@@ -1,0 +1,913 @@
+{
+    "metadata": {
+        "name": "California Native Species Catalog",
+        "description": "Native plant species for post-fire restoration in California Fire Model regions",
+        "version": "1.0.0",
+        "sources": [
+            "CalFlora Database",
+            "USDA PLANTS Database",
+            "California Native Plant Society",
+            "USFS Fire Effects Information System (FEIS)",
+            "Jepson eFlora"
+        ],
+        "last_updated": "2026-01-21"
+    },
+    "species": [
+        {
+            "id": "PIPO",
+            "common_name": "Ponderosa Pine",
+            "scientific_name": "Pinus ponderosa",
+            "family": "Pinaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Sierra Nevada, Klamath Mountains, Cascade Range, Coast Ranges",
+            "habitat": {
+                "elevation_range_m": [
+                    300,
+                    2700
+                ],
+                "elevation_range_ft": [
+                    1000,
+                    9000
+                ],
+                "precipitation_mm": [
+                    380,
+                    1020
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "sandy loam",
+                    "granitic"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thick_bark",
+                "bark_thickness_cm_mature": [
+                    7,
+                    15
+                ],
+                "fire_survival_rate": "high_if_mature",
+                "post_fire_response": "seed_regeneration",
+                "seedling_fire_sensitivity": "high",
+                "serotiny": false,
+                "sprouting_ability": "none"
+            },
+            "restoration": {
+                "priority_for_planting": 1,
+                "planting_density_stems_ha": [
+                    400,
+                    600
+                ],
+                "container_size_recommended": "D40_or_larger",
+                "planting_season": "fall_after_rain",
+                "survival_rate_typical": 0.70,
+                "years_to_seed_production": [
+                    20,
+                    40
+                ],
+                "growth_rate": "moderate",
+                "nursery_availability": "high"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "camp_2018",
+                "creek_2020",
+                "rim_2013"
+            ],
+            "ecological_notes": "Keystone species in Sierra Nevada mixed conifer forests. Thick bark allows survival of low-intensity surface fires. Creates important wildlife habitat. Historically maintained by frequent low-intensity fire."
+        },
+        {
+            "id": "ABCO",
+            "common_name": "White Fir",
+            "scientific_name": "Abies concolor",
+            "family": "Pinaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Sierra Nevada, Klamath Mountains, Southern California mountains",
+            "habitat": {
+                "elevation_range_m": [
+                    1200,
+                    2800
+                ],
+                "elevation_range_ft": [
+                    4000,
+                    9200
+                ],
+                "precipitation_mm": [
+                    760,
+                    1520
+                ],
+                "soil_preference": [
+                    "deep",
+                    "well-drained",
+                    "loam"
+                ],
+                "sun_requirement": "shade_tolerant",
+                "drought_tolerance": "moderate"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thin_bark",
+                "fire_survival_rate": "low_to_moderate",
+                "post_fire_response": "seed_regeneration",
+                "seedling_fire_sensitivity": "very_high",
+                "sprouting_ability": "none",
+                "notes": "Fire-sensitive. Increased in density due to fire suppression."
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    200,
+                    400
+                ],
+                "container_size_recommended": "D40",
+                "planting_season": "fall",
+                "survival_rate_typical": 0.60,
+                "growth_rate": "moderate",
+                "shade_planting_recommended": true,
+                "nursery_availability": "moderate"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "creek_2020"
+            ],
+            "ecological_notes": "Shade-tolerant species that fills in forest understory. Important for late-successional habitat. Consider reduced planting density to maintain historical open forest structure."
+        },
+        {
+            "id": "QUKE",
+            "common_name": "Black Oak",
+            "scientific_name": "Quercus kelloggii",
+            "family": "Fagaceae",
+            "life_form": "deciduous_tree",
+            "native_range": "Sierra Nevada, Klamath Mountains, Coast Ranges",
+            "habitat": {
+                "elevation_range_m": [
+                    200,
+                    2400
+                ],
+                "elevation_range_ft": [
+                    700,
+                    8000
+                ],
+                "precipitation_mm": [
+                    510,
+                    1520
+                ],
+                "soil_preference": [
+                    "deep",
+                    "well-drained"
+                ],
+                "sun_requirement": "full_sun_to_partial_shade",
+                "drought_tolerance": "high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "vigorous_resprouter",
+                "fire_survival_rate": "very_high",
+                "post_fire_response": "basal_sprouting",
+                "sprout_vigor": "very_high",
+                "time_to_resprout_months": [
+                    3,
+                    12
+                ],
+                "top_kill_recovery": "excellent"
+            },
+            "restoration": {
+                "priority_for_planting": 1,
+                "planting_density_stems_ha": [
+                    100,
+                    200
+                ],
+                "acorn_direct_seeding": true,
+                "container_size_recommended": "deepot",
+                "planting_season": "fall",
+                "survival_rate_typical": 0.65,
+                "growth_rate": "moderate_to_fast",
+                "nursery_availability": "moderate"
+            },
+            "wildlife_value": {
+                "acorn_production": "high",
+                "wildlife_dependent": [
+                    "Black Bear",
+                    "Mule Deer",
+                    "Wild Turkey",
+                    "Acorn Woodpecker",
+                    "Western Gray Squirrel"
+                ],
+                "cavity_nesting_habitat": true
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "camp_2018",
+                "creek_2020",
+                "rim_2013"
+            ],
+            "ecological_notes": "Critical mast species for wildlife. Vigorous resprouter - often does not need replanting if root system survives. Check for resprouts before planting. Cultural significance to California Native American tribes."
+        },
+        {
+            "id": "CADE",
+            "common_name": "Incense-cedar",
+            "scientific_name": "Calocedrus decurrens",
+            "family": "Cupressaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Sierra Nevada, Klamath Mountains, Cascade Range",
+            "habitat": {
+                "elevation_range_m": [
+                    600,
+                    2300
+                ],
+                "elevation_range_ft": [
+                    2000,
+                    7500
+                ],
+                "precipitation_mm": [
+                    510,
+                    1520
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "various"
+                ],
+                "sun_requirement": "shade_tolerant",
+                "drought_tolerance": "moderate_to_high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thick_bark_moderate",
+                "fire_survival_rate": "moderate",
+                "post_fire_response": "seed_regeneration",
+                "sprouting_ability": "none"
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    100,
+                    200
+                ],
+                "planting_season": "fall",
+                "survival_rate_typical": 0.55,
+                "growth_rate": "slow_to_moderate",
+                "nursery_availability": "moderate"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "camp_2018"
+            ],
+            "ecological_notes": "Important component of mixed conifer forest. Distinctive aromatic foliage. Provides year-round cover for wildlife."
+        },
+        {
+            "id": "QUCH",
+            "common_name": "Canyon Live Oak",
+            "scientific_name": "Quercus chrysolepis",
+            "family": "Fagaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Throughout California mountains",
+            "habitat": {
+                "elevation_range_m": [
+                    100,
+                    2700
+                ],
+                "elevation_range_ft": [
+                    330,
+                    9000
+                ],
+                "precipitation_mm": [
+                    380,
+                    1520
+                ],
+                "soil_preference": [
+                    "rocky",
+                    "various"
+                ],
+                "sun_requirement": "full_sun_to_shade",
+                "drought_tolerance": "very_high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "vigorous_resprouter",
+                "fire_survival_rate": "very_high",
+                "post_fire_response": "basal_and_root_sprouting",
+                "sprout_vigor": "very_high"
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    50,
+                    150
+                ],
+                "planting_season": "fall",
+                "survival_rate_typical": 0.70,
+                "check_for_resprouts_first": true,
+                "nursery_availability": "moderate"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "camp_2018",
+                "creek_2020",
+                "rim_2013"
+            ],
+            "ecological_notes": "Extremely adaptable species. Often does not need replanting due to vigorous resprouting. Important on rocky, steep terrain."
+        },
+        {
+            "id": "ARPA",
+            "common_name": "Greenleaf Manzanita",
+            "scientific_name": "Arctostaphylos patula",
+            "family": "Ericaceae",
+            "life_form": "evergreen_shrub",
+            "native_range": "Sierra Nevada, Klamath Mountains, Cascade Range",
+            "habitat": {
+                "elevation_range_m": [
+                    600,
+                    3000
+                ],
+                "elevation_range_ft": [
+                    2000,
+                    10000
+                ],
+                "precipitation_mm": [
+                    510,
+                    1520
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "rocky",
+                    "acidic"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "obligate_seeder",
+                "fire_survival_rate": "adults_killed",
+                "post_fire_response": "seed_germination",
+                "seed_bank": "persistent_soil_seed_bank",
+                "fire_stimulated_germination": true,
+                "heat_required_for_germination": true
+            },
+            "restoration": {
+                "priority_for_planting": 3,
+                "planting_density_stems_ha": [
+                    100,
+                    300
+                ],
+                "direct_seeding_possible": true,
+                "seed_treatment": "scarification_and_stratification",
+                "planting_season": "fall",
+                "nursery_availability": "moderate",
+                "notes": "Often regenerates naturally from seed bank after fire"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "creek_2020"
+            ],
+            "ecological_notes": "Early successional species after fire. Fixes nitrogen. Important pollinator resource. May compete with conifer regeneration if too dense."
+        },
+        {
+            "id": "PSME",
+            "common_name": "Douglas-fir",
+            "scientific_name": "Pseudotsuga menziesii",
+            "family": "Pinaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Coast Ranges, Klamath Mountains, northern Sierra Nevada (scattered)",
+            "habitat": {
+                "elevation_range_m": [
+                    0,
+                    1800
+                ],
+                "elevation_range_ft": [
+                    0,
+                    6000
+                ],
+                "precipitation_mm": [
+                    760,
+                    3050
+                ],
+                "soil_preference": [
+                    "deep",
+                    "well-drained"
+                ],
+                "sun_requirement": "full_sun_to_partial_shade",
+                "drought_tolerance": "moderate"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thick_bark_when_mature",
+                "bark_thickness_cm_mature": [
+                    10,
+                    25
+                ],
+                "fire_survival_rate": "moderate_to_high_if_mature",
+                "post_fire_response": "seed_regeneration",
+                "seedling_fire_sensitivity": "high",
+                "sprouting_ability": "none"
+            },
+            "restoration": {
+                "priority_for_planting": 1,
+                "planting_density_stems_ha": [
+                    300,
+                    600
+                ],
+                "container_size_recommended": "large",
+                "planting_season": "late_fall_winter",
+                "survival_rate_typical": 0.75,
+                "growth_rate": "fast",
+                "nursery_availability": "high"
+            },
+            "associated_fires": [
+                "mendocino_complex_2018",
+                "kincade_2019"
+            ],
+            "ecological_notes": "Dominant species in Coast Range forests. Fast-growing, excellent for timber and carbon sequestration. Important for northern spotted owl habitat."
+        },
+        {
+            "id": "LIDE",
+            "common_name": "Tanoak",
+            "scientific_name": "Notholithocarpus densiflorus",
+            "family": "Fagaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Coast Ranges, Klamath Mountains",
+            "habitat": {
+                "elevation_range_m": [
+                    0,
+                    1500
+                ],
+                "elevation_range_ft": [
+                    0,
+                    5000
+                ],
+                "precipitation_mm": [
+                    1020,
+                    3050
+                ],
+                "soil_preference": [
+                    "acidic",
+                    "well-drained"
+                ],
+                "sun_requirement": "shade_tolerant",
+                "drought_tolerance": "low_to_moderate"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "vigorous_resprouter",
+                "fire_survival_rate": "very_high",
+                "post_fire_response": "basal_sprouting",
+                "sprout_vigor": "very_high",
+                "time_to_resprout_months": [
+                    3,
+                    6
+                ]
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    100,
+                    300
+                ],
+                "check_for_resprouts_first": true,
+                "planting_season": "fall_winter",
+                "survival_rate_typical": 0.60,
+                "nursery_availability": "low_to_moderate",
+                "notes": "Subject to Sudden Oak Death (Phytophthora ramorum) in some areas"
+            },
+            "associated_fires": [
+                "mendocino_complex_2018",
+                "kincade_2019"
+            ],
+            "ecological_notes": "Important mast species for wildlife. Vigorous resprouter typically does not need replanting. Check for Sudden Oak Death presence before restoration planning."
+        },
+        {
+            "id": "QUAG",
+            "common_name": "Coast Live Oak",
+            "scientific_name": "Quercus agrifolia",
+            "family": "Fagaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Coast Ranges, Southern California",
+            "habitat": {
+                "elevation_range_m": [
+                    0,
+                    1200
+                ],
+                "elevation_range_ft": [
+                    0,
+                    4000
+                ],
+                "precipitation_mm": [
+                    380,
+                    1020
+                ],
+                "soil_preference": [
+                    "deep",
+                    "well-drained"
+                ],
+                "sun_requirement": "full_sun_to_partial_shade",
+                "drought_tolerance": "high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "resprouter",
+                "fire_survival_rate": "high",
+                "post_fire_response": "basal_sprouting",
+                "sprout_vigor": "high"
+            },
+            "restoration": {
+                "priority_for_planting": 1,
+                "planting_density_stems_ha": [
+                    50,
+                    150
+                ],
+                "acorn_direct_seeding": true,
+                "planting_season": "fall",
+                "survival_rate_typical": 0.65,
+                "nursery_availability": "high"
+            },
+            "associated_fires": [
+                "kincade_2019",
+                "woolsey_2018"
+            ],
+            "ecological_notes": "Iconic California oak. Important for wildlife habitat. Drought and fire adapted. Cultural significance."
+        },
+        {
+            "id": "ADFA",
+            "common_name": "Chamise",
+            "scientific_name": "Adenostoma fasciculatum",
+            "family": "Rosaceae",
+            "life_form": "evergreen_shrub",
+            "native_range": "Throughout California chaparral",
+            "habitat": {
+                "elevation_range_m": [
+                    0,
+                    1800
+                ],
+                "elevation_range_ft": [
+                    0,
+                    6000
+                ],
+                "precipitation_mm": [
+                    250,
+                    1020
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "rocky",
+                    "nutrient-poor"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "very_high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "facultative_seeder_sprouter",
+                "fire_survival_rate": "high",
+                "post_fire_response": "both_sprouting_and_seeding",
+                "basal_burl": true,
+                "seed_bank": "persistent",
+                "fire_stimulated_germination": true
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    500,
+                    1500
+                ],
+                "direct_seeding": true,
+                "container_planting": true,
+                "planting_season": "fall",
+                "survival_rate_typical": 0.70,
+                "nursery_availability": "moderate",
+                "notes": "Often regenerates naturally from sprouts and seed bank"
+            },
+            "associated_fires": [
+                "thomas_2017",
+                "woolsey_2018"
+            ],
+            "ecological_notes": "Dominant chaparral species. Fire-adapted with both sprouting and seeding strategies. Important for erosion control immediately after fire."
+        },
+        {
+            "id": "HEAR",
+            "common_name": "Toyon",
+            "scientific_name": "Heteromeles arbutifolia",
+            "family": "Rosaceae",
+            "life_form": "evergreen_shrub_small_tree",
+            "native_range": "Throughout California",
+            "habitat": {
+                "elevation_range_m": [
+                    0,
+                    1200
+                ],
+                "elevation_range_ft": [
+                    0,
+                    4000
+                ],
+                "precipitation_mm": [
+                    300,
+                    1020
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "various"
+                ],
+                "sun_requirement": "full_sun_to_partial_shade",
+                "drought_tolerance": "high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "resprouter",
+                "fire_survival_rate": "high",
+                "post_fire_response": "basal_sprouting"
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    100,
+                    300
+                ],
+                "container_planting": true,
+                "planting_season": "fall",
+                "survival_rate_typical": 0.75,
+                "nursery_availability": "high"
+            },
+            "wildlife_value": {
+                "berry_production": "high",
+                "wildlife_dependent": [
+                    "American Robin",
+                    "Cedar Waxwing",
+                    "Mockingbird",
+                    "Coyote"
+                ]
+            },
+            "associated_fires": [
+                "thomas_2017",
+                "woolsey_2018",
+                "kincade_2019"
+            ],
+            "ecological_notes": "California's Christmas berry. Excellent wildlife value. Attractive landscape plant. Highly recommended for restoration."
+        },
+        {
+            "id": "QUDO",
+            "common_name": "Blue Oak",
+            "scientific_name": "Quercus douglasii",
+            "family": "Fagaceae",
+            "life_form": "deciduous_tree",
+            "native_range": "Sierra Nevada foothills, Coast Range foothills, Central Valley edges",
+            "habitat": {
+                "elevation_range_m": [
+                    50,
+                    1200
+                ],
+                "elevation_range_ft": [
+                    165,
+                    4000
+                ],
+                "precipitation_mm": [
+                    300,
+                    760
+                ],
+                "soil_preference": [
+                    "shallow",
+                    "rocky",
+                    "well-drained"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "very_high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "resprouter",
+                "fire_survival_rate": "high",
+                "post_fire_response": "basal_sprouting",
+                "sprout_vigor": "moderate_to_high"
+            },
+            "restoration": {
+                "priority_for_planting": 1,
+                "planting_density_stems_ha": [
+                    50,
+                    150
+                ],
+                "acorn_direct_seeding": true,
+                "planting_season": "fall",
+                "survival_rate_typical": 0.55,
+                "growth_rate": "slow",
+                "nursery_availability": "moderate",
+                "notes": "Difficult to establish from container stock; acorn seeding often preferred"
+            },
+            "associated_fires": [
+                "creek_2020",
+                "rim_2013"
+            ],
+            "ecological_notes": "Iconic foothill species. Extremely drought tolerant. Slow-growing but long-lived. Important for foothill savanna restoration."
+        },
+        {
+            "id": "CEIN",
+            "common_name": "Deerbrush",
+            "scientific_name": "Ceanothus integerrimus",
+            "family": "Rhamnaceae",
+            "life_form": "deciduous_shrub",
+            "native_range": "Sierra Nevada, Coast Ranges, Klamath Mountains",
+            "habitat": {
+                "elevation_range_m": [
+                    300,
+                    2100
+                ],
+                "elevation_range_ft": [
+                    1000,
+                    7000
+                ],
+                "precipitation_mm": [
+                    510,
+                    1520
+                ],
+                "soil_preference": [
+                    "well-drained",
+                    "various"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "moderate"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "obligate_seeder",
+                "fire_survival_rate": "adults_killed",
+                "post_fire_response": "seed_germination",
+                "seed_bank": "persistent",
+                "fire_stimulated_germination": true,
+                "nitrogen_fixing": true
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    200,
+                    500
+                ],
+                "direct_seeding": true,
+                "seed_treatment": "hot_water_scarification",
+                "planting_season": "fall",
+                "nursery_availability": "moderate",
+                "notes": "Pioneer species - often not needed if seed bank present"
+            },
+            "associated_fires": [
+                "dixie_2021",
+                "caldor_2021",
+                "creek_2020"
+            ],
+            "ecological_notes": "Important nitrogen-fixing pioneer species. Provides browse for deer. White flowers attract pollinators. Short-lived (10-20 years) but critical for early succession."
+        },
+        {
+            "id": "ABMA",
+            "common_name": "Red Fir",
+            "scientific_name": "Abies magnifica",
+            "family": "Pinaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Sierra Nevada, Klamath Mountains (high elevation)",
+            "habitat": {
+                "elevation_range_m": [
+                    1800,
+                    2800
+                ],
+                "elevation_range_ft": [
+                    6000,
+                    9200
+                ],
+                "precipitation_mm": [
+                    1020,
+                    1780
+                ],
+                "soil_preference": [
+                    "deep",
+                    "well-drained"
+                ],
+                "sun_requirement": "shade_tolerant",
+                "drought_tolerance": "low"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thin_bark",
+                "fire_survival_rate": "low",
+                "post_fire_response": "seed_regeneration",
+                "seedling_fire_sensitivity": "very_high",
+                "notes": "Fire-sensitive species of high-elevation forests"
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    200,
+                    400
+                ],
+                "container_size_recommended": "large",
+                "planting_season": "late_spring_after_snowmelt",
+                "survival_rate_typical": 0.50,
+                "growth_rate": "slow",
+                "nursery_availability": "low",
+                "notes": "Difficult to establish; long recovery time"
+            },
+            "associated_fires": [
+                "caldor_2021"
+            ],
+            "ecological_notes": "High-elevation species with long recovery times. Climate change may shift suitable habitat upward. Consider assisted migration planning."
+        },
+        {
+            "id": "PISA",
+            "common_name": "Gray Pine",
+            "scientific_name": "Pinus sabiniana",
+            "family": "Pinaceae",
+            "life_form": "evergreen_tree",
+            "native_range": "Sierra Nevada foothills, Coast Range foothills",
+            "habitat": {
+                "elevation_range_m": [
+                    100,
+                    1200
+                ],
+                "elevation_range_ft": [
+                    330,
+                    4000
+                ],
+                "precipitation_mm": [
+                    300,
+                    760
+                ],
+                "soil_preference": [
+                    "rocky",
+                    "shallow",
+                    "serpentine_tolerant"
+                ],
+                "sun_requirement": "full_sun",
+                "drought_tolerance": "very_high"
+            },
+            "fire_ecology": {
+                "fire_adaptation": "thin_bark_vulnerable",
+                "fire_survival_rate": "moderate",
+                "post_fire_response": "seed_regeneration",
+                "large_seeds": true,
+                "notes": "Large seeds eaten by many wildlife species"
+            },
+            "restoration": {
+                "priority_for_planting": 2,
+                "planting_density_stems_ha": [
+                    50,
+                    150
+                ],
+                "direct_seeding": true,
+                "planting_season": "fall",
+                "survival_rate_typical": 0.55,
+                "growth_rate": "fast",
+                "nursery_availability": "moderate"
+            },
+            "associated_fires": [
+                "creek_2020",
+                "camp_2018"
+            ],
+            "ecological_notes": "Distinctive open-crowned pine of hot, dry foothills. Large edible seeds important for wildlife and historically for Native Americans."
+        }
+    ],
+    "invasive_species_warnings": [
+        {
+            "common_name": "Yellow Star-thistle",
+            "scientific_name": "Centaurea solstitialis",
+            "threat_level": "high",
+            "post_fire_risk": "very_high",
+            "regions": [
+                "sierra_foothills",
+                "coast_ranges",
+                "chaparral"
+            ],
+            "management": "Early detection and rapid response critical. Mowing before seed set. Targeted herbicide."
+        },
+        {
+            "common_name": "Cheatgrass",
+            "scientific_name": "Bromus tectorum",
+            "threat_level": "high",
+            "post_fire_risk": "very_high",
+            "regions": [
+                "sierra_nevada",
+                "modoc_plateau"
+            ],
+            "management": "Creates grass-fire cycle. Priority control in first 2 years post-fire."
+        },
+        {
+            "common_name": "Scotch Broom",
+            "scientific_name": "Cytisus scoparius",
+            "threat_level": "high",
+            "post_fire_risk": "high",
+            "regions": [
+                "coast_ranges",
+                "sierra_nevada"
+            ],
+            "management": "Fire-stimulated germination. Pull or cut before seed set. Persistent seed bank."
+        },
+        {
+            "common_name": "French Broom",
+            "scientific_name": "Genista monspessulana",
+            "threat_level": "high",
+            "post_fire_risk": "high",
+            "regions": [
+                "coast_ranges",
+                "bay_area"
+            ],
+            "management": "Similar to Scotch Broom. Fire-adapted invasive."
+        },
+        {
+            "common_name": "Black Mustard",
+            "scientific_name": "Brassica nigra",
+            "threat_level": "moderate",
+            "post_fire_risk": "high",
+            "regions": [
+                "southern_california",
+                "chaparral"
+            ],
+            "management": "Can cause type conversion from shrubland to annual grassland."
+        }
+    ]
+}

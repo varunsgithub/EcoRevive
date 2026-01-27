@@ -24,8 +24,6 @@ checkpoints/
 data/
 datasets/
 *.csv
-*.json
-*.geojson
 *.tif
 *.tiff
 

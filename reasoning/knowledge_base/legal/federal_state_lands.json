@@ -1,0 +1,587 @@
+{
+    "metadata": {
+        "name": "California Federal and State Lands Database",
+        "description": "Land ownership and management data for California Fire Model regions",
+        "version": "1.0.0",
+        "sources": [
+            "USDA Forest Service",
+            "Bureau of Land Management",
+            "National Park Service",
+            "California Department of Parks and Recreation",
+            "CAL FIRE"
+        ],
+        "last_updated": "2026-01-21",
+        "disclaimer": "Contact information should be verified before use. For official permits, contact the managing agency directly."
+    },
+    "national_forests": {
+        "plumas_nf": {
+            "name": "Plumas National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 1146000,
+            "bbox": [
+                -121.50,
+                39.40,
+                -120.00,
+                40.50
+            ],
+            "fires_affected": [
+                "dixie_2021"
+            ],
+            "supervisor_office": {
+                "address": "159 Lawrence Street, Quincy, CA 95971",
+                "phone": "(530) 283-2050",
+                "website": "https://www.fs.usda.gov/plumas"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Feather River Ranger District",
+                    "phone": "(530) 534-6500",
+                    "address": "875 Mitchell Avenue, Oroville, CA 95965",
+                    "counties_served": [
+                        "Butte",
+                        "Plumas"
+                    ]
+                },
+                {
+                    "name": "Mount Hough Ranger District",
+                    "phone": "(530) 283-0555",
+                    "address": "39696 Highway 70, Quincy, CA 95971",
+                    "counties_served": [
+                        "Plumas"
+                    ]
+                },
+                {
+                    "name": "Beckwourth Ranger District",
+                    "phone": "(530) 836-2575",
+                    "address": "23 Mohawk Road, Blairsden, CA 96103",
+                    "counties_served": [
+                        "Plumas",
+                        "Lassen"
+                    ]
+                }
+            ],
+            "permits_required": {
+                "restoration_activities": "Special Use Permit",
+                "volunteer_groups": "Volunteer Agreement (FS-301)",
+                "tree_planting": "Authorization through Ranger District",
+                "seed_collection": "Seed Collection Permit"
+            },
+            "special_designations": [
+                "Bucks Lake Wilderness",
+                "Middle Fork Feather Wild and Scenic River",
+                "Lakes Basin Recreation Area"
+            ]
+        },
+        "lassen_nf": {
+            "name": "Lassen National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 1059000,
+            "bbox": [
+                -121.80,
+                40.00,
+                -120.80,
+                41.20
+            ],
+            "fires_affected": [
+                "dixie_2021"
+            ],
+            "supervisor_office": {
+                "address": "2550 Riverside Drive, Susanville, CA 96130",
+                "phone": "(530) 257-2151",
+                "website": "https://www.fs.usda.gov/lassen"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Almanor Ranger District",
+                    "phone": "(530) 258-2141",
+                    "address": "900 Highway 89, Chester, CA 96020",
+                    "counties_served": [
+                        "Plumas",
+                        "Butte"
+                    ]
+                },
+                {
+                    "name": "Eagle Lake Ranger District",
+                    "phone": "(530) 257-4188",
+                    "address": "477-050 Eagle Lake Road, Susanville, CA 96130",
+                    "counties_served": [
+                        "Lassen"
+                    ]
+                }
+            ],
+            "permits_required": {
+                "restoration_activities": "Special Use Permit",
+                "volunteer_groups": "Volunteer Agreement",
+                "research": "Research Permit"
+            }
+        },
+        "eldorado_nf": {
+            "name": "Eldorado National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 597000,
+            "bbox": [
+                -120.80,
+                38.40,
+                -119.80,
+                39.10
+            ],
+            "fires_affected": [
+                "caldor_2021"
+            ],
+            "supervisor_office": {
+                "address": "100 Forni Road, Placerville, CA 95667",
+                "phone": "(530) 622-5061",
+                "website": "https://www.fs.usda.gov/eldorado"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Amador Ranger District",
+                    "phone": "(209) 295-4251",
+                    "address": "26820 Silver Drive, Pioneer, CA 95666",
+                    "counties_served": [
+                        "Amador",
+                        "El Dorado"
+                    ]
+                },
+                {
+                    "name": "Pacific Ranger District",
+                    "phone": "(530) 644-2349",
+                    "address": "7887 Highway 50, Pollock Pines, CA 95726",
+                    "counties_served": [
+                        "El Dorado"
+                    ]
+                },
+                {
+                    "name": "Placerville Ranger District",
+                    "phone": "(530) 644-2324",
+                    "address": "4260 Eight Mile Road, Camino, CA 95709",
+                    "counties_served": [
+                        "El Dorado"
+                    ]
+                }
+            ],
+            "special_designations": [
+                "Desolation Wilderness",
+                "Mokelumne Wilderness"
+            ]
+        },
+        "sierra_nf": {
+            "name": "Sierra National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 1305000,
+            "bbox": [
+                -119.80,
+                36.80,
+                -118.80,
+                37.80
+            ],
+            "fires_affected": [
+                "creek_2020"
+            ],
+            "supervisor_office": {
+                "address": "1600 Tollhouse Road, Clovis, CA 93611",
+                "phone": "(559) 297-0706",
+                "website": "https://www.fs.usda.gov/sierra"
+            },
+            "ranger_districts": [
+                {
+                    "name": "High Sierra Ranger District",
+                    "phone": "(559) 855-5355",
+                    "address": "29688 Auberry Road, Prather, CA 93651",
+                    "counties_served": [
+                        "Fresno",
+                        "Madera"
+                    ]
+                },
+                {
+                    "name": "Bass Lake Ranger District",
+                    "phone": "(559) 877-2218",
+                    "address": "57003 Road 225, North Fork, CA 93643",
+                    "counties_served": [
+                        "Madera"
+                    ]
+                }
+            ],
+            "special_designations": [
+                "Ansel Adams Wilderness",
+                "Dinkey Lakes Wilderness",
+                "John Muir Wilderness (partial)"
+            ]
+        },
+        "stanislaus_nf": {
+            "name": "Stanislaus National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 898000,
+            "bbox": [
+                -120.50,
+                37.60,
+                -119.40,
+                38.40
+            ],
+            "fires_affected": [
+                "rim_2013"
+            ],
+            "supervisor_office": {
+                "address": "19777 Greenley Road, Sonora, CA 95370",
+                "phone": "(209) 532-3671",
+                "website": "https://www.fs.usda.gov/stanislaus"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Groveland Ranger District",
+                    "phone": "(209) 962-7825",
+                    "address": "24545 Highway 120, Groveland, CA 95321",
+                    "counties_served": [
+                        "Tuolumne"
+                    ]
+                },
+                {
+                    "name": "Mi-Wok Ranger District",
+                    "phone": "(209) 586-3234",
+                    "address": "24695 Highway 108, Mi-Wuk Village, CA 95346",
+                    "counties_served": [
+                        "Tuolumne"
+                    ]
+                }
+            ],
+            "special_designations": [
+                "Emigrant Wilderness",
+                "Carson-Iceberg Wilderness (partial)",
+                "Mokelumne Wilderness (partial)"
+            ]
+        },
+        "mendocino_nf": {
+            "name": "Mendocino National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 913000,
+            "bbox": [
+                -123.30,
+                39.00,
+                -122.30,
+                40.00
+            ],
+            "fires_affected": [
+                "mendocino_complex_2018"
+            ],
+            "supervisor_office": {
+                "address": "825 N. Humboldt Avenue, Willows, CA 95988",
+                "phone": "(530) 934-3316",
+                "website": "https://www.fs.usda.gov/mendocino"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Upper Lake Ranger District",
+                    "phone": "(707) 275-2361",
+                    "address": "10025 Elk Mountain Road, Upper Lake, CA 95485",
+                    "counties_served": [
+                        "Lake",
+                        "Mendocino"
+                    ]
+                },
+                {
+                    "name": "Grindstone Ranger District",
+                    "phone": "(530) 934-1112",
+                    "address": "825 N. Humboldt Avenue, Willows, CA 95988",
+                    "counties_served": [
+                        "Glenn",
+                        "Colusa"
+                    ]
+                },
+                {
+                    "name": "Covelo Ranger District",
+                    "phone": "(707) 983-6118",
+                    "address": "78150 Covelo Road, Covelo, CA 95428",
+                    "counties_served": [
+                        "Mendocino"
+                    ]
+                }
+            ],
+            "special_designations": [
+                "Yolla Bolly-Middle Eel Wilderness (partial)",
+                "Snow Mountain Wilderness"
+            ]
+        },
+        "los_padres_nf": {
+            "name": "Los Padres National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 1752000,
+            "bbox": [
+                -121.00,
+                34.00,
+                -118.50,
+                36.00
+            ],
+            "fires_affected": [
+                "thomas_2017"
+            ],
+            "supervisor_office": {
+                "address": "6750 Navigator Way, Suite 150, Goleta, CA 93117",
+                "phone": "(805) 968-6640",
+                "website": "https://www.fs.usda.gov/lpnf"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Ojai Ranger District",
+                    "phone": "(805) 646-4348",
+                    "address": "1190 E. Ojai Avenue, Ojai, CA 93023",
+                    "counties_served": [
+                        "Ventura"
+                    ]
+                },
+                {
+                    "name": "Santa Barbara Ranger District",
+                    "phone": "(805) 967-3481",
+                    "address": "3505 Paradise Road, Santa Barbara, CA 93105",
+                    "counties_served": [
+                        "Santa Barbara"
+                    ]
+                }
+            ],
+            "special_designations": [
+                "Ventana Wilderness",
+                "San Rafael Wilderness",
+                "Dick Smith Wilderness",
+                "Sespe Wilderness"
+            ]
+        },
+        "angeles_nf": {
+            "name": "Angeles National Forest",
+            "agency": "USDA Forest Service",
+            "region": "Pacific Southwest Region (R5)",
+            "total_acres": 655000,
+            "bbox": [
+                -118.70,
+                34.10,
+                -117.60,
+                34.70
+            ],
+            "fires_affected": [
+                "woolsey_2018"
+            ],
+            "supervisor_office": {
+                "address": "701 N. Santa Anita Avenue, Arcadia, CA 91006",
+                "phone": "(626) 574-1613",
+                "website": "https://www.fs.usda.gov/angeles"
+            },
+            "ranger_districts": [
+                {
+                    "name": "Los Angeles River Ranger District",
+                    "phone": "(818) 899-1900",
+                    "address": "12371 N. Little Tujunga Canyon Road, San Fernando, CA 91342",
+                    "counties_served": [
+                        "Los Angeles"
+                    ]
+                }
+            ]
+        }
+    },
+    "bureau_of_land_management": {
+        "ukiah_field_office": {
+            "name": "Ukiah Field Office",
+            "agency": "Bureau of Land Management",
+            "total_acres": 270000,
+            "bbox": [
+                -123.50,
+                38.50,
+                -122.50,
+                40.00
+            ],
+            "fires_affected": [
+                "mendocino_complex_2018"
+            ],
+            "office": {
+                "address": "2550 N. State Street, Ukiah, CA 95482",
+                "phone": "(707) 468-4000"
+            }
+        },
+        "central_california_district": {
+            "name": "Central California District",
+            "agency": "Bureau of Land Management",
+            "fires_affected": [
+                "creek_2020",
+                "rim_2013"
+            ],
+            "office": {
+                "address": "5152 Hillsdale Circle, El Dorado Hills, CA 95762",
+                "phone": "(916) 941-3101"
+            }
+        }
+    },
+    "state_lands": {
+        "butte_county": {
+            "parks": [
+                {
+                    "name": "Lake Oroville State Recreation Area",
+                    "fires_affected": [
+                        "camp_2018"
+                    ],
+                    "phone": "(530) 538-2200",
+                    "permit_contact": "California State Parks, Northern Buttes District"
+                }
+            ]
+        },
+        "sonoma_county": {
+            "parks": [
+                {
+                    "name": "Sugarloaf Ridge State Park",
+                    "fires_affected": [
+                        "kincade_2019"
+                    ],
+                    "phone": "(707) 833-5712"
+                },
+                {
+                    "name": "Jack London State Historic Park",
+                    "fires_affected": [
+                        "kincade_2019"
+                    ],
+                    "phone": "(707) 938-5216"
+                }
+            ]
+        },
+        "ventura_county": {
+            "parks": [
+                {
+                    "name": "Point Mugu State Park",
+                    "fires_affected": [
+                        "woolsey_2018"
+                    ],
+                    "phone": "(805) 488-5223"
+                },
+                {
+                    "name": "Malibu Creek State Park",
+                    "fires_affected": [
+                        "woolsey_2018"
+                    ],
+                    "phone": "(818) 880-0367"
+                }
+            ]
+        }
+    },
+    "national_park_service": {
+        "santa_monica_mountains_nra": {
+            "name": "Santa Monica Mountains National Recreation Area",
+            "agency": "National Park Service",
+            "total_acres": 150000,
+            "fires_affected": [
+                "woolsey_2018"
+            ],
+            "office": {
+                "address": "401 W. Hillcrest Drive, Thousand Oaks, CA 91360",
+                "phone": "(805) 370-2301",
+                "website": "https://www.nps.gov/samo"
+            },
+            "restoration_contact": {
+                "division": "Resource Management",
+                "note": "NPS has strict protocols for restoration. Contact early in planning process."
+            }
+        }
+    },
+    "permit_types": {
+        "usfs_volunteer_agreement": {
+            "name": "Volunteer Service Agreement (FS-301)",
+            "agency": "USDA Forest Service",
+            "purpose": "Authorizes volunteer activities on National Forest lands",
+            "requirements": [
+                "Signed agreement",
+                "Safety briefing",
+                "Supervision by FS personnel or partner organization"
+            ],
+            "processing_time_days": [
+                14,
+                30
+            ],
+            "cost": "Free"
+        },
+        "usfs_special_use_permit": {
+            "name": "Special Use Permit",
+            "agency": "USDA Forest Service",
+            "purpose": "Required for organized restoration activities beyond simple volunteering",
+            "requirements": [
+                "Application",
+                "NEPA compliance may be required",
+                "Insurance",
+                "Operating plan"
+            ],
+            "processing_time_days": [
+                30,
+                180
+            ],
+            "cost": "Varies, often $100-500 for nonprofits",
+            "notes": "Large-scale planting projects typically require this permit"
+        },
+        "blm_volunteer_authorization": {
+            "name": "Volunteer Service Authorization",
+            "agency": "Bureau of Land Management",
+            "purpose": "Authorizes volunteer activities on BLM lands",
+            "requirements": [
+                "Application",
+                "Safety training",
+                "Liability release"
+            ],
+            "processing_time_days": [
+                7,
+                21
+            ],
+            "cost": "Free"
+        },
+        "calfire_vegetation_management": {
+            "name": "California Vegetation Treatment Program (CalVTP)",
+            "agency": "CAL FIRE",
+            "purpose": "State-approved restoration and fuel treatment on various lands",
+            "requirements": [
+                "Environmental review under CalVTP PEIR",
+                "Project-specific analysis"
+            ],
+            "notes": "Streamlined CEQA process for vegetation management"
+        }
+    },
+    "indigenous_territories": {
+        "note": "Many fire-affected areas are within or adjacent to ancestral territories of California Native American tribes. Free, Prior, and Informed Consent (FPIC) should be sought for restoration projects.",
+        "tribes_by_region": {
+            "plumas_butte_lassen": [
+                "Maidu",
+                "Mountain Maidu (Northeastern Maidu)",
+                "Konkow"
+            ],
+            "eldorado_amador": [
+                "Miwok (Me-Wuk)",
+                "Washoe"
+            ],
+            "fresno_madera": [
+                "Mono (Western Mono)",
+                "Yokuts",
+                "Miwok (Southern Sierra Miwok)"
+            ],
+            "mendocino_lake": [
+                "Pomo",
+                "Wappo",
+                "Yuki"
+            ],
+            "ventura_santa_barbara": [
+                "Chumash"
+            ],
+            "los_angeles": [
+                "Tongva (Gabrielino)",
+                "Chumash"
+            ],
+            "sonoma": [
+                "Coast Miwok",
+                "Pomo",
+                "Wappo"
+            ]
+        },
+        "cultural_considerations": [
+            "Traditional burning practices may inform restoration approach",
+            "Sacred sites may be present in restoration areas",
+            "Traditional plant gathering areas should be considered in species selection",
+            "Tribal consultation recommended for projects over 10 acres"
+        ]
+    }
+}
