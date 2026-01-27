@@ -1,0 +1,509 @@
+{
+    "metadata": {
+        "name": "Legal, Policy & Legislative Framework Database",
+        "description": "Comprehensive legal constraints for ecosystem restoration recommendations",
+        "version": "1.0.0",
+        "sources": [
+            "UN Convention on Biological Diversity",
+            "US Endangered Species Act",
+            "California Environmental Quality Act",
+            "Clean Water Act",
+            "Wilderness Act"
+        ],
+        "last_updated": "2026-01-21"
+    },
+    "international_frameworks": {
+        "un_convention_biodiversity": {
+            "name": "UN Convention on Biological Diversity (CBD)",
+            "type": "international_treaty",
+            "key_targets": {
+                "kunming_montreal_2022": {
+                    "target_2": "30% of degraded ecosystems under effective restoration by 2030",
+                    "target_3": "30% of land and sea areas protected by 2030",
+                    "relevance": "Restoration projects contribute to national CBD commitments"
+                }
+            },
+            "implications": [
+                "Frame restoration as contributing to national CBD targets",
+                "Track biodiversity outcomes, not just area restored",
+                "Prioritize sites with high biodiversity value"
+            ]
+        },
+        "un_decade_ecosystem_restoration": {
+            "name": "UN Decade on Ecosystem Restoration (2021-2030)",
+            "type": "international_initiative",
+            "principles": [
+                "Effective contribution to Sustainable Development Goals",
+                "Inclusive, multi-stakeholder processes",
+                "Based on best available science",
+                "Measurable results"
+            ],
+            "sdg_alignment": {
+                "sdg_13": "Climate Action (nature-based solutions)",
+                "sdg_15": "Life on Land (restore degraded land, halt biodiversity loss)"
+            },
+            "implications": [
+                "Map interventions to SDG indicators",
+                "Engage local stakeholders in planning",
+                "Document carbon co-benefits"
+            ]
+        },
+        "paris_agreement": {
+            "name": "Paris Agreement (UNFCCC)",
+            "type": "international_treaty",
+            "relevance": "Nature-based solutions for climate mitigation",
+            "key_concepts": [
+                "Nationally Determined Contributions (NDCs)",
+                "Carbon sequestration through restoration",
+                "Adaptation through ecosystem resilience"
+            ],
+            "implications": [
+                "Estimate carbon sequestration potential",
+                "Align with national NDC commitments",
+                "Document climate adaptation benefits"
+            ]
+        }
+    },
+    "us_federal_laws": {
+        "endangered_species_act": {
+            "name": "Endangered Species Act (ESA)",
+            "code": "16 U.S.C. § 1531 et seq.",
+            "agency": "USFWS, NMFS",
+            "key_provisions": {
+                "section_7": "Federal agency consultation for listed species",
+                "section_9": "Prohibition on take of listed species",
+                "section_10": "Incidental take permits for non-federal actions"
+            },
+            "constraints": [
+                "No actions that harm listed species or critical habitat",
+                "Section 7 consultation required for federal projects",
+                "Habitat Conservation Plans may be required"
+            ],
+            "listed_species_examples": [
+                "California Spotted Owl",
+                "California Red-legged Frog",
+                "California Tiger Salamander",
+                "Delta Smelt",
+                "Chinook Salmon"
+            ]
+        },
+        "clean_water_act": {
+            "name": "Clean Water Act (CWA)",
+            "code": "33 U.S.C. § 1251 et seq.",
+            "agency": "EPA, Army Corps of Engineers",
+            "key_provisions": {
+                "section_404": "Permits for discharge of dredged or fill material into waters",
+                "section_401": "State water quality certification",
+                "section_402": "NPDES permits for point source discharges"
+            },
+            "constraints": [
+                "Section 404 permit required for wetland fill/dredging",
+                "Avoid and minimize impacts to waters of the US",
+                "Mitigation required for unavoidable impacts"
+            ],
+            "implications_for_restoration": [
+                "Wetland restoration may require 404 permit",
+                "Stream restoration needs Army Corps consultation",
+                "Riparian buffers must meet water quality standards"
+            ]
+        },
+        "nepa": {
+            "name": "National Environmental Policy Act (NEPA)",
+            "code": "42 U.S.C. § 4321 et seq.",
+            "agency": "Council on Environmental Quality (CEQ)",
+            "requirements": {
+                "categorical_exclusion": "Routine actions with no significant impact",
+                "environmental_assessment": "Uncertain significance, short review",
+                "environmental_impact_statement": "Significant impacts, full review"
+            },
+            "constraints": [
+                "Federal actions require NEPA compliance",
+                "Public comment periods for EAs and EISs",
+                "Alternatives analysis required"
+            ]
+        },
+        "wilderness_act": {
+            "name": "Wilderness Act of 1964",
+            "code": "16 U.S.C. § 1131 et seq.",
+            "agency": "USFS, NPS, BLM, USFWS",
+            "definition": "Untrammeled, where man is a visitor who does not remain",
+            "prohibitions": [
+                "Permanent roads",
+                "Motorized or mechanical transport",
+                "Commercial enterprise",
+                "Structures and installations"
+            ],
+            "constraints_for_restoration": [
+                "ONLY natural regeneration allowed",
+                "No planting without Minimum Requirements Analysis",
+                "Hand tools only, no chainsaws except fire emergency",
+                "Minimum tool/impact approach required"
+            ],
+            "exceptions": [
+                "Fire suppression in emergencies",
+                "Invasive species control (case-by-case)",
+                "Research with permit"
+            ]
+        },
+        "national_historic_preservation_act": {
+            "name": "National Historic Preservation Act (NHPA)",
+            "code": "54 U.S.C. § 300101 et seq.",
+            "agency": "Advisory Council on Historic Preservation",
+            "key_provisions": {
+                "section_106": "Federal undertakings require review for historic properties"
+            },
+            "constraints": [
+                "Archaeological survey may be required",
+                "Tribal consultation for traditional cultural properties",
+                "Avoid/mitigate impacts to historic resources"
+            ]
+        },
+        "america_30x30": {
+            "name": "America the Beautiful (30x30) Initiative",
+            "type": "executive_initiative",
+            "agency": "DOI, USDA, NOAA",
+            "target": "Conserve 30% of US lands and waters by 2030",
+            "principles": [
+                "Locally-led conservation",
+                "Voluntary and incentive-based",
+                "Honor tribal sovereignty",
+                "Private property rights respected"
+            ],
+            "implications": [
+                "Prioritize sites contributing to 30x30 goals",
+                "Track conservation outcomes",
+                "Align with state and tribal conservation plans"
+            ]
+        }
+    },
+    "california_state_laws": {
+        "ceqa": {
+            "name": "California Environmental Quality Act (CEQA)",
+            "code": "Public Resources Code § 21000 et seq.",
+            "agency": "Lead agency (varies)",
+            "requirements": {
+                "categorical_exemption": "Types of projects exempt from review",
+                "negative_declaration": "No significant environmental impact",
+                "mitigated_negative_declaration": "Impacts can be mitigated",
+                "environmental_impact_report": "Significant impacts requiring full review"
+            },
+            "exemptions_for_restoration": [
+                "Class 4: Minor alteration to land (some restoration)",
+                "Class 33: Small habitat restoration projects",
+                "Statutory exemption for some fire prevention"
+            ],
+            "constraints": [
+                "Most restoration projects need CEQA compliance",
+                "Public notice and comment periods apply",
+                "Mitigation monitoring required"
+            ]
+        },
+        "california_endangered_species_act": {
+            "name": "California Endangered Species Act (CESA)",
+            "code": "Fish & Game Code § 2050 et seq.",
+            "agency": "California Department of Fish and Wildlife (CDFW)",
+            "key_provisions": {
+                "section_2081": "Incidental take permits",
+                "section_2080.1": "Consistency determinations with federal ESA"
+            },
+            "constraints": [
+                "No take of state-listed species",
+                "Separate from federal ESA (both may apply)",
+                "CDFW consultation for impacts to listed species"
+            ]
+        },
+        "lake_streambed_alteration": {
+            "name": "Lake and Streambed Alteration Agreement",
+            "code": "Fish & Game Code § 1602",
+            "agency": "CDFW",
+            "trigger": "Any activity that may substantially divert or obstruct natural flow or substantially change the bed, channel, or bank of any river, stream, or lake",
+            "constraints": [
+                "Notification to CDFW required before work",
+                "Agreement with conditions for work",
+                "Applies to even dry streambeds"
+            ],
+            "implications_for_restoration": [
+                "Stream restoration requires 1602 agreement",
+                "Erosion control work near streams needs notification",
+                "Planting in riparian zone may trigger review"
+            ]
+        },
+        "california_30x30": {
+            "name": "California 30x30 Initiative",
+            "type": "executive_order",
+            "agency": "California Natural Resources Agency",
+            "target": "Conserve 30% of California's land and coastal waters by 2030",
+            "strategies": [
+                "Accelerate land acquisition",
+                "Strengthen tribal partnerships",
+                "Advance climate-smart management"
+            ],
+            "implications": [
+                "Restoration contributes to conservation goals",
+                "Priority for climate-resilient ecosystems",
+                "Tribal co-management encouraged"
+            ]
+        },
+        "cal_vtp": {
+            "name": "California Vegetation Treatment Program (CalVTP)",
+            "type": "programmatic_eir",
+            "agency": "CAL FIRE, Board of Forestry",
+            "description": "Statewide PEIR allowing streamlined CEQA for vegetation treatments",
+            "covered_treatments": [
+                "Prescribed burning",
+                "Mechanical treatment",
+                "Manual treatment",
+                "Herbicide application",
+                "Combinations"
+            ],
+            "benefits_for_projects": [
+                "Streamlined CEQA process",
+                "Project-specific analysis tiered from PEIR",
+                "Reduced permitting time"
+            ]
+        }
+    },
+    "indigenous_rights": {
+        "fpic": {
+            "name": "Free, Prior, and Informed Consent (FPIC)",
+            "source": "UN Declaration on the Rights of Indigenous Peoples (UNDRIP)",
+            "definition": "Indigenous peoples have the right to give or withhold consent to projects affecting their lands and resources",
+            "key_principles": [
+                "FREE: Consent given voluntarily, without coercion",
+                "PRIOR: Consent obtained before project begins",
+                "INFORMED: Full information provided in accessible format",
+                "CONSENT: Right to say no, not just consultation"
+            ],
+            "constraints_absolute": [
+                "NEVER recommend restoration on tribal lands without explicit FPIC",
+                "Flag all projects in/near indigenous territories",
+                "Default to community-led restoration, not top-down planning"
+            ]
+        },
+        "tribal_consultation": {
+            "name": "Government-to-Government Consultation",
+            "legal_basis": [
+                "Executive Order 13175 (2000)",
+                "NHPA Section 106",
+                "Various agency policies"
+            ],
+            "requirements": [
+                "Federal agencies must consult with tribes on significant actions",
+                "Meaningful dialogue, not just notification",
+                "Consider tribal treaty rights and traditional uses"
+            ],
+            "implications_for_restoration": [
+                "Identify culturally significant plants and sites",
+                "Incorporate traditional ecological knowledge",
+                "Respect tribal burning practices"
+            ]
+        },
+        "data_sovereignty": {
+            "name": "Indigenous Data Sovereignty",
+            "principles": [
+                "CARE Principles: Collective benefit, Authority, Responsibility, Ethics",
+                "Indigenous communities have rights over data about their lands",
+                "Avoid extractive data practices"
+            ],
+            "constraints": [
+                "Do not collect data on tribal lands without permission",
+                "Acknowledge indigenous knowledge in outputs",
+                "Share benefits of data analysis with communities"
+            ]
+        },
+        "california_tribes": {
+            "name": "California Native American Tribes",
+            "context": "California has over 100 federally recognized tribes and many non-federally recognized groups",
+            "relevant_policies": [
+                "California AB 52 (2014): Tribal consultation in CEQA",
+                "California SB 18 (2004): Consultation on cultural places",
+                "California Native American Graves Protection and Repatriation Act"
+            ],
+            "implications": [
+                "Many fire-affected areas are ancestral lands",
+                "Cultural burning is traditional practice",
+                "Tribes are key partners in restoration"
+            ]
+        }
+    },
+    "ethical_considerations": {
+        "risk_of_oversimplification": {
+            "risk": "AI may miss ecosystem nuances",
+            "examples": [
+                "Microhabitat variation not visible in satellite data",
+                "Soil conditions require on-site assessment",
+                "Species interactions complex and unpredictable"
+            ],
+            "mitigation": [
+                "Frame as DECISION SUPPORT, not autonomous decision-making",
+                "ALWAYS require expert validation before implementation",
+                "Acknowledge uncertainty in all recommendations",
+                "Include confidence scores and limitations"
+            ]
+        },
+        "displacement_of_local_knowledge": {
+            "risk": "Traditional ecological knowledge not captured in satellite data",
+            "examples": [
+                "Indigenous burning practices more effective than AI suggestions",
+                "Local landowners know specific site conditions",
+                "Community has historical knowledge of ecosystem change"
+            ],
+            "mitigation": [
+                "Recommend community consultation as MANDATORY step",
+                "Frame AI as COMPLEMENTARY to local knowledge, not replacement",
+                "Include TEK integration points in workflow",
+                "Respect expertise of local practitioners"
+            ]
+        },
+        "unintended_consequences": {
+            "risk": "AI recommendation harms adjacent ecosystem",
+            "examples": [
+                "Downstream impacts of hydrological changes",
+                "Introduction of species that become invasive",
+                "Disruption of wildlife corridors"
+            ],
+            "mitigation": [
+                "Holistic landscape-level assessment",
+                "Uncertainty quantification in all outputs",
+                "Adaptive management framework",
+                "Monitoring requirements for all interventions"
+            ]
+        },
+        "misuse_prevention": {
+            "risk": "Tool used for greenwashing, land grabs, or displacement",
+            "examples": [
+                "Restoration claims used to displace communities",
+                "Carbon offset projects violating indigenous rights",
+                "Biodiversity 'restoration' that harms existing ecosystems"
+            ],
+            "mitigation": [
+                "Clear terms of use and ethical guidelines",
+                "Transparency in all recommendations",
+                "Built-in checks for indigenous land overlap",
+                "Cannot recommend removal of communities"
+            ]
+        },
+        "data_bias": {
+            "geographic_bias": {
+                "issue": "High-resolution data more available in wealthy regions",
+                "mitigation": "Acknowledge data limitations, use consistent data sources"
+            },
+            "temporal_bias": {
+                "issue": "More recent data for some areas than others",
+                "mitigation": "Use consistent time periods, note temporal gaps"
+            },
+            "cloud_cover_bias": {
+                "issue": "Tropical regions harder to image due to clouds",
+                "mitigation": "Aggregate data across seasons, note cloud-affected areas"
+            },
+            "classification_bias": {
+                "issue": "Models trained on Western ecosystems may fail elsewhere",
+                "mitigation": "Validate locally, use transfer learning, acknowledge limitations"
+            }
+        }
+    },
+    "site_specific_templates": {
+        "national_forest": {
+            "applicable_laws": [
+                "NEPA",
+                "NFMA",
+                "ESA",
+                "NHPA",
+                "Clean Water Act"
+            ],
+            "permits_likely_required": [
+                "NEPA documentation",
+                "Section 7 if listed species",
+                "1602 for streams"
+            ],
+            "constraints": [
+                "Consult with USFS ranger district",
+                "Follow forest plan standards",
+                "Check for wilderness boundaries"
+            ]
+        },
+        "wilderness_area": {
+            "applicable_laws": [
+                "Wilderness Act",
+                "NEPA",
+                "ESA"
+            ],
+            "permits_likely_required": [
+                "Minimum Requirements Analysis",
+                "Research permit if needed"
+            ],
+            "constraints": [
+                "ONLY natural regeneration",
+                "No mechanized equipment",
+                "Hand tools only",
+                "Minimal intervention philosophy"
+            ]
+        },
+        "national_park": {
+            "applicable_laws": [
+                "NPS Organic Act",
+                "NEPA",
+                "ESA",
+                "NHPA"
+            ],
+            "permits_likely_required": [
+                "NPS project review",
+                "NEPA document",
+                "Archaeological survey"
+            ],
+            "constraints": [
+                "NPS approval required",
+                "Native species only",
+                "Preserve natural character"
+            ]
+        },
+        "state_park": {
+            "applicable_laws": [
+                "CEQA",
+                "CESA",
+                "1602"
+            ],
+            "permits_likely_required": [
+                "CEQA document",
+                "State Parks authorization"
+            ],
+            "constraints": [
+                "State Parks approval required",
+                "Follow park management plan"
+            ]
+        },
+        "private_land": {
+            "applicable_laws": [
+                "CEQA (if permit trigger)",
+                "County zoning",
+                "CWA if wetlands"
+            ],
+            "permits_likely_required": [
+                "Varies by county",
+                "1602 if streams",
+                "404 if wetlands"
+            ],
+            "constraints": [
+                "Respect property rights",
+                "Check easements",
+                "Follow county regulations"
+            ]
+        },
+        "tribal_land": {
+            "applicable_laws": [
+                "Tribal law primary",
+                "NEPA if federal funding",
+                "ESA if listed species"
+            ],
+            "permits_likely_required": [
+                "Tribal Council approval",
+                "FPIC documentation"
+            ],
+            "constraints": [
+                "FPIC REQUIRED before any action",
+                "Tribal sovereignty respected",
+                "Community-led planning only"
+            ]
+        }
+    }
+}

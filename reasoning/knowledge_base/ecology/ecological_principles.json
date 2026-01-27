@@ -1,0 +1,412 @@
+{
+    "metadata": {
+        "name": "Ecological Principles for Restoration Reasoning",
+        "description": "Core ecological rules and scientific knowledge for AI-assisted restoration planning",
+        "version": "1.0.0",
+        "sources": [
+            "Society for Ecological Restoration (SER)",
+            "IUCN Red List of Ecosystems",
+            "UN Decade on Ecosystem Restoration",
+            "Peer-reviewed literature"
+        ],
+        "last_updated": "2026-01-21"
+    },
+    "core_principles": {
+        "succession_and_recovery": {
+            "name": "Succession & Recovery",
+            "description": "Understanding natural ecosystem recovery patterns and when to intervene",
+            "key_concepts": [
+                "Natural regeneration vs active planting decisions",
+                "Pioneer species establish first, facilitating climax community",
+                "Fire-adapted species follow predictable succession patterns",
+                "Seed bank persistence varies by species and disturbance severity"
+            ],
+            "recovery_timeframes": {
+                "grassland": {
+                    "years": [
+                        5,
+                        10
+                    ],
+                    "description": "Herbaceous communities recover relatively quickly"
+                },
+                "shrubland": {
+                    "years": [
+                        10,
+                        20
+                    ],
+                    "description": "Chaparral and scrub communities"
+                },
+                "mixed_forest": {
+                    "years": [
+                        20,
+                        50
+                    ],
+                    "description": "Canopy closure and structural complexity"
+                },
+                "old_growth_forest": {
+                    "years": [
+                        100,
+                        300
+                    ],
+                    "description": "Full structural and compositional recovery"
+                }
+            },
+            "decision_rules": [
+                "If burn severity < 50% AND seed source within 100m → natural regeneration likely",
+                "If burn severity > 70% AND no seed source within 500m → active planting required",
+                "Pioneer shrubs (Ceanothus, manzanita) establish within 1-3 years post-fire",
+                "Conifer regeneration may take 5-20 years to establish"
+            ],
+            "california_specific": [
+                "Coast redwood resprouts from base even after severe fire",
+                "Chaparral species have fire-stimulated seed germination",
+                "Mixed conifer forests historically had 10-25 year fire return intervals",
+                "High-severity fire patches should be limited to <15% of landscape"
+            ]
+        },
+        "connectivity_and_corridors": {
+            "name": "Connectivity & Corridors",
+            "description": "Maintaining landscape connectivity for species movement and gene flow",
+            "key_concepts": [
+                "Fragmented habitats need linkages for population viability",
+                "Wildlife corridors enable species movement and migration",
+                "Gene flow prevents inbreeding depression",
+                "Connectivity increases resilience to climate change"
+            ],
+            "decision_rules": [
+                "Prioritize restoration sites that connect existing habitat patches",
+                "Riparian corridors provide multi-species connectivity",
+                "Minimum corridor width: 100m for small mammals, 500m+ for large carnivores",
+                "Stepping stone habitats can supplement continuous corridors"
+            ],
+            "california_specific": [
+                "Sierra Nevada to Coast Range connections critical for wide-ranging species",
+                "Highway underpasses and overpasses for wildlife crossing",
+                "Salmon need connected stream networks (dam removal, fish passage)",
+                "Mountain lion habitat connectivity increasingly fragmented"
+            ]
+        },
+        "hydrology_and_wetlands": {
+            "name": "Hydrology & Wetlands",
+            "description": "Water flow restoration as foundation for ecosystem recovery",
+            "key_concepts": [
+                "Wetland restoration requires water flow restoration first",
+                "Floodplains provide critical ecosystem services",
+                "Riparian buffers protect water quality",
+                "Post-fire debris flows alter stream channels"
+            ],
+            "decision_rules": [
+                "Restore hydrology BEFORE planting wetland vegetation",
+                "Maintain minimum 30m riparian buffer from streams",
+                "Reduce sediment loading post-fire through erosion control",
+                "Allow natural flood regimes where possible"
+            ],
+            "california_specific": [
+                "California has lost >90% of historic wetlands",
+                "Vernal pools are globally rare and host endemic species",
+                "Atmospheric rivers cause high-intensity flooding",
+                "Drought cycles require drought-tolerant riparian species"
+            ],
+            "post_fire_hydrology": [
+                "Hydrophobic soil layer forms after high-severity fire",
+                "Debris flow risk highest in first 1-2 years post-fire",
+                "Stream flashiness increases after watershed burns",
+                "Mulching and erosion control critical on steep slopes"
+            ]
+        },
+        "soil_and_nutrients": {
+            "name": "Soil & Nutrients",
+            "description": "Soil health as foundation for restoration success",
+            "key_concepts": [
+                "Degraded soil limits restoration success",
+                "Legumes fix atmospheric nitrogen",
+                "Mycorrhizal networks essential for forest recovery",
+                "Soil organic matter takes decades to rebuild"
+            ],
+            "decision_rules": [
+                "Test soil before restoration to identify limitations",
+                "Include nitrogen-fixing species (Ceanothus, lupine) in early plantings",
+                "Inoculate with native mycorrhizae when replanting conifers",
+                "Avoid soil compaction during restoration activities"
+            ],
+            "california_specific": [
+                "Serpentine soils require specialized native species",
+                "Sierra Nevada soils often nitrogen-limited",
+                "Fire volatilizes nitrogen but ash provides other nutrients",
+                "Ceanothus species are important nitrogen-fixers post-fire"
+            ],
+            "post_fire_soil": [
+                "High-severity fire consumes soil organic matter",
+                "Soil heating kills mycorrhizal fungi to 10cm depth",
+                "Ash layer provides short-term nutrient pulse",
+                "Erosion risk highest before vegetation establishes"
+            ]
+        },
+        "keystone_species_and_trophic_cascades": {
+            "name": "Keystone Species & Trophic Cascades",
+            "description": "Key species that disproportionately influence ecosystem function",
+            "key_concepts": [
+                "Removing invasive predators allows native prey recovery",
+                "Reintroducing native pollinators enhances reproduction",
+                "Beavers are ecosystem engineers that create wetlands",
+                "Oak trees are keystone mast providers for wildlife"
+            ],
+            "decision_rules": [
+                "Identify and protect keystone species in restoration planning",
+                "Remove invasive species before planting natives",
+                "Plant species that support native pollinators",
+                "Consider trophic interactions, not just individual species"
+            ],
+            "california_keystone_species": [
+                {
+                    "species": "Black Oak",
+                    "role": "Acorn mast for 100+ wildlife species"
+                },
+                {
+                    "species": "Salmon",
+                    "role": "Marine nutrients to forest via carcasses"
+                },
+                {
+                    "species": "Ground squirrels",
+                    "role": "Soil aeration, prey base for raptors"
+                },
+                {
+                    "species": "Native bees",
+                    "role": "Pollination of 80% flowering plants"
+                },
+                {
+                    "species": "Gopher snakes",
+                    "role": "Rodent population control"
+                }
+            ],
+            "invasive_species_priority": [
+                "Yellow star-thistle displaces native grassland",
+                "Scotch broom outcompetes native shrubs post-fire",
+                "Cheatgrass creates grass-fire cycle",
+                "Sudden Oak Death (Phytophthora) kills oaks and tanoaks"
+            ]
+        },
+        "climate_adaptation": {
+            "name": "Climate Adaptation",
+            "description": "Planning restoration for future climate conditions",
+            "key_concepts": [
+                "Choose species suited to future climate, not just current",
+                "Assisted migration for climate refugees",
+                "Build resilience to drought, fire, and floods",
+                "Genetic diversity for adaptive capacity"
+            ],
+            "decision_rules": [
+                "Use climate projections (2050, 2100) when selecting species",
+                "Source seeds from slightly warmer/drier populations",
+                "Favor drought-tolerant genotypes within native species",
+                "Maintain genetic diversity in planting stock"
+            ],
+            "california_projections": {
+                "temperature": "+2-4°C by 2100",
+                "precipitation": "More variable, more extreme events",
+                "fire": "Fire season lengthening by 2-3 months",
+                "snowpack": "50-75% reduction in Sierra Nevada snowpack"
+            },
+            "adaptation_strategies": [
+                "Shift species selection toward warmer-adapted ecotypes",
+                "Increase spacing to reduce drought competition",
+                "Favor fire-resilient species and forest structures",
+                "Prepare for type-conversion (forest → shrubland) in some areas"
+            ]
+        },
+        "community_and_cultural_ecology": {
+            "name": "Community & Cultural Ecology",
+            "description": "Integrating human communities and traditional knowledge",
+            "key_concepts": [
+                "Traditional ecological knowledge (TEK) is valuable",
+                "Indigenous stewardship practices often fire-based",
+                "Local livelihoods depend on ecosystem services",
+                "Community engagement improves restoration success"
+            ],
+            "decision_rules": [
+                "Consult with local tribes on restoration plans",
+                "Incorporate traditional burning practices where appropriate",
+                "Plan for sustainable harvest of restoration products",
+                "Engage local community in monitoring and stewardship"
+            ],
+            "california_indigenous_practices": [
+                "Cultural burning by California tribes for millennia",
+                "Hazel gathering requires periodic burning",
+                "Acorn harvest and oak woodland management",
+                "Basketry plants (sedge, willow) need fire management"
+            ],
+            "economic_opportunities": [
+                "Ecosystem restoration jobs in rural communities",
+                "Native seed and plant nurseries",
+                "Eco-tourism and nature-based recreation",
+                "Carbon credits and ecological services payments"
+            ]
+        }
+    },
+    "scientific_literature": {
+        "essential_references": [
+            {
+                "title": "Primer on Ecological Restoration",
+                "author": "Society for Ecological Restoration (SER)",
+                "type": "handbook",
+                "key_concept": "International standards and principles for restoration",
+                "url": "https://ser.org"
+            },
+            {
+                "title": "Forest Restoration in Landscapes: Beyond Planting Trees",
+                "author": "Mansourian et al.",
+                "type": "book",
+                "key_concept": "Landscape-scale restoration planning",
+                "year": 2005
+            },
+            {
+                "title": "The Tallgrass Restoration Handbook",
+                "author": "Packard & Mutel",
+                "type": "book",
+                "key_concept": "Grassland restoration techniques",
+                "year": 2005
+            },
+            {
+                "title": "Wetland Restoration and Management",
+                "author": "Batzer & Sharitz",
+                "type": "book",
+                "key_concept": "Wetland ecology and restoration",
+                "year": 2014
+            }
+        ],
+        "key_papers": [
+            {
+                "title": "Global priority areas for ecosystem restoration",
+                "authors": "Strassburg et al.",
+                "journal": "Nature",
+                "year": 2020,
+                "key_finding": "Prioritization framework for cost-effective restoration",
+                "doi": "10.1038/s41586-020-2784-9"
+            },
+            {
+                "title": "A global review of past land use, climate, and passive vs active forest restoration",
+                "authors": "Crouzeilles et al.",
+                "journal": "Nature Scientific Reports",
+                "year": 2017,
+                "key_finding": "Passive restoration often as effective as active planting",
+                "doi": "10.1038/s41598-017-05059-5"
+            },
+            {
+                "title": "Legal frameworks enabling ecosystem restoration",
+                "authors": "Schulze et al.",
+                "journal": "Restoration Ecology",
+                "year": 2018,
+                "key_finding": "Policy mechanisms that support restoration at scale"
+            },
+            {
+                "title": "Reforestation and carbon sequestration",
+                "authors": "Bastin et al.",
+                "journal": "Science",
+                "year": 2019,
+                "key_finding": "Global potential for tree cover restoration"
+            }
+        ],
+        "california_specific": [
+            {
+                "title": "Fire severity strongly affects germination of California native shrubs",
+                "authors": "Multiple",
+                "journal": "Ecosphere",
+                "key_finding": "Chaparral seed germination responses to fire severity"
+            },
+            {
+                "title": "Post-fire forest regeneration in the Sierra Nevada",
+                "authors": "USFS Research",
+                "journal": "General Technical Report",
+                "key_finding": "Conifer regeneration patterns after high-severity fire"
+            }
+        ]
+    },
+    "policy_frameworks": {
+        "international": [
+            {
+                "name": "UN Decade on Ecosystem Restoration 2021-2030",
+                "description": "Global movement to restore 1 billion hectares",
+                "targets": "350 million hectares by 2030",
+                "url": "https://www.decadeonrestoration.org"
+            },
+            {
+                "name": "Bonn Challenge",
+                "description": "Global commitment to restore degraded forests",
+                "targets": "350 million hectares by 2030",
+                "url": "https://bonnchallenge.org"
+            },
+            {
+                "name": "CBD Kunming-Montreal Global Biodiversity Framework",
+                "description": "30x30 target: protect 30% of land and sea by 2030",
+                "targets": "30% protection, 30% restoration of degraded ecosystems"
+            }
+        ],
+        "us_federal": [
+            {
+                "name": "Bipartisan Infrastructure Law (2021)",
+                "description": "Major funding for wildfire risk reduction and restoration",
+                "funding": "$3.4 billion for wildfire risk reduction"
+            },
+            {
+                "name": "America the Beautiful Initiative",
+                "description": "Locally-led conservation and restoration",
+                "targets": "Conserve 30% of U.S. lands and waters by 2030"
+            },
+            {
+                "name": "Collaborative Forest Landscape Restoration Program",
+                "description": "USFS program for large-scale landscape restoration",
+                "url": "https://www.fs.usda.gov/restoration/CFLRP/"
+            }
+        ],
+        "california_state": [
+            {
+                "name": "California Wildfire and Forest Resilience Action Plan",
+                "description": "Treat 1 million acres per year by 2025",
+                "url": "https://fmtf.fire.ca.gov/actions/"
+            },
+            {
+                "name": "30x30 California",
+                "description": "Conserve 30% of land and coastal waters by 2030",
+                "url": "https://www.californianature.ca.gov/pages/30x30"
+            },
+            {
+                "name": "California Climate Investments",
+                "description": "Cap-and-trade funding for forest and watershed restoration"
+            }
+        ]
+    },
+    "decision_frameworks": {
+        "active_vs_passive_restoration": {
+            "description": "When to actively plant vs allow natural recovery",
+            "passive_restoration_conditions": [
+                "Burn severity < 50%",
+                "Seed source within 100-200m",
+                "Native species seed bank likely intact",
+                "Resprouting species present",
+                "Low invasive species pressure"
+            ],
+            "active_restoration_conditions": [
+                "Burn severity > 70%",
+                "No seed source within 500m",
+                "Type conversion risk high",
+                "High invasive species pressure",
+                "High erosion risk requiring rapid cover"
+            ]
+        },
+        "prioritization_criteria": {
+            "description": "How to prioritize restoration sites with limited resources",
+            "ecological_criteria": [
+                "Connectivity value (links habitat patches)",
+                "Biodiversity value (rare species, high diversity)",
+                "Ecosystem service value (water, carbon, recreation)",
+                "Restoration feasibility (soil, hydrology, access)"
+            ],
+            "social_criteria": [
+                "Community support and engagement",
+                "Economic benefits to local communities",
+                "Cultural and spiritual significance",
+                "Risk reduction for communities"
+            ]
+        }
+    }
+}
