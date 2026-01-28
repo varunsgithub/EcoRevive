@@ -11,8 +11,8 @@ services:
     volumes:
       # Mount checkpoints so you don't copy the model into the image
       - ./California-Fire-Model/checkpoints:/app/California-Fire-Model/checkpoints:ro
-      # Mount Earth Engine credentials from host
-      - ~/.config/earthengine:/root/.config/earthengine:ro
+      # Mount Earth Engine service account key
+      - ./APIGoogKey.json:/app/APIGoogKey.json:ro
     environment:
       - PYTHONUNBUFFERED=1
 

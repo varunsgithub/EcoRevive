@@ -15,6 +15,7 @@ import requests
 from PIL import Image
 import io
 import base64
+from pathlib import Path
 
 # Model specifications - MUST MATCH config.py
 BANDS = ['B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B8A', 'B11', 'B12']
@@ -24,24 +25,52 @@ CLOUD_THRESHOLD = 20
 
 # Earth Engine project
 EE_PROJECT_ID = 'hale-life-482914-r0'
+SERVICE_ACCOUNT_KEY = 'APIGoogKey.json'
 
 
 def initialize_ee(project_id: str = EE_PROJECT_ID):
-    """Initialize Google Earth Engine."""
+    """
+    Initialize Google Earth Engine using service account.
+    No user authentication required!
+    """
+    # Find the key file (check multiple locations)
+    possible_paths = [
+        Path(SERVICE_ACCOUNT_KEY),  # Current directory
+        Path(__file__).parent / SERVICE_ACCOUNT_KEY,  # Backend directory
+        Path(__file__).parent.parent / SERVICE_ACCOUNT_KEY,  # Project root
+    ]
+    
+    key_file = None
+    for path in possible_paths:
+        if path.exists():
+            key_file = path
+            break
+    
+    if key_file:
+        try:
+            # Use service account credentials (no user login needed!)
+            credentials = ee.ServiceAccountCredentials(
+                email='varun-212@hale-life-482914-r0.iam.gserviceaccount.com',
+                key_file=str(key_file)
+            )
+            ee.Initialize(credentials, project=project_id)
+            print(f"✅ Earth Engine initialized with service account")
+            print(f"   Project: {project_id}")
+            return True
+        except Exception as e:
+            print(f"⚠️ Service account init failed: {e}")
+    else:
+        print(f"⚠️ Service account key not found, trying user auth...")
+    
+    # Fallback to user authentication (for development)
     try:
         ee.Authenticate()
         ee.Initialize(project=project_id)
-        print(f"✅ Earth Engine initialized with project: {project_id}")
+        print(f"✅ Earth Engine initialized with user auth")
         return True
     except Exception as e:
-        print(f"⚠️ EE initialization failed: {e}")
-        try:
-            ee.Initialize()
-            print("✅ Earth Engine initialized (default)")
-            return True
-        except Exception as e2:
-            print(f"❌ EE initialization failed: {e2}")
-            return False
+        print(f"❌ EE initialization failed: {e}")
+        return False
 
 
 def get_sentinel2_composite(bbox: Dict[str, float], start_date: str, end_date: str):
