@@ -75,7 +75,7 @@ def download_for_inference(
     bbox: Dict[str, float],
     start_date: str = '2023-06-01',
     end_date: str = '2023-09-30',
-    max_tiles: int = 25  # Limit to prevent excessive downloads
+    max_tiles: int = 250  # Limit to prevent excessive downloads
 ) -> Tuple[list, Dict[str, Any]]:
     """
     Download Sentinel-2 imagery ready for model inference.

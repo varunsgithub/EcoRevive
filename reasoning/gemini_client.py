@@ -56,9 +56,9 @@ class EcoReviveGemini:
             HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         }
         
-        # Main reasoning model (Gemini 2.0 Flash - best free tier option)
+        # Main reasoning model (Gemini 3 Flash Preview - Hackathon Standard)
         self.model = genai.GenerativeModel(
-            model_name='models/gemini-2.0-flash',
+            model_name='models/gemini-3-flash-preview',
             safety_settings=self.safety_settings,
             generation_config=genai.GenerationConfig(
                 temperature=0.2,  # Low temp for factual responses
@@ -69,7 +69,7 @@ class EcoReviveGemini:
         
         # Model configured for JSON output
         self.json_model = genai.GenerativeModel(
-            model_name='models/gemini-2.0-flash',
+            model_name='models/gemini-3-flash-preview',
             safety_settings=self.safety_settings,
             generation_config=genai.GenerationConfig(
                 temperature=0.1,
@@ -80,7 +80,7 @@ class EcoReviveGemini:
         
         # Model with grounding (Google Search)
         self.grounded_model = genai.GenerativeModel(
-            model_name='models/gemini-2.0-flash',
+            model_name='models/gemini-3-flash-preview',
             safety_settings=self.safety_settings,
             generation_config=genai.GenerationConfig(
                 temperature=0.2,
@@ -90,7 +90,7 @@ class EcoReviveGemini:
         )
         
         print("✅ EcoRevive Gemini client initialized")
-        print(f"   - Main model: gemini-2.0-flash")
+        print(f"   - Main model: gemini-3-flash-preview")
         print(f"   - JSON output: enabled")
         print(f"   - Google Search grounding: enabled")
     
@@ -211,7 +211,7 @@ class EcoReviveGemini:
         """
         # Create model with tools
         model_with_tools = genai.GenerativeModel(
-            model_name='gemini-1.5-pro',
+            model_name='gemini-1.5-flash',
             safety_settings=self.safety_settings,
             tools=tools
         )
@@ -305,7 +305,7 @@ class EcoReviveGemini:
             ChatSession object for multi-turn conversation
         """
         model = genai.GenerativeModel(
-            model_name='gemini-1.5-pro',
+            model_name='gemini-3-flash-preview',
             safety_settings=self.safety_settings,
             system_instruction=system_instruction
         )
