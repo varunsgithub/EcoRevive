@@ -359,16 +359,244 @@ def severity_to_raw_image(severity_map: np.ndarray) -> str:
     return f"data:image/png;base64,{base64_str}"
 
 
-def get_gemini_analysis(stats: Dict[str, Any], bbox: Dict[str, float], user_type: str) -> str:
-    """Get Gemini analysis of the burn severity results."""
+def get_gemini_analysis(
+    stats: Dict[str, Any], 
+    bbox: Dict[str, float], 
+    user_type: str,
+    satellite_rgb: np.ndarray = None,
+    severity_map: np.ndarray = None
+) -> Dict[str, Any]:
+    """
+    Get TRUE MULTIMODAL Gemini analysis of the burn severity results.
+    
+    This function sends BOTH the satellite image AND severity overlay to Gemini,
+    enabling spatial reasoning about WHAT is burned, not just statistics.
+    
+    Args:
+        stats: Burn severity statistics dict
+        bbox: Bounding box dict with west, south, east, north
+        user_type: "professional" or "personal"
+        satellite_rgb: (H, W, 3) RGB satellite image array
+        severity_map: (H, W) severity predictions from U-Net
+        
+    Returns:
+        Dict with 'text' (formatted analysis) and 'analysis' (structured data)
+    """
     try:
-        from reasoning import EcoReviveGemini
+        # Check if we have images for true multimodal analysis
+        if satellite_rgb is not None and severity_map is not None:
+            return _get_multimodal_analysis(stats, bbox, user_type, satellite_rgb, severity_map)
+        else:
+            # Fallback to text-only analysis
+            return _get_text_only_analysis(stats, bbox, user_type)
+            
+    except Exception as e:
+        print(f"⚠️ Gemini analysis failed: {e}")
+        import traceback
+        traceback.print_exc()
+        fallback_text = (
+            f"AI analysis temporarily unavailable. Manual assessment: "
+            f"{stats['mean_severity']:.0%} average severity with "
+            f"{stats['high_severity_ratio']:.0%} high-severity areas requiring attention."
+        )
+        return {'text': fallback_text, 'analysis': None}
+
+
+def _get_multimodal_analysis(
+    stats: Dict[str, Any],
+    bbox: Dict[str, float],
+    user_type: str,
+    satellite_rgb: np.ndarray,
+    severity_map: np.ndarray
+) -> Dict[str, Any]:
+    """
+    TRUE MULTIMODAL analysis - sends images to Gemini for spatial reasoning.
+    """
+    from reasoning.gemini_multimodal import (
+        MultimodalAnalyzer,
+        create_image_pack,
+        build_gemini_context
+    )
+    from reasoning import create_client
+    
+    print("   🔬 Running TRUE MULTIMODAL analysis (sending images to Gemini)...")
+    
+    # Create Gemini client
+    client = create_client()
+    
+    # Calculate center location
+    center_lat = (bbox['north'] + bbox['south']) / 2
+    center_lon = (bbox['west'] + bbox['east']) / 2
+    location = (center_lat, center_lon)
+    
+    # Prepare RGB tile for multimodal - transpose from (H, W, 3) to (3, H, W)
+    if satellite_rgb.ndim == 3 and satellite_rgb.shape[2] == 3:
+        rgb_tile = np.moveaxis(satellite_rgb, -1, 0)
+    else:
+        rgb_tile = satellite_rgb
+    
+    # Build metadata for context
+    metadata = {
+        'bbox': bbox,
+        'user_type': user_type,
+        'fire_date': None,  # Could be passed from request
+        'days_since_fire': None,
+    }
+    
+    # Run multimodal analysis
+    analyzer = MultimodalAnalyzer(client)
+    result = analyzer.analyze(
+        rgb_tile=rgb_tile,
+        severity_map=severity_map,
+        location=location,
+        metadata=metadata,
+        unet_confidence=0.85  # Assumed confidence
+    )
+    
+    # Format the response for the frontend
+    if result.get('status') == 'complete':
+        analysis = result.get('analysis', {})
         
-        client = EcoReviveGemini()
+        # Build human-readable text from spatial analysis
+        text_parts = []
         
-        # Format prompt based on user type
-        if user_type == "professional":
-            prompt = f"""You are an expert wildfire restoration ecologist. Analyze this burn severity assessment:
+        # Visual grounding section
+        vg = analysis.get('visual_grounding', {})
+        if vg:
+            land_cover = ", ".join(vg.get('observed_land_cover', ['Unknown']))
+            text_parts.append(f"## 🛰️ What Gemini Sees in the Satellite Image\n")
+            text_parts.append(f"**Land Cover Types Detected:** {land_cover}\n")
+            if vg.get('terrain_features'):
+                text_parts.append(f"**Terrain Features:** {', '.join(vg.get('terrain_features', []))}\n")
+            if vg.get('pre_fire_vegetation_description'):
+                text_parts.append(f"**Vegetation Description:** {vg.get('pre_fire_vegetation_description')}\n")
+        
+        # Segmentation quality section
+        sq = analysis.get('segmentation_quality', {})
+        if sq:
+            quality = sq.get('overall_quality', 'unknown')
+            confidence = sq.get('confidence_in_prediction', 0)
+            text_parts.append(f"\n## 🔍 U-Net Prediction Quality Assessment\n")
+            text_parts.append(f"**Overall Quality:** {quality.upper()}\n")
+            text_parts.append(f"**Gemini's Confidence in Predictions:** {confidence:.0%}\n")
+            if sq.get('artifact_flags'):
+                text_parts.append(f"**⚠️ Artifacts Detected:** {', '.join(sq.get('artifact_flags'))}\n")
+            if sq.get('quality_notes'):
+                text_parts.append(f"**Notes:** {sq.get('quality_notes')}\n")
+        
+        # Spatial patterns section
+        sp = analysis.get('spatial_patterns', {})
+        if sp:
+            text_parts.append(f"\n## 🗺️ Spatial Pattern Analysis\n")
+            
+            frag = sp.get('fragmentation_assessment', {})
+            if frag:
+                text_parts.append(f"**Burn Patches Visible:** {frag.get('patch_count_visual', 'unknown')}\n")
+                text_parts.append(f"**Connectivity:** {frag.get('connectivity', 'unknown')}\n")
+                text_parts.append(f"**Shape Complexity:** {frag.get('shape_complexity', 'unknown')}\n")
+            
+            edge = sp.get('edge_characteristics', {})
+            if edge:
+                text_parts.append(f"**Edge Sharpness:** {edge.get('edge_sharpness', 'unknown')}\n")
+                if edge.get('unburned_inclusions'):
+                    text_parts.append(f"**Unburned Islands:** Yes - {edge.get('inclusion_significance', '')}\n")
+            
+            grad = sp.get('gradient_analysis', {})
+            if grad:
+                if grad.get('dominant_direction') and grad.get('dominant_direction') != 'none':
+                    text_parts.append(f"**Fire Spread Direction:** {grad.get('dominant_direction')}\n")
+                if grad.get('fire_behavior_inference'):
+                    text_parts.append(f"**Fire Behavior Inference:** {grad.get('fire_behavior_inference')}\n")
+        
+        # Ecological interpretation
+        ei = analysis.get('ecological_interpretation', {})
+        if ei:
+            text_parts.append(f"\n## 🌲 Ecological Interpretation\n")
+            text_parts.append(f"**Natural Regeneration Potential:** {ei.get('natural_regeneration_potential', 'unknown')}\n")
+            text_parts.append(f"**Seed Source Availability:** {ei.get('seed_source_availability', 'unknown')}\n")
+            if ei.get('regeneration_rationale'):
+                text_parts.append(f"**Rationale:** {ei.get('regeneration_rationale')}\n")
+            
+            # Differential impacts
+            impacts = ei.get('differential_impacts', [])
+            if impacts:
+                text_parts.append(f"\n**Differential Impacts:**\n")
+                for impact in impacts[:3]:
+                    text_parts.append(f"- {impact.get('vegetation_type', 'Unknown')}: "
+                                     f"{impact.get('severity_level', '')} severity - "
+                                     f"{impact.get('ecological_significance', '')}\n")
+        
+        # Priority zones section
+        zones = analysis.get('priority_zones', [])
+        if zones:
+            text_parts.append(f"\n## 🎯 Priority Restoration Zones\n")
+            for zone in zones[:5]:
+                urgency_emoji = {
+                    'immediate': '🔴',
+                    '6_months': '🟠', 
+                    '1_year': '🟡',
+                    '2_3_years': '🟢'
+                }.get(zone.get('urgency', ''), '⚪')
+                
+                text_parts.append(f"\n### {urgency_emoji} Zone {zone.get('zone_id', '?')}: {zone.get('urgency', 'unknown').replace('_', ' ').title()}\n")
+                text_parts.append(f"**Location:** {zone.get('location_description', 'See overlay')}\n")
+                text_parts.append(f"**Severity:** {zone.get('severity', 'unknown')}\n")
+                text_parts.append(f"**Why Priority:** {zone.get('priority_reason', 'N/A')}\n")
+                text_parts.append(f"**Recommended Action:** {zone.get('recommended_intervention', 'N/A').replace('_', ' ').title()}\n")
+        
+        # Machine-readable signals section
+        signals = analysis.get('signals_for_final_model', {})
+        if signals:
+            text_parts.append(f"\n## 📊 Restoration Scores (Machine-Readable)\n")
+            text_parts.append(f"| Metric | Score |\n|--------|-------|\n")
+            text_parts.append(f"| Restoration Potential | {signals.get('restoration_potential_score', 0):.2f} |\n")
+            text_parts.append(f"| Intervention Urgency | {signals.get('intervention_urgency_score', 0):.2f} |\n")
+            text_parts.append(f"| Ecological Complexity | {signals.get('ecological_complexity_score', 0):.2f} |\n")
+            text_parts.append(f"| Risk Score | {signals.get('risk_score', 0):.2f} |\n")
+        
+        # Reasoning trace
+        if analysis.get('reasoning_trace'):
+            text_parts.append(f"\n---\n*Gemini's reasoning: {analysis.get('reasoning_trace')}*\n")
+        
+        formatted_text = "".join(text_parts)
+        
+        # Add human review warning if needed
+        if result.get('human_review', {}).get('required'):
+            triggers = result.get('human_review', {}).get('triggers', [])
+            formatted_text = (
+                f"⚠️ **Human Review Recommended:** {', '.join(triggers)}\n\n"
+                + formatted_text
+            )
+        
+        print(f"   ✅ Multimodal analysis complete! Found {len(zones)} priority zones.")
+        
+        return {
+            'text': formatted_text,
+            'analysis': analysis,
+            'signals': signals,
+            'human_review_required': result.get('human_review', {}).get('required', False)
+        }
+    
+    else:
+        # Analysis failed - return error info
+        error_text = f"⚠️ Multimodal analysis failed: {result.get('error', result.get('status', 'unknown'))}"
+        print(f"   {error_text}")
+        return {'text': error_text, 'analysis': None}
+
+
+def _get_text_only_analysis(stats: Dict[str, Any], bbox: Dict[str, float], user_type: str) -> Dict[str, Any]:
+    """
+    LEGACY text-only analysis (fallback when images aren't available).
+    """
+    from reasoning import EcoReviveGemini
+    
+    print("   ⚠️ Running LEGACY text-only analysis (no images sent to Gemini)")
+    
+    client = EcoReviveGemini()
+    
+    # Format prompt based on user type
+    if user_type == "professional":
+        prompt = f"""You are an expert wildfire restoration ecologist. Analyze this burn severity assessment:
 
 **Location**: {bbox['south']:.4f}°N to {bbox['north']:.4f}°N, {bbox['west']:.4f}°W to {bbox['east']:.4f}°W
 
@@ -388,8 +616,8 @@ Provide a professional assessment including:
 6. **Budget Estimate**: Rough cost per hectare for restoration
 
 Keep the response concise but actionable for grant proposals and project planning."""
-        else:
-            prompt = f"""You are a friendly environmental guide helping someone understand wildfire damage. Explain this burn severity assessment in simple terms:
+    else:
+        prompt = f"""You are a friendly environmental guide helping someone understand wildfire damage. Explain this burn severity assessment in simple terms:
 
 **Location**: Near {bbox['south']:.2f}°N, {abs(bbox['west']):.2f}°W
 
@@ -407,12 +635,10 @@ Please explain:
 
 Keep it encouraging and accessible - this person cares about the environment but isn't a scientist."""
 
-        response = client.analyze_multimodal(prompt=prompt, use_json=False)
-        return response.get('text', 'Analysis not available.')
-        
-    except Exception as e:
-        print(f"⚠️ Gemini analysis failed: {e}")
-        return f"AI analysis temporarily unavailable. Manual assessment of the burn severity data shows {stats['mean_severity']:.0%} average severity with {stats['high_severity_ratio']:.0%} high-severity areas requiring immediate attention."
+    response = client.analyze_multimodal(prompt=prompt, use_json=False)
+    return {'text': response.get('text', 'Analysis not available.'), 'analysis': None}
+
+
 
 
 @app.on_event("startup")
@@ -509,9 +735,18 @@ async def analyze_area(request: AnalyzeRequest):
         severity_image = severity_to_image(severity_map)
         raw_severity_image = severity_to_raw_image(severity_map)
         
-        # Step 4: Get Gemini analysis
-        print("🧠 Generating Gemini analysis...")
-        gemini_text = get_gemini_analysis(stats, bbox, request.user_type or "personal")
+        # Step 4: Get Gemini analysis with TRUE MULTIMODAL
+        print("🧠 Generating Gemini multimodal analysis (sending images to Gemini)...")
+        gemini_result = get_gemini_analysis(
+            stats=stats, 
+            bbox=bbox, 
+            user_type=request.user_type or "personal",
+            satellite_rgb=satellite_rgb,  # Pass the satellite image!
+            severity_map=severity_map      # Pass the severity map!
+        )
+        
+        # Extract text from result (now returns dict)
+        gemini_text = gemini_result.get('text', '') if isinstance(gemini_result, dict) else gemini_result
         
         print("✅ Analysis complete!")
         

@@ -2,15 +2,20 @@
 EcoRevive Ecosystem Classification Module
 ==========================================
 Uses Gemini's multimodal capabilities to:
-1. Analyze burn severity maps as images
+1. Analyze burn severity maps WITH original satellite imagery (true multimodal)
 2. Classify ecosystem type from location + visual patterns
 3. Recommend native species with Google Search grounding
-4. Determine restoration approach
+4. Determine restoration approach based on spatial reasoning
 
 This module showcases:
-- Multimodal input (image + text)
-- Structured JSON output
+- TRUE multimodal input (RGB image + severity overlay + structured context)
+- Spatial pattern analysis (fragmentation, edges, gradients)
+- Structured JSON output with machine-readable signals
 - Grounding with Google Search for species data
+
+IMPORTANT: For true multimodal analysis, use classify_multimodal() which requires
+the original RGB tile. The legacy classify() method is preserved for backward
+compatibility but only sends the severity colormap without landscape context.
 """
 
 import os
@@ -25,6 +30,16 @@ except ImportError:
     PIL = None
 
 from .gemini_client import EcoReviveGemini, create_client
+from .gemini_multimodal import (
+    MultimodalAnalyzer,
+    create_image_pack,
+    build_gemini_context,
+    build_multimodal_prompt,
+    validate_gemini_output,
+    should_trigger_human_review,
+    compute_severity_statistics,
+    compute_spatial_metrics,
+)
 
 
 # California Ecoregion reference data
@@ -218,6 +233,10 @@ class EcosystemClassifier:
     
     Uses multimodal analysis to understand burn patterns and
     recommend appropriate restoration strategies.
+    
+    Two analysis modes are available:
+    - classify_multimodal(): TRUE multimodal with RGB + severity overlay (RECOMMENDED)
+    - classify(): Legacy mode with severity colormap only (preserved for backward compatibility)
     """
     
     def __init__(self, gemini_client: Optional[EcoReviveGemini] = None):
@@ -228,6 +247,78 @@ class EcosystemClassifier:
             gemini_client: Optional pre-configured Gemini client
         """
         self.client = gemini_client or create_client()
+        self._multimodal_analyzer = None  # Lazy initialization
+    
+    @property
+    def multimodal_analyzer(self) -> MultimodalAnalyzer:
+        """Get or create the multimodal analyzer instance."""
+        if self._multimodal_analyzer is None:
+            self._multimodal_analyzer = MultimodalAnalyzer(self.client)
+        return self._multimodal_analyzer
+    
+    def classify_multimodal(
+        self,
+        location: Tuple[float, float],
+        rgb_tile: np.ndarray,
+        severity_map: np.ndarray,
+        metadata: Optional[Dict] = None,
+        unet_confidence: float = None,
+        include_probability: bool = False,
+        probability_map: np.ndarray = None
+    ) -> Dict[str, Any]:
+        """
+        TRUE multimodal ecosystem classification with RGB + severity overlay.
+        
+        This is the RECOMMENDED method for ecosystem classification. It sends
+        BOTH the original satellite image AND the severity overlay to Gemini,
+        enabling proper spatial reasoning about what is actually burned.
+        
+        Args:
+            location: (latitude, longitude) tuple
+            rgb_tile: (3, H, W) or (H, W, 3) RGB bands from Sentinel-2 (B4, B3, B2)
+            severity_map: 2D numpy array with burn severity values (0-1)
+            metadata: Optional additional metadata (ecosystem, legal, temporal context)
+            unet_confidence: U-Net model confidence score
+            include_probability: Whether to include probability heatmap as 3rd image
+            probability_map: Raw sigmoid output for uncertainty visualization
+            
+        Returns:
+            Complete multimodal analysis with:
+            - visual_grounding: What Gemini observes in the landscape
+            - segmentation_quality: Assessment of U-Net prediction quality
+            - spatial_patterns: Fragmentation, edges, gradients
+            - ecological_interpretation: Differential impacts, regeneration potential
+            - priority_zones: 3-5 priority areas for restoration
+            - signals_for_final_model: Machine-readable scores for Layer 3
+        """
+        # Enrich metadata with ecoregion info
+        lat, lon = location
+        ecoregion_key = get_ecoregion_from_location(lat, lon)
+        
+        enriched_metadata = metadata.copy() if metadata else {}
+        if ecoregion_key:
+            enriched_metadata['ecoregion'] = ecoregion_key
+            enriched_metadata['biome'] = CALIFORNIA_ECOREGIONS[ecoregion_key]['name']
+        
+        # Run true multimodal analysis
+        result = self.multimodal_analyzer.analyze(
+            rgb_tile=rgb_tile,
+            severity_map=severity_map,
+            location=location,
+            metadata=enriched_metadata,
+            unet_confidence=unet_confidence,
+            include_probability=include_probability,
+            probability_map=probability_map
+        )
+        
+        # Add ecoregion info to result
+        if result.get('status') == 'complete':
+            result['ecoregion'] = {
+                'key': ecoregion_key,
+                'info': CALIFORNIA_ECOREGIONS.get(ecoregion_key) if ecoregion_key else None
+            }
+        
+        return result
     
     def classify(
         self,
@@ -236,12 +327,14 @@ class EcosystemClassifier:
         metadata: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """
-        Classify ecosystem and generate restoration recommendations.
+        LEGACY ecosystem classification with severity colormap only.
         
-        This is the main entry point that demonstrates:
-        - Multimodal input (severity map as image)
-        - Structured JSON output
-        - Location-aware analysis
+        ⚠️ DEPRECATED: This method only sends the severity colormap to Gemini,
+        without the original RGB satellite image. Gemini cannot understand
+        WHAT is burned, only that something is burned. Use classify_multimodal()
+        for true spatial reasoning.
+        
+        This method is preserved for backward compatibility only.
         
         Args:
             location: (latitude, longitude) tuple
@@ -278,7 +371,8 @@ class EcosystemClassifier:
         )
         
         # Call Gemini with multimodal input (image + text) and JSON output
-        print(f"🌲 Analyzing ecosystem at ({lat:.4f}, {lon:.4f})...")
+        print(f"🌲 [LEGACY] Analyzing ecosystem at ({lat:.4f}, {lon:.4f})...")
+        print(f"   ⚠️ Using legacy mode - consider classify_multimodal() for better results")
         print(f"   Ecoregion: {ecoregion_hint}")
         print(f"   High severity: {stats['high_severity_ratio']:.1%}")
         
@@ -294,7 +388,8 @@ class EcosystemClassifier:
                 'location': {'lat': lat, 'lon': lon},
                 'ecoregion_key': ecoregion_key,
                 'severity_stats': stats,
-                'tokens_used': response['usage']
+                'tokens_used': response['usage'],
+                'analysis_mode': 'legacy_severity_only'
             }
             
             print(f"   ✅ Classified as: {result.get('ecosystem_type', 'Unknown')}")
@@ -308,7 +403,8 @@ class EcosystemClassifier:
                 'raw_response': response['text'],
                 '_metadata': {
                     'location': {'lat': lat, 'lon': lon},
-                    'severity_stats': stats
+                    'severity_stats': stats,
+                    'analysis_mode': 'legacy_severity_only'
                 }
             }
     
@@ -363,7 +459,9 @@ def classify_ecosystem(
     api_key: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Convenience function for ecosystem classification.
+    LEGACY convenience function for ecosystem classification.
+    
+    ⚠️ DEPRECATED: Use classify_ecosystem_multimodal() for true spatial reasoning.
     
     Args:
         location: (latitude, longitude) tuple
@@ -379,25 +477,126 @@ def classify_ecosystem(
     return classifier.classify(location, severity_map, metadata)
 
 
+def classify_ecosystem_multimodal(
+    location: Tuple[float, float],
+    rgb_tile: np.ndarray,
+    severity_map: np.ndarray,
+    metadata: Optional[Dict] = None,
+    unet_confidence: float = None,
+    api_key: Optional[str] = None,
+    **kwargs
+) -> Dict[str, Any]:
+    """
+    TRUE multimodal ecosystem classification (RECOMMENDED).
+    
+    This function properly sends BOTH the original satellite image AND
+    the severity overlay to Gemini, enabling spatial reasoning about
+    what is actually burned in the landscape.
+    
+    Args:
+        location: (latitude, longitude) tuple
+        rgb_tile: (3, H, W) or (H, W, 3) RGB bands from Sentinel-2 (B4, B3, B2)
+        severity_map: 2D numpy array with burn severity values (0-1)
+        metadata: Optional additional metadata (ecosystem, legal, temporal)
+        unet_confidence: U-Net model confidence score
+        api_key: Optional Google API key
+        **kwargs: Additional arguments (include_probability, probability_map)
+        
+    Returns:
+        Complete multimodal analysis with:
+        - visual_grounding: What Gemini observes in the landscape
+        - segmentation_quality: Assessment of U-Net prediction quality
+        - spatial_patterns: Fragmentation, edges, gradients
+        - ecological_interpretation: Differential impacts, regeneration potential
+        - priority_zones: 3-5 priority areas for restoration
+        - signals_for_final_model: Machine-readable scores for Layer 3
+    """
+    client = create_client(api_key) if api_key else None
+    classifier = EcosystemClassifier(gemini_client=client)
+    return classifier.classify_multimodal(
+        location=location,
+        rgb_tile=rgb_tile,
+        severity_map=severity_map,
+        metadata=metadata,
+        unet_confidence=unet_confidence,
+        **kwargs
+    )
+
+
 if __name__ == "__main__":
     # Demo with synthetic data
     print("=" * 60)
     print("🌲 EcoRevive Ecosystem Classifier Demo")
     print("=" * 60)
     
-    # Create synthetic severity map (simulating Dixie Fire pattern)
+    # Create synthetic data (simulating Dixie Fire)
     np.random.seed(42)
-    severity_map = np.random.beta(2, 1, size=(256, 256))  # Skewed towards higher severity
+    
+    # Synthetic RGB tile (simulating Sentinel-2 B4, B3, B2)
+    rgb_tile = np.random.randint(100, 200, size=(3, 256, 256), dtype=np.uint8)
+    
+    # Synthetic severity map with spatial structure
+    x, y = np.meshgrid(np.linspace(0, 1, 256), np.linspace(0, 1, 256))
+    severity_map = 0.5 * np.exp(-((x - 0.5)**2 + (y - 0.3)**2) / 0.1)
+    severity_map += 0.3 * np.random.beta(2, 1, size=(256, 256))
+    severity_map = np.clip(severity_map, 0, 1).astype(np.float32)
     
     # Dixie Fire location
     location = (40.05, -121.20)
     
+    print("\n" + "=" * 40)
+    print("Testing TRUE MULTIMODAL analysis (recommended)")
+    print("=" * 40)
+    
     try:
-        result = classify_ecosystem(location, severity_map)
+        result = classify_ecosystem_multimodal(
+            location=location,
+            rgb_tile=rgb_tile,
+            severity_map=severity_map,
+            unet_confidence=0.87
+        )
         
-        print("\n📊 Classification Results:")
-        print(json.dumps(result, indent=2, default=str))
+        print("\n📊 Multimodal Analysis Results:")
+        if result.get('status') == 'complete':
+            analysis = result.get('analysis', {})
+            sq = analysis.get('segmentation_quality', {})
+            print(f"   Segmentation Quality: {sq.get('overall_quality', 'N/A')}")
+            print(f"   Confidence: {sq.get('confidence_in_prediction', 0):.0%}")
+            
+            signals = analysis.get('signals_for_final_model', {})
+            print(f"   Restoration Potential: {signals.get('restoration_potential_score', 0):.2f}")
+            print(f"   Intervention Urgency: {signals.get('intervention_urgency_score', 0):.2f}")
+            print(f"   Risk Score: {signals.get('risk_score', 0):.2f}")
+            
+            zones = analysis.get('priority_zones', [])
+            print(f"   Priority Zones: {len(zones)}")
+            for zone in zones[:3]:
+                print(f"     - Zone {zone.get('zone_id')}: {zone.get('urgency')} - {zone.get('recommended_intervention')}")
+            
+            if result.get('human_review', {}).get('required'):
+                print(f"\n   ⚠️ Human review required: {result['human_review']['triggers']}")
+        else:
+            print(f"   Status: {result.get('status')}")
+            if result.get('error'):
+                print(f"   Error: {result.get('error')}")
         
     except ValueError as e:
         print(f"\n⚠️ {e}")
         print("Set GOOGLE_API_KEY to run the demo.")
+    
+    print("\n" + "=" * 40)
+    print("Testing LEGACY analysis (for comparison)")
+    print("=" * 40)
+    
+    try:
+        legacy_result = classify_ecosystem(location, severity_map)
+        
+        print("\n📊 Legacy Results:")
+        print(f"   Ecosystem Type: {legacy_result.get('ecosystem_type', 'N/A')}")
+        print(f"   Restoration Method: {legacy_result.get('restoration_method', 'N/A')}")
+        print(f"   Mode: {legacy_result.get('_metadata', {}).get('analysis_mode', 'N/A')}")
+        
+    except ValueError as e:
+        print(f"\n⚠️ {e}")
+        print("Set GOOGLE_API_KEY to run the demo.")
+
