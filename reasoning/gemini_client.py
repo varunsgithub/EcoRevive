@@ -1,14 +1,15 @@
 """
 EcoRevive Gemini Client
 =======================
-Unified Gemini API client showcasing multiple features:
-- Gemini 1.5 Pro (multimodal reasoning)
-- Structured JSON output
-- Function calling
-- Grounding with Google Search
-- Imagen 3 for image generation
+Unified Gemini API client using the NEW google.genai SDK.
 
-Built for the Gemini API Developer Competition.
+Features:
+- Gemini 3 Flash Preview
+- Structured JSON output
+- Google Search grounding
+- Multimodal (images)
+
+MIGRATED from deprecated google.generativeai to google.genai
 """
 
 import os
@@ -20,16 +21,16 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+# New unified SDK
+from google import genai
+from google.genai import types
 
 
 class EcoReviveGemini:
     """
     Gemini-powered reasoning engine for EcoRevive.
     
-    This client demonstrates extensive use of Gemini API features
-    for ecosystem restoration intelligence.
+    Uses the new google.genai unified SDK (replacing deprecated google.generativeai).
     """
     
     def __init__(self, api_key: Optional[str] = None):
@@ -39,60 +40,23 @@ class EcoReviveGemini:
         Args:
             api_key: Google API key. If not provided, reads from GOOGLE_API_KEY env var.
         """
-        # Configure API key
+        # Get API key
         self.api_key = api_key or os.environ.get('GOOGLE_API_KEY')
         if not self.api_key:
             raise ValueError(
                 "Google API key required. Set GOOGLE_API_KEY environment variable "
                 "or pass api_key parameter."
             )
-        genai.configure(api_key=self.api_key)
         
-        # Safety settings - allow ecological/environmental content
-        self.safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
-        }
+        # Create unified client
+        self.client = genai.Client(api_key=self.api_key)
         
-        # Main reasoning model (Gemini 3 Flash Preview - Hackathon Standard)
-        self.model = genai.GenerativeModel(
-            model_name='models/gemini-3-flash-preview',
-            safety_settings=self.safety_settings,
-            generation_config=genai.GenerationConfig(
-                temperature=0.2,  # Low temp for factual responses
-                top_p=0.95,
-                max_output_tokens=8192,
-            )
-        )
-        
-        # Model configured for JSON output
-        self.json_model = genai.GenerativeModel(
-            model_name='models/gemini-3-flash-preview',
-            safety_settings=self.safety_settings,
-            generation_config=genai.GenerationConfig(
-                temperature=0.1,
-                response_mime_type='application/json',
-                max_output_tokens=8192,
-            )
-        )
-        
-        # Model with grounding (Google Search)
-        self.grounded_model = genai.GenerativeModel(
-            model_name='models/gemini-3-flash-preview',
-            safety_settings=self.safety_settings,
-            generation_config=genai.GenerationConfig(
-                temperature=0.2,
-                max_output_tokens=8192,
-            ),
-            tools='google_search_retrieval'
-        )
+        # Model names
+        self.model_name = 'gemini-3-flash-preview'  # Use stable model
         
         print("✅ EcoRevive Gemini client initialized")
-        print(f"   - Main model: gemini-3-flash-preview")
-        print(f"   - JSON output: enabled")
-        print(f"   - Google Search grounding: enabled")
+        print(f"   - Model: {self.model_name}")
+        print(f"   - SDK: google.genai (unified)")
     
     def analyze_multimodal(
         self,
@@ -112,27 +76,42 @@ class EcoReviveGemini:
             Response dict with 'text' and optionally 'parsed' (if JSON)
         """
         # Build content parts
-        content = [prompt]
+        contents = []
         
+        # Add images first if provided
         if images:
             for img in images:
                 if isinstance(img, (str, Path)):
                     # Load image from path
                     import PIL.Image
                     img = PIL.Image.open(img)
-                content.append(img)
+                contents.append(img)
         
-        # Choose model based on output format
-        model = self.json_model if use_json else self.model
+        # Add text prompt
+        contents.append(prompt)
+        
+        # Configure generation
+        config = types.GenerateContentConfig(
+            temperature=0.1 if use_json else 0.2,
+            max_output_tokens=8192,
+        )
+        
+        # Add JSON response format if requested
+        if use_json:
+            config.response_mime_type = 'application/json'
         
         # Generate response
-        response = model.generate_content(content)
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=contents,
+            config=config
+        )
         
         result = {
             'text': response.text,
             'usage': {
-                'prompt_tokens': response.usage_metadata.prompt_token_count,
-                'response_tokens': response.usage_metadata.candidates_token_count,
+                'prompt_tokens': getattr(response.usage_metadata, 'prompt_token_count', 0) if response.usage_metadata else 0,
+                'response_tokens': getattr(response.usage_metadata, 'candidates_token_count', 0) if response.usage_metadata else 0,
             }
         }
         
@@ -150,16 +129,24 @@ class EcoReviveGemini:
         """
         Query with Google Search grounding for real-time information.
         
-        Uses Gemini's grounding feature to search the web and provide
-        cited, up-to-date information.
-        
         Args:
             query: The query to search and answer
             
         Returns:
             Response with grounded answer and sources
         """
-        response = self.grounded_model.generate_content(query)
+        # Configure with Google Search tool
+        config = types.GenerateContentConfig(
+            temperature=0.2,
+            max_output_tokens=8192,
+            tools=[types.Tool(google_search=types.GoogleSearch())]
+        )
+        
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=query,
+            config=config
+        )
         
         result = {
             'text': response.text,
@@ -168,18 +155,17 @@ class EcoReviveGemini:
         }
         
         # Extract grounding metadata if available
-        if hasattr(response, 'candidates') and response.candidates:
+        if response.candidates and len(response.candidates) > 0:
             candidate = response.candidates[0]
-            if hasattr(candidate, 'grounding_metadata'):
+            if hasattr(candidate, 'grounding_metadata') and candidate.grounding_metadata:
                 gm = candidate.grounding_metadata
                 result['grounding_metadata'] = {
-                    'search_queries': getattr(gm, 'search_queries', []),
-                    'grounding_supports': getattr(gm, 'grounding_supports', []),
+                    'search_queries': getattr(gm, 'web_search_queries', []),
                 }
                 # Extract source URLs
-                if hasattr(gm, 'grounding_chunks'):
+                if hasattr(gm, 'grounding_chunks') and gm.grounding_chunks:
                     for chunk in gm.grounding_chunks:
-                        if hasattr(chunk, 'web'):
+                        if hasattr(chunk, 'web') and chunk.web:
                             result['sources'].append({
                                 'uri': chunk.web.uri,
                                 'title': chunk.web.title
@@ -197,9 +183,6 @@ class EcoReviveGemini:
         """
         Generate response with function calling capabilities.
         
-        Allows Gemini to request function calls which can be executed
-        and fed back for continued reasoning.
-        
         Args:
             prompt: The user prompt
             tools: List of function declarations
@@ -209,14 +192,18 @@ class EcoReviveGemini:
         Returns:
             Response with text and/or function calls
         """
-        # Create model with tools
-        model_with_tools = genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
-            safety_settings=self.safety_settings,
+        # Configure with function tools
+        config = types.GenerateContentConfig(
+            temperature=0.2,
+            max_output_tokens=8192,
             tools=tools
         )
         
-        response = model_with_tools.generate_content(prompt)
+        response = self.client.models.generate_content(
+            model=self.model_name,
+            contents=prompt,
+            config=config
+        )
         
         result = {
             'text': None,
@@ -225,19 +212,18 @@ class EcoReviveGemini:
         }
         
         # Check for function calls
-        if response.candidates:
+        if response.candidates and len(response.candidates) > 0:
             candidate = response.candidates[0]
             
-            # Extract text if present
-            if candidate.content.parts:
+            if candidate.content and candidate.content.parts:
                 for part in candidate.content.parts:
-                    if hasattr(part, 'text'):
+                    if hasattr(part, 'text') and part.text:
                         result['text'] = part.text
-                    elif hasattr(part, 'function_call'):
+                    elif hasattr(part, 'function_call') and part.function_call:
                         fc = part.function_call
                         call_info = {
                             'name': fc.name,
-                            'args': dict(fc.args)
+                            'args': dict(fc.args) if fc.args else {}
                         }
                         result['function_calls'].append(call_info)
                         
@@ -257,44 +243,7 @@ class EcoReviveGemini:
         
         return result
     
-    def generate_image(
-        self,
-        prompt: str,
-        aspect_ratio: str = "16:9",
-        num_images: int = 1
-    ) -> List[Any]:
-        """
-        Generate images using Imagen 3.
-        
-        Args:
-            prompt: Description of the image to generate
-            aspect_ratio: Image aspect ratio (e.g., "16:9", "1:1", "9:16")
-            num_images: Number of images to generate (1-4)
-            
-        Returns:
-            List of generated images
-        """
-        try:
-            from google.generativeai import ImageGenerationModel
-            
-            imagen = ImageGenerationModel.from_pretrained("imagen-3.0-generate-002")
-            
-            response = imagen.generate_images(
-                prompt=prompt,
-                number_of_images=num_images,
-                aspect_ratio=aspect_ratio,
-                safety_filter_level="block_few",
-                person_generation="allow_adult",
-            )
-            
-            return [img for img in response.images]
-            
-        except Exception as e:
-            print(f"⚠️ Imagen generation failed: {e}")
-            print("   Imagen 3 may require additional API access.")
-            return []
-    
-    def chat_session(self, system_instruction: str = None) -> 'ChatSession':
+    def chat_session(self, system_instruction: str = None):
         """
         Start a multi-turn chat session.
         
@@ -302,14 +251,19 @@ class EcoReviveGemini:
             system_instruction: Optional system prompt for the session
             
         Returns:
-            ChatSession object for multi-turn conversation
+            Chat object for multi-turn conversation
         """
-        model = genai.GenerativeModel(
-            model_name='gemini-3-flash-preview',
-            safety_settings=self.safety_settings,
+        config = types.GenerateContentConfig(
+            temperature=0.2,
+            max_output_tokens=8192,
             system_instruction=system_instruction
         )
-        return model.start_chat()
+        
+        # Return a chat wrapper
+        return self.client.chats.create(
+            model=self.model_name,
+            config=config
+        )
 
 
 # Convenience function for quick initialization
@@ -320,7 +274,7 @@ def create_client(api_key: Optional[str] = None) -> EcoReviveGemini:
 
 if __name__ == "__main__":
     # Quick test
-    print("Testing EcoRevive Gemini Client...")
+    print("Testing EcoRevive Gemini Client (google.genai SDK)...")
     
     try:
         client = create_client()

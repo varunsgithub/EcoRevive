@@ -418,6 +418,95 @@ def _clean_none_values(d: Dict) -> Dict:
 # GEMINI PROMPT
 # =============================================================================
 
+# =============================================================================
+# LAYER 2 STRUCTURED OUTPUT PROMPT (JSON-only, no verbose text)
+# =============================================================================
+
+LAYER2_STRUCTURED_PROMPT = '''You are an expert spatial feature extractor for ecosystem restoration analysis.
+
+## YOUR TASK
+Extract structured spatial features from the satellite imagery and U-Net burn severity prediction.
+Output ONLY machine-readable JSON. NO prose, NO explanations, NO recommendations.
+Layer 3 will handle all interpretation and text generation.
+
+## IMAGES PROVIDED
+1. **Original Satellite Image** (Sentinel-2 RGB)
+2. **Severity Map Overlay** (U-Net: Red=high, Orange=moderate, Yellow=low)
+
+## LOCATION CONTEXT
+```json
+{context_json}
+```
+
+---
+
+## OUTPUT JSON SCHEMA (strict compliance required):
+
+{{
+  "location_enhancement": {{
+    "detected_area_type": "string: forest | grassland | agricultural | urban | mixed | wilderness",
+    "terrain_features": ["list of detected: valley | ridge | slope | flat | drainage | road | water"],
+    "elevation_estimate": "string: low_elevation | mid_elevation | high_elevation | unknown"
+  }},
+  "site_characteristics": {{
+    "soil_type_inference": "string: sandy | loamy | clay | rocky | organic | unknown",
+    "slope_category": "string: flat | gentle | moderate | steep | unknown",
+    "drainage_pattern": "string: well_drained | moderate | poor | unknown",
+    "land_use_history": "string: natural_forest | managed_forest | agriculture | developed | unknown"
+  }},
+  "ecosystem": {{
+    "current_state": "string describing current ecosystem state",
+    "pre_degradation_ecosystem": "string: mixed_conifer | pine_forest | oak_woodland | chaparral | grassland | riparian | unknown",
+    "vegetation_types": ["list of detected vegetation types"],
+    "key_species_likely": ["list of likely species based on ecosystem"],
+    "succession_stage": "string: pioneer | early | mid | late_climax | disturbed"
+  }},
+  "spatial_zones": [
+    {{
+      "zone_id": "string: zone_001, zone_002, etc",
+      "zone_type": "string: burn_scar | healthy_vegetation | degraded_vegetation | bare_soil | water",
+      "area_estimate_pct": 0.0,
+      "severity_category": "string: high | moderate | low | none",
+      "confidence": 0.0
+    }}
+  ],
+  "hazards": [
+    {{
+      "hazard_type": "string: standing_dead_tree | steep_slope | erosion_channel | unstable_terrain",
+      "severity": "string: low | moderate | high",
+      "location_description": "string: brief spatial description",
+      "detection_confidence": 0.0
+    }}
+  ],
+  "quality_assessment": {{
+    "segmentation_quality": "string: good | acceptable | poor | unusable",
+    "confidence_in_prediction": 0.0,
+    "artifact_flags": ["list of detected artifacts: noise | edge_effects | cloud_shadow | spectral_confusion"],
+    "requires_human_review": false,
+    "review_triggers": ["list of reasons if review needed"]
+  }},
+  "computed_signals": {{
+    "restoration_potential_score": 0.0,
+    "intervention_urgency_score": 0.0,
+    "ecological_complexity_score": 0.0,
+    "natural_regeneration_likelihood": 0.0,
+    "erosion_risk_score": 0.0
+  }}
+}}
+
+CRITICAL RULES:
+1. Output ONLY the JSON object above. No markdown, no explanation.
+2. All scores are 0.0 to 1.0 floats.
+3. If uncertain, use "unknown" or 0.5 confidence.
+4. Keep arrays to 3-5 items max.
+5. Be concise - strings should be brief labels, not sentences.
+'''
+
+
+# =============================================================================
+# LEGACY MULTIMODAL PROMPT (for display/text output - used by existing frontend)
+# =============================================================================
+
 MULTIMODAL_ANALYSIS_PROMPT = '''You are an expert restoration ecologist with remote sensing expertise.
 
 ## YOUR TASK
@@ -585,6 +674,26 @@ def build_multimodal_prompt(
     
     return MULTIMODAL_ANALYSIS_PROMPT.format(
         probability_image_clause=probability_clause,
+        context_json=context_json
+    )
+
+
+def build_layer2_prompt(context: Dict[str, Any]) -> str:
+    """
+    Build the Layer 2 structured JSON prompt.
+    
+    This prompt generates machine-readable JSON for Layer 2 output.
+    No verbose text - Layer 3 handles all interpretation.
+    
+    Args:
+        context: Structured context from build_gemini_context()
+        
+    Returns:
+        Complete prompt string for Layer 2 JSON output
+    """
+    context_json = json.dumps(context, indent=2)
+    
+    return LAYER2_STRUCTURED_PROMPT.format(
         context_json=context_json
     )
 
@@ -810,6 +919,133 @@ class MultimodalAnalyzer:
             print(f"   ⚠️ Human review required: {', '.join(review_triggers)}")
         
         return result
+    
+    def analyze_for_layer2(
+        self,
+        rgb_tile: np.ndarray,
+        severity_map: np.ndarray,
+        location: Tuple[float, float],
+        metadata: Dict[str, Any] = None,
+        unet_confidence: float = None
+    ) -> Dict[str, Any]:
+        """
+        Perform Layer 2 analysis - returns structured JSON only.
+        
+        This method uses LAYER2_STRUCTURED_PROMPT which outputs
+        JSON matching the Layer2Output schema. No verbose text.
+        Layer 3 handles all interpretation and text generation.
+        
+        Args:
+            rgb_tile: (3, H, W) or (H, W, 3) RGB bands from Sentinel-2
+            severity_map: (H, W) float32 burn severity predictions 0-1
+            location: (latitude, longitude) tuple
+            metadata: Additional context
+            unet_confidence: U-Net model confidence score
+            
+        Returns:
+            Structured JSON matching Layer2Output schema components
+        """
+        # Create image pack (RGB + severity overlay)
+        images = create_image_pack(
+            rgb_tile=rgb_tile,
+            severity_map=severity_map,
+            probability_map=None,
+            include_probability=False
+        )
+        
+        # Build context
+        context = build_gemini_context(
+            location=location,
+            severity_map=severity_map,
+            metadata=metadata,
+            unet_confidence=unet_confidence
+        )
+        
+        # Build Layer 2 structured prompt
+        prompt = build_layer2_prompt(context=context)
+        
+        # Call Gemini with multimodal input
+        print(f"📊 Running Layer 2 structured analysis at ({location[0]:.4f}, {location[1]:.4f})...")
+        print(f"   Sending {len(images)} images for JSON extraction")
+        
+        response = self.client.analyze_multimodal(
+            prompt=prompt,
+            images=images,
+            use_json=True
+        )
+        
+        if not response.get('parsed'):
+            return {
+                'status': 'error',
+                'error': 'Failed to parse Gemini response',
+                'raw_response': response.get('text', '')[:500]
+            }
+        
+        gemini_output = response['parsed']
+        
+        # Map Gemini output to Layer2Output-compatible structure
+        layer2_data = self._transform_to_layer2_schema(gemini_output)
+        
+        print(f"   ✅ Layer 2 extraction complete")
+        
+        return {
+            'status': 'complete',
+            'layer2_data': layer2_data,
+            'raw_gemini_output': gemini_output,
+            'tokens_used': response.get('usage')
+        }
+    
+    def _transform_to_layer2_schema(self, gemini_output: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Transform Gemini's structured output to Layer2Output-compatible format.
+        
+        Args:
+            gemini_output: Parsed JSON from LAYER2_STRUCTURED_PROMPT
+            
+        Returns:
+            Dict compatible with Layer2Output enhancement
+        """
+        loc = gemini_output.get('location_enhancement', {})
+        site = gemini_output.get('site_characteristics', {})
+        eco = gemini_output.get('ecosystem', {})
+        quality = gemini_output.get('quality_assessment', {})
+        
+        return {
+            # For LocationContext enhancement
+            'location_enhancement': {
+                'terrain_features': loc.get('terrain_features', []),
+                'area_type': loc.get('detected_area_type', 'unknown')
+            },
+            # For SiteCharacteristics 
+            'characteristics': {
+                'soil_type': site.get('soil_type_inference', 'unknown'),
+                'slope_category': site.get('slope_category', 'unknown'),
+                'drainage_pattern': site.get('drainage_pattern', 'unknown'),
+                'land_use_history': site.get('land_use_history', 'unknown')
+            },
+            # For EcosystemInfo
+            'ecosystem': {
+                'current_state': eco.get('current_state', 'unknown'),
+                'pre_degradation_ecosystem': eco.get('pre_degradation_ecosystem', 'unknown'),
+                'vegetation_types': eco.get('vegetation_types', []),
+                'key_species': eco.get('key_species_likely', []),
+                'succession_stage': eco.get('succession_stage', 'disturbed')
+            },
+            # Spatial zones detected by Gemini
+            'visual_zones': gemini_output.get('spatial_zones', []),
+            # Hazards detected by Gemini vision
+            'visual_hazards': gemini_output.get('hazards', []),
+            # Quality assessment for ConfidenceMetadata
+            'quality': {
+                'segmentation_quality': quality.get('segmentation_quality', 'unknown'),
+                'confidence_in_prediction': quality.get('confidence_in_prediction', 0.5),
+                'artifact_flags': quality.get('artifact_flags', []),
+                'requires_human_review': quality.get('requires_human_review', False),
+                'review_triggers': quality.get('review_triggers', [])
+            },
+            # Signals for Layer 3
+            'signals': gemini_output.get('computed_signals', {})
+        }
 
 
 # =============================================================================

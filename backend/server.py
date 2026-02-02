@@ -73,7 +73,17 @@ class AnalyzeResponse(BaseModel):
     severity_image: Optional[str] = None  # Base64 encoded colorized PNG
     raw_severity_image: Optional[str] = None  # Base64 encoded raw grayscale model output
     severity_stats: Optional[Dict[str, Any]] = None
-    gemini_analysis: Optional[str] = None
+    gemini_analysis: Optional[str] = None  # Legacy verbose text for display
+    layer2_output: Optional[Dict[str, Any]] = None  # Structured Layer 2 JSON
+    error: Optional[str] = None
+
+
+class Layer2AnalyzeResponse(BaseModel):
+    """Structured Layer 2 output for Layer 3 consumption."""
+    success: bool
+    layer2_output: Optional[Dict[str, Any]] = None  # Full structured Layer 2 data
+    satellite_image: Optional[str] = None  # Base64 encoded RGB for reference
+    severity_image: Optional[str] = None  # Base64 encoded colorized severity
     error: Optional[str] = None
 
 
@@ -735,18 +745,48 @@ async def analyze_area(request: AnalyzeRequest):
         severity_image = severity_to_image(severity_map)
         raw_severity_image = severity_to_raw_image(severity_map)
         
-        # Step 4: Get Gemini analysis with TRUE MULTIMODAL
-        print("🧠 Generating Gemini multimodal analysis (sending images to Gemini)...")
-        gemini_result = get_gemini_analysis(
-            stats=stats, 
-            bbox=bbox, 
-            user_type=request.user_type or "personal",
-            satellite_rgb=satellite_rgb,  # Pass the satellite image!
-            severity_map=severity_map      # Pass the severity map!
-        )
-        
-        # Extract text from result (now returns dict)
-        gemini_text = gemini_result.get('text', '') if isinstance(gemini_result, dict) else gemini_result
+        # Step 4: Generate Layer 2 structured output (JSON-only, single Gemini call)
+        print("📊 Generating Layer 2 structured output...")
+        layer2_output = None
+        try:
+            from reasoning.layer2_output import create_layer2_response
+            from reasoning.gemini_multimodal import MultimodalAnalyzer
+            from reasoning import create_client
+            
+            # Prepare RGB tile
+            if satellite_rgb.ndim == 3 and satellite_rgb.shape[2] == 3:
+                rgb_tile = np.moveaxis(satellite_rgb, -1, 0)
+            else:
+                rgb_tile = satellite_rgb
+            
+            center_lat = (bbox['north'] + bbox['south']) / 2
+            center_lon = (bbox['west'] + bbox['east']) / 2
+            location = (center_lat, center_lon)
+            
+            # Get structured Gemini analysis for Layer 2 (JSON-only, no verbose text)
+            client = create_client()
+            analyzer = MultimodalAnalyzer(client)
+            l2_result = analyzer.analyze_for_layer2(
+                rgb_tile=rgb_tile,
+                severity_map=severity_map,
+                location=location,
+                unet_confidence=0.85
+            )
+            
+            if l2_result.get('status') == 'complete':
+                layer2_output = create_layer2_response(
+                    severity_map=severity_map,
+                    location=location,
+                    bbox=bbox,
+                    gemini_analysis=l2_result.get('layer2_data'),
+                    model_confidence=0.85,
+                    imagery_date=end_date
+                )
+                print("   ✅ Layer 2 JSON generated")
+        except Exception as e:
+            print(f"   ⚠️ Layer 2 generation failed: {e}")
+            import traceback
+            traceback.print_exc()
         
         print("✅ Analysis complete!")
         
@@ -756,7 +796,8 @@ async def analyze_area(request: AnalyzeRequest):
             severity_image=severity_image,
             raw_severity_image=raw_severity_image,
             severity_stats=stats,
-            gemini_analysis=gemini_text
+            gemini_analysis=None,  # No longer sending verbose text
+            layer2_output=layer2_output
         )
         
     except HTTPException:
@@ -771,7 +812,136 @@ async def analyze_area(request: AnalyzeRequest):
         )
 
 
+@app.post("/api/layer2-analyze", response_model=Layer2AnalyzeResponse)
+async def layer2_analyze_area(request: AnalyzeRequest):
+    """
+    Layer 2 structured analysis endpoint.
+    
+    Returns structured JSON output for Layer 3 consumption.
+    This endpoint is optimized for programmatic access and includes:
+    - Location context (lat/lon, state, country)
+    - Site characteristics (soil, terrain, land-use history)
+    - Ecosystem classification
+    - Computed metrics (burn %, NDVI, healing time)
+    - Spatial primitives (zones, hazards, risk grid)
+    - Machine-readable signals for downstream workflows
+    """
+    try:
+        from reasoning.layer2_output import create_layer2_response
+        
+        # Validate bounding box
+        bbox = {
+            'west': request.west,
+            'south': request.south,
+            'east': request.east,
+            'north': request.north
+        }
+        
+        # Set date range
+        start_date = request.start_date or "2023-06-01"
+        end_date = request.end_date or "2023-09-30"
+        
+        print(f"📍 Layer 2 Analysis: {bbox}")
+        
+        # Step 1: Download Sentinel-2 imagery
+        if ee_initialized:
+            try:
+                print("🛰️ Downloading Sentinel-2 imagery...")
+                tiles, ee_metadata = download_sentinel2_for_model(bbox, start_date, end_date)
+                if not tiles:
+                    raise Exception("No tiles downloaded")
+            except Exception as e:
+                print(f"⚠️ EE download failed: {e}, using synthetic data")
+                synthetic_image = create_synthetic_image(bbox)
+                tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
+                ee_metadata = {'n_rows': 1, 'n_cols': 1}
+        else:
+            print("⚠️ Earth Engine not available, using synthetic imagery")
+            synthetic_image = create_synthetic_image(bbox)
+            tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
+            ee_metadata = {'n_rows': 1, 'n_cols': 1}
+        
+        # Step 2: Run Fire Model inference
+        if model is None:
+            raise HTTPException(status_code=503, detail="Fire model not loaded")
+        
+        print("🔥 Running burn severity inference...")
+        severity_map, satellite_rgb, stats = run_tiled_inference(tiles, ee_metadata)
+        
+        # Step 3: Calculate center location
+        center_lat = (bbox['north'] + bbox['south']) / 2
+        center_lon = (bbox['west'] + bbox['east']) / 2
+        location = (center_lat, center_lon)
+        
+        # Step 4: Run Gemini multimodal analysis for enhancement
+        gemini_analysis = None
+        try:
+            # Prepare RGB tile for multimodal
+            if satellite_rgb.ndim == 3 and satellite_rgb.shape[2] == 3:
+                rgb_tile = np.moveaxis(satellite_rgb, -1, 0)
+            else:
+                rgb_tile = satellite_rgb
+            
+            from reasoning.gemini_multimodal import MultimodalAnalyzer
+            from reasoning import create_client
+            
+            client = create_client()
+            analyzer = MultimodalAnalyzer(client)
+            
+            # Use analyze_for_layer2 for structured JSON output
+            result = analyzer.analyze_for_layer2(
+                rgb_tile=rgb_tile,
+                severity_map=severity_map,
+                location=location,
+                unet_confidence=0.85
+            )
+            
+            if result.get('status') == 'complete':
+                # Use layer2_data which is already transformed to Layer2Output schema
+                gemini_analysis = result.get('layer2_data')
+                
+        except Exception as e:
+            print(f"⚠️ Gemini analysis failed: {e}, proceeding without enhancement")
+        
+        # Step 5: Generate Layer 2 structured output
+        print("📊 Generating Layer 2 structured output...")
+        layer2_output = create_layer2_response(
+            severity_map=severity_map,
+            location=location,
+            bbox=bbox,
+            gemini_analysis=gemini_analysis,
+            model_confidence=0.85,
+            imagery_date=end_date
+        )
+        
+        # Step 6: Create images for reference
+        satellite_image = rgb_array_to_base64(satellite_rgb)
+        severity_image = severity_to_image(severity_map)
+        
+        print(f"✅ Layer 2 analysis complete! Found {len(layer2_output.get('zones', []))} zones, "
+              f"{len(layer2_output.get('hazards', []))} hazards")
+        
+        return Layer2AnalyzeResponse(
+            success=True,
+            layer2_output=layer2_output,
+            satellite_image=satellite_image,
+            severity_image=severity_image
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Layer 2 analysis failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return Layer2AnalyzeResponse(
+            success=False,
+            error=str(e)
+        )
+
+
 # Run with: uvicorn server:app --reload --port 8000
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
