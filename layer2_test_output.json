@@ -1,0 +1,497 @@
+{
+  "analysis_id": "e913bd69-0b14-4db6-b3b4-057a7532ece2",
+  "timestamp": "2026-02-02T02:23:06.320228Z",
+  "location": {
+    "latitude": 39.42,
+    "longitude": -121.15,
+    "state": "California",
+    "country": "United States",
+    "bounding_box": {
+      "west": -121.5,
+      "south": 39.0,
+      "east": -121.0,
+      "north": 39.5
+    }
+  },
+  "characteristics": {},
+  "ecosystem": {
+    "current_state": "unknown",
+    "match_confidence": 0.0,
+    "succession_stage": "disturbed"
+  },
+  "metrics": {
+    "ndvi_mean": 0.0,
+    "ndvi_std": 0.0,
+    "ndvi_min": 0.0,
+    "ndvi_max": 0.0,
+    "canopy_cover_pct": 10.052490234375,
+    "burn_pct": 89.947509765625,
+    "high_severity_pct": 33.91876220703125,
+    "moderate_severity_pct": 39.13726806640625,
+    "low_severity_pct": 16.8914794921875,
+    "unburned_pct": 10.052490234375,
+    "estimated_healing_years": {
+      "optimistic": 5,
+      "realistic": 8,
+      "pessimistic": 12
+    },
+    "mean_severity": 0.49960236209077064,
+    "max_severity": 0.9999721473679823,
+    "model_confidence": 0.85,
+    "total_area_hectares": 655.36
+  },
+  "zones": [
+    {
+      "zone_id": "zone_000",
+      "zone_type": "burn_scar",
+      "geometry_type": "polygon",
+      "centroid": [
+        -121.15,
+        39.42
+      ],
+      "area_hectares": 0.13,
+      "confidence": 0.500396728515625,
+      "uncertainty_radius_m": 15.0,
+      "severity_mean": 0.7934358584992837
+    }
+  ],
+  "hazards": [
+    {
+      "hazard_id": "haz_001",
+      "hazard_type": "standing_dead_tree",
+      "geometry_type": "point",
+      "location": [
+        -121.15,
+        39.42
+      ],
+      "severity": "high",
+      "detection_confidence": 0.65,
+      "buffer_radius_m": 20.0,
+      "description": "Approximately 7925 clusters of high-severity burn detected. Likely areas with standing dead trees (widowmakers)."
+    },
+    {
+      "hazard_id": "haz_002",
+      "hazard_type": "erosion_channel",
+      "geometry_type": "point",
+      "location": [
+        -121.15,
+        39.42
+      ],
+      "severity": "moderate",
+      "detection_confidence": 0.55,
+      "buffer_radius_m": 15.0,
+      "description": "Sharp severity gradients detected. Potential erosion risk areas."
+    }
+  ],
+  "risk_grid": {
+    "resolution": 8,
+    "grid_type": "simple_grid",
+    "cells": [
+      {
+        "cell_id": "r0_c0",
+        "risk_level": "moderate",
+        "risk_score": 0.48903914954756156,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.49028672500341436,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c2",
+        "risk_level": "moderate",
+        "risk_score": 0.49632001495485906,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c3",
+        "risk_level": "moderate",
+        "risk_score": 0.4958047267921365,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c4",
+        "risk_level": "moderate",
+        "risk_score": 0.4950605154204065,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.48689783130910536,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c6",
+        "risk_level": "moderate",
+        "risk_score": 0.49665499930480883,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r0_c7",
+        "risk_level": "high",
+        "risk_score": 0.5085134701851926,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c0",
+        "risk_level": "high",
+        "risk_score": 0.5047099793660306,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.485644501677465,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c2",
+        "risk_level": "high",
+        "risk_score": 0.5134028557758122,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c3",
+        "risk_level": "moderate",
+        "risk_score": 0.49747419346461774,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c4",
+        "risk_level": "high",
+        "risk_score": 0.5166089832232201,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.4876615121428638,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c6",
+        "risk_level": "moderate",
+        "risk_score": 0.4942269573064344,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r1_c7",
+        "risk_level": "moderate",
+        "risk_score": 0.4868469267776342,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c0",
+        "risk_level": "high",
+        "risk_score": 0.502355629938278,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c1",
+        "risk_level": "high",
+        "risk_score": 0.5027315855181362,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c2",
+        "risk_level": "high",
+        "risk_score": 0.5084267925386174,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c3",
+        "risk_level": "high",
+        "risk_score": 0.5232996263431529,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c4",
+        "risk_level": "high",
+        "risk_score": 0.5232721133094727,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.4920929995670681,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c6",
+        "risk_level": "high",
+        "risk_score": 0.5172220118438925,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r2_c7",
+        "risk_level": "high",
+        "risk_score": 0.5191621180308703,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c0",
+        "risk_level": "moderate",
+        "risk_score": 0.483145136298884,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.48779497156744,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c2",
+        "risk_level": "moderate",
+        "risk_score": 0.49368238534382847,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c3",
+        "risk_level": "high",
+        "risk_score": 0.5013777093174057,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c4",
+        "risk_level": "moderate",
+        "risk_score": 0.495003041540421,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.49414511149116813,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c6",
+        "risk_level": "high",
+        "risk_score": 0.5084468674333154,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r3_c7",
+        "risk_level": "moderate",
+        "risk_score": 0.49455813758301803,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c0",
+        "risk_level": "high",
+        "risk_score": 0.5110593150341338,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.49506256400382515,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c2",
+        "risk_level": "moderate",
+        "risk_score": 0.4886432808252923,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c3",
+        "risk_level": "high",
+        "risk_score": 0.5021685391385753,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c4",
+        "risk_level": "high",
+        "risk_score": 0.5052172954908325,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.499613383915984,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c6",
+        "risk_level": "moderate",
+        "risk_score": 0.4950480562429166,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r4_c7",
+        "risk_level": "moderate",
+        "risk_score": 0.4867575019026954,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c0",
+        "risk_level": "moderate",
+        "risk_score": 0.4948010358211135,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.4899832509042851,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c2",
+        "risk_level": "high",
+        "risk_score": 0.5091712686971291,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c3",
+        "risk_level": "high",
+        "risk_score": 0.5050025551200017,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c4",
+        "risk_level": "moderate",
+        "risk_score": 0.49924446781101467,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.4981891702411705,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c6",
+        "risk_level": "moderate",
+        "risk_score": 0.4854284591320628,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r5_c7",
+        "risk_level": "moderate",
+        "risk_score": 0.49459329696934523,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c0",
+        "risk_level": "moderate",
+        "risk_score": 0.4969117450269512,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.4945302285444407,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c2",
+        "risk_level": "high",
+        "risk_score": 0.5117425863277798,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c3",
+        "risk_level": "high",
+        "risk_score": 0.5114426452208531,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c4",
+        "risk_level": "moderate",
+        "risk_score": 0.4977052519885253,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c5",
+        "risk_level": "moderate",
+        "risk_score": 0.4941548886128721,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c6",
+        "risk_level": "high",
+        "risk_score": 0.5089121492550448,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r6_c7",
+        "risk_level": "high",
+        "risk_score": 0.507380690901347,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c0",
+        "risk_level": "moderate",
+        "risk_score": 0.492778708528045,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c1",
+        "risk_level": "moderate",
+        "risk_score": 0.4864994807245425,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c2",
+        "risk_level": "high",
+        "risk_score": 0.5174133429689518,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c3",
+        "risk_level": "high",
+        "risk_score": 0.5036876099830091,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c4",
+        "risk_level": "moderate",
+        "risk_score": 0.4803095453189513,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c5",
+        "risk_level": "high",
+        "risk_score": 0.5025527312481455,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c6",
+        "risk_level": "high",
+        "risk_score": 0.5088481514357612,
+        "contributing_factors": []
+      },
+      {
+        "cell_id": "r7_c7",
+        "risk_level": "high",
+        "risk_score": 0.5078283965571941,
+        "contributing_factors": []
+      }
+    ]
+  },
+  "confidence": {
+    "overall_confidence": 0.85,
+    "segmentation_quality": "good",
+    "classification_reliability": 0.765,
+    "data_quality_flags": [],
+    "requires_human_review": false,
+    "review_triggers": []
+  },
+  "processing": {
+    "layer1_model_version": "california_fire_v2",
+    "layer2_gemini_model": "gemini-2.0-flash",
+    "processing_time_ms": 186,
+    "imagery_source": "sentinel2"
+  },
+  "signals": {
+    "restoration_potential_score": 0.5003976379092294,
+    "intervention_urgency_score": 0.678375244140625,
+    "risk_score": 0.49960236209077064,
+    "confidence_weighted_severity": 0.424662007777155,
+    "ecological_complexity_score": 0.1
+  }
+}

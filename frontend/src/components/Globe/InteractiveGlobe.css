@@ -682,6 +682,60 @@
     box-shadow: 0 8px 30px rgba(0, 212, 170, 0.4);
 }
 
+.selection-actions .btn-primary:disabled {
+    background: linear-gradient(135deg, rgba(128, 128, 128, 0.5) 0%, rgba(90, 90, 90, 0.5) 100%);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+.selection-actions .btn-primary:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Area Validation Styles */
+.area-valid {
+    color: var(--color-accent);
+    font-weight: var(--font-bold);
+}
+
+.area-invalid {
+    color: #ff6b6b;
+    font-weight: var(--font-bold);
+}
+
+.area-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 107, 107, 0.05) 100%);
+    border: 1px solid rgba(255, 107, 107, 0.4);
+    border-radius: 12px;
+    animation: shake 0.5s ease-in-out;
+}
+
+.area-warning svg {
+    flex-shrink: 0;
+    color: #ff6b6b;
+    margin-top: 2px;
+}
+
+.area-warning span {
+    font-size: var(--text-sm);
+    color: #ff6b6b;
+    line-height: 1.4;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-3px); }
+    40%, 80% { transform: translateX(3px); }
+}
+
 /* ============================================
    Drawing Indicator - Floating Badge
    ============================================ */

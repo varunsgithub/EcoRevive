@@ -26,27 +26,26 @@ class FirePredictor:
         checkpoint_path: str,
         device: str = 'auto',
         use_tta: bool = True,
+        temperature: float = 0.5,
     ):
         """
         Args:
             checkpoint_path: Path to model checkpoint
             device: 'cuda', 'cpu', or 'auto'
             use_tta: Whether to use test-time augmentation
+            temperature: Prediction sharpening factor (0.1-1.0). Lower = more confident.
+                         Default 0.5 for sharper predictions. Use 1.0 for original output.
         """
         # Device
         if device == 'auto':
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self.device = torch.device(device)
-        
-        print(f"🔥 FirePredictor initialized on {self.device}")
-        
+                
         # Load model
         self.model = load_model(checkpoint_path, device=str(self.device), **MODEL_CONFIG)
         self.model.eval()
-        
-        print(f"   ✅ Model loaded from {checkpoint_path}")
-        
+                
         # Normalization stats
         self.band_means, self.band_stds = get_band_stats()
         self.band_means = np.array(self.band_means, dtype=np.float32)
@@ -54,6 +53,9 @@ class FirePredictor:
         
         # TTA
         self.use_tta = use_tta
+        
+        # Temperature scaling for confidence adjustment
+        self.temperature = max(0.1, min(temperature, 2.0))  # Clamp to reasonable range
     
     def normalize(self, image: np.ndarray) -> np.ndarray:
         """Normalize image using computed band statistics."""
@@ -95,32 +97,36 @@ class FirePredictor:
         
         with torch.no_grad():
             if self.use_tta:
-                # Test-time augmentation: average predictions from multiple transforms
-                predictions = []
+                # Test-time augmentation: average LOGITS from multiple transforms
+                # Temperature scaling is applied after averaging for better results
+                logits = []
                 
                 # Original
-                pred = torch.sigmoid(self.model(image_tensor))
-                predictions.append(pred)
+                logit = self.model(image_tensor)
+                logits.append(logit)
                 
                 # Horizontal flip
-                pred_hflip = torch.sigmoid(self.model(torch.flip(image_tensor, [3])))
-                pred_hflip = torch.flip(pred_hflip, [3])
-                predictions.append(pred_hflip)
+                logit_hflip = self.model(torch.flip(image_tensor, [3]))
+                logit_hflip = torch.flip(logit_hflip, [3])
+                logits.append(logit_hflip)
                 
                 # Vertical flip
-                pred_vflip = torch.sigmoid(self.model(torch.flip(image_tensor, [2])))
-                pred_vflip = torch.flip(pred_vflip, [2])
-                predictions.append(pred_vflip)
+                logit_vflip = self.model(torch.flip(image_tensor, [2]))
+                logit_vflip = torch.flip(logit_vflip, [2])
+                logits.append(logit_vflip)
                 
                 # Rotate 90
-                pred_rot = torch.sigmoid(self.model(torch.rot90(image_tensor, 1, [2, 3])))
-                pred_rot = torch.rot90(pred_rot, -1, [2, 3])
-                predictions.append(pred_rot)
+                logit_rot = self.model(torch.rot90(image_tensor, 1, [2, 3]))
+                logit_rot = torch.rot90(logit_rot, -1, [2, 3])
+                logits.append(logit_rot)
                 
-                # Average
-                severity = torch.stack(predictions).mean(0)
+                # Average logits, then apply temperature scaling
+                avg_logit = torch.stack(logits).mean(0)
+                severity = torch.sigmoid(avg_logit / self.temperature)
             else:
-                severity = torch.sigmoid(self.model(image_tensor))
+                logit = self.model(image_tensor)
+                # Temperature scaling: divide logits to sharpen predictions
+                severity = torch.sigmoid(logit / self.temperature)
             
             severity = severity.cpu().numpy()[0, 0]
         
@@ -141,7 +147,6 @@ class FirePredictor:
             severity: (H, W) burn severity map
             metadata: Dict with prediction stats
         """
-        print(f"📥 Loading: {input_path}")
         
         with rasterio.open(input_path) as src:
             image = src.read()
@@ -184,7 +189,7 @@ class FirePredictor:
             with rasterio.open(output_path, 'w', **profile) as dst:
                 dst.write(severity.astype(np.float32), 1)
             
-            print(f"💾 Saved: {output_path}")
+            print(f" Saved: {output_path}")
         
         return severity, metadata
     
@@ -235,14 +240,11 @@ class FirePredictor:
 
 def main(args):
     """Main inference function."""
-    print("=" * 70)
-    print("🔥 CALIFORNIA FIRE MODEL - INFERENCE")
-    print("=" * 70)
     
     # Check input
     input_path = Path(args.input)
     if not input_path.exists():
-        print(f"❌ Input not found: {input_path}")
+        print(f" Input not found: {input_path}")
         return
     
     # Create predictor
@@ -250,6 +252,7 @@ def main(args):
         checkpoint_path=args.checkpoint,
         device=args.device,
         use_tta=not args.no_tta,
+        temperature=args.temperature,
     )
     
     # Output path
@@ -262,14 +265,14 @@ def main(args):
     if input_path.is_file():
         severity, metadata = predictor.predict_file(str(input_path), output_path)
         
-        print("\n📊 Results:")
+        print("\nResults:")
         for key, value in metadata.items():
             print(f"   {key}: {value}")
     
     elif input_path.is_dir():
         # Process all .tif files in directory
         tif_files = list(input_path.glob("*.tif"))
-        print(f"\n📂 Processing {len(tif_files)} files...")
+        print(f"\n Processing {len(tif_files)} files...")
         
         output_dir = Path(args.output) if args.output else input_path / "predictions"
         output_dir.mkdir(exist_ok=True)
@@ -279,9 +282,9 @@ def main(args):
             try:
                 predictor.predict_file(str(tif_path), str(out_path))
             except Exception as e:
-                print(f"   ❌ Error processing {tif_path.name}: {e}")
+                print(f"  Error processing {tif_path.name}: {e}")
     
-    print("\n✅ Done!")
+    print("\n Done!")
 
 
 if __name__ == "__main__":
@@ -298,6 +301,8 @@ if __name__ == "__main__":
                         help='Device to use')
     parser.add_argument('--no-tta', action='store_true',
                         help='Disable test-time augmentation')
+    parser.add_argument('--temperature', type=float, default=0.5,
+                        help='Prediction temperature (0.1-1.0). Lower = more confident. Default: 0.5')
     
     args = parser.parse_args()
     
