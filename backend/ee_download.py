@@ -9,6 +9,9 @@ Matches training config:
 """
 
 import ee
+import os
+import json
+import tempfile
 import numpy as np
 from typing import Tuple, Dict, Any
 import requests
@@ -46,6 +49,19 @@ def initialize_ee(project_id: str = EE_PROJECT_ID):
             key_file = path
             break
     
+    # Fallback: check for EE_SERVICE_ACCOUNT_JSON environment variable
+    if not key_file:
+        ee_json = os.environ.get('EE_SERVICE_ACCOUNT_JSON')
+        if ee_json:
+            try:
+                tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+                tmp.write(ee_json)
+                tmp.close()
+                key_file = Path(tmp.name)
+                print(f"[INFO] Using EE credentials from environment variable")
+            except Exception as e:
+                print(f"[WARNING] Failed to write EE credentials to temp file: {e}")
+
     if key_file:
         try:
             # Use service account credentials (no user login needed!)
