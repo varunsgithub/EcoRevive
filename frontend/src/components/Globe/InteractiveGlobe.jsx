@@ -181,6 +181,11 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         { id: 'supplies', label: 'Supplies & Cost', icon: '', prompt: 'Generate a list of supplies and estimated costs for a community restoration drive.' }
     ]
 
+    // Debug: Log props on mount
+    useEffect(() => {
+        console.log('[Globe] Component mounted. onBack type:', typeof onBack, 'userType:', userType)
+    }, [])
+
     // Load Cesium dynamically
     useEffect(() => {
         const loadCesium = async () => {
@@ -473,10 +478,15 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
             try {
                 console.log('[Search] Querying:', searchQuery)
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&addressdetails=1`,
+                    {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
                 )
                 const results = await response.json()
-                console.log('[Search] Results:', results.length, 'items')
+                console.log('[Search] Results:', results.length, 'items', results)
                 setSearchResults(results)
                 setShowSearchResults(true)
             } catch (error) {
@@ -495,14 +505,21 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
 
         setIsSearching(true)
         try {
+            console.log('[Search Manual] Querying:', searchQuery)
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5`
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&addressdetails=1`,
+                {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                }
             )
             const results = await response.json()
+            console.log('[Search Manual] Results:', results.length, 'items')
             setSearchResults(results)
             setShowSearchResults(true)
         } catch (error) {
-            console.error('Search failed:', error)
+            console.error('[Search Manual] Failed:', error)
         } finally {
             setIsSearching(false)
         }
@@ -569,6 +586,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
 
     // Clear selection
     const handleClearSelection = useCallback(() => {
+        console.log('[Clear] Clearing selection and analysis')
         if (viewerRef.current) {
             viewerRef.current.entities.removeAll()
         }
@@ -582,6 +600,14 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         setChatMessages([])
         setShowChat(false)
     }, [])
+
+    // Auto-clear analysis panel when zooming out
+    useEffect(() => {
+        if (!isZoomedIn && selectionConfirmed) {
+            console.log('[Zoom] Zoomed out - clearing analysis panel')
+            handleClearSelection()
+        }
+    }, [isZoomedIn, selectionConfirmed, handleClearSelection])
 
     // Confirm selection and trigger analysis
     const handleConfirmSelection = useCallback(async () => {
@@ -883,7 +909,20 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
 
             {/* Top bar */}
             <div className="globe-topbar">
-                <button type="button" className="back-button" onClick={onBack}>
+                <button
+                    type="button"
+                    className="back-button"
+                    onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        console.log('[Back] Button clicked')
+                        if (typeof onBack === 'function') {
+                            onBack()
+                        } else {
+                            console.error('[Back] onBack is not a function:', onBack)
+                        }
+                    }}
+                >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
