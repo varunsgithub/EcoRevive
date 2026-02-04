@@ -173,23 +173,23 @@ class ConstraintChecker:
         # Add global warnings based on site conditions
         if site.protected_status != ProtectedStatus.NONE:
             global_warnings.append(
-                f"⚠️ Site is in {site.protected_status.value.replace('_', ' ').title()}. "
+                f"[WARNING] Site is in {site.protected_status.value.replace('_', ' ').title()}. "
                 f"Special restrictions apply."
             )
         
         if site.slope_degrees > 30:
             global_warnings.append(
-                f"⚠️ Steep slope ({site.slope_degrees}°). Erosion control measures required."
+                f"[WARNING] Steep slope ({site.slope_degrees}°). Erosion control measures required."
             )
         
         if site.land_owner == "tribal":
             global_warnings.append(
-                "⚠️ Tribal land. Free, Prior, and Informed Consent (FPIC) required."
+                "[WARNING] Tribal land. Free, Prior, and Informed Consent (FPIC) required."
             )
         
         if site.burn_severity > 0.7:
             global_warnings.append(
-                "⚠️ High burn severity. Natural regeneration may be limited. "
+                "[WARNING] High burn severity. Natural regeneration may be limited. "
                 "Check for surviving seed sources."
             )
         
@@ -625,7 +625,7 @@ def validate_restoration_plan(
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🛡️ EcoRevive Constraints Test")
+    print("EcoRevive Constraints Test")
     print("=" * 60)
     
     # Test site in a National Park
@@ -664,19 +664,19 @@ if __name__ == "__main__":
     checker = ConstraintChecker()
     filtered, warnings = checker.check_site_constraints(site, actions)
     
-    print(f"\n📍 Site: Wilderness Area, {site.slope_degrees}° slope, {site.burn_severity:.0%} burn severity")
-    print(f"\n⚠️ Global Warnings:")
+    print(f"\nSite: Wilderness Area, {site.slope_degrees} deg slope, {site.burn_severity:.0%} burn severity")
+    print(f"\nGlobal Warnings:")
     for w in warnings:
         print(f"   {w}")
     
-    print(f"\n✅ Allowed Actions:")
+    print(f"\n[OK] Allowed Actions:")
     for a in filtered:
         if a.allowed:
             print(f"   - {a.name}")
             for w in a.warnings:
-                print(f"     ⚠️ {w}")
+                print(f"     [WARNING] {w}")
     
-    print(f"\n❌ Blocked Actions:")
+    print(f"\n[BLOCKED] Blocked Actions:")
     for a in filtered:
         if not a.allowed:
             print(f"   - {a.name}")

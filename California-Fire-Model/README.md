@@ -1,4 +1,4 @@
-# 🔥 California Fire Detection Model
+# California Fire Detection Model
 
 ## Overview
 
@@ -8,7 +8,7 @@ on held-out fire events to ensure generalization.
 
 ---
 
-## 🎯 What Makes This Different
+## What Makes This Different
 
 | Previous Approach | This Approach |
 |------------------|---------------|
@@ -21,7 +21,7 @@ on held-out fire events to ensure generalization.
 
 ---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 California-Fire-Model/
@@ -56,7 +56,7 @@ California-Fire-Model/
 
 ---
 
-## 🌲 California Focus Areas
+## California Focus Areas
 
 ### Major Fire Events (Training Data)
 
@@ -82,7 +82,7 @@ California-Fire-Model/
 
 ---
 
-## 📊 Label Strategy: Continuous Burn Severity
+## Label Strategy: Continuous Burn Severity
 
 Instead of binary labels, we use **dNBR (differenced Normalized Burn Ratio)**:
 
@@ -104,7 +104,7 @@ This gives us a **continuous 0-1 regression target** instead of binary classific
 
 ---
 
-## 🔄 Data Collection Strategy
+## Data Collection Strategy
 
 ### For Each Fire:
 1. **Pre-fire image** (1-2 months before) - baseline vegetation
@@ -118,7 +118,7 @@ This gives us a **continuous 0-1 regression target** instead of binary classific
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Step 1: Download Data
 ```bash
@@ -150,7 +150,7 @@ python predict.py --checkpoint ../checkpoints/best.pth --input path/to/image.tif
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 All settings are in `config.py`:
 
@@ -177,7 +177,7 @@ BAND_STDS = [...]        # Calculated from training data
 
 ---
 
-## 📈 Expected Results
+## Expected Results
 
 With this approach, you should achieve:
 
@@ -190,7 +190,7 @@ With this approach, you should achieve:
 
 ---
 
-## 🏆 Hackathon Demo Strategy
+## Hackathon Demo Strategy
 
 1. **Show temporal progression:**
    - Healthy forest → Fire → 1 year recovery → 2 year recovery
@@ -206,7 +206,7 @@ With this approach, you should achieve:
 
 ---
 
-## 📚 References
+## References
 
 - [MTBS Data Access](https://www.mtbs.gov/direct-download)
 - [Sentinel-2 Band Info](https://sentinels.copernicus.eu/web/sentinel/user-guides/sentinel-2-msi/resolutions/spectral)

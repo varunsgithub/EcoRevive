@@ -182,7 +182,7 @@ class Trainer:
     def train(self, epochs: int) -> dict:
         """Full training loop."""
         print("\n" + "=" * 70)
-        print("🏋️  TRAINING START")
+        print("TRAINING START")
         print("=" * 70)
         print(f"   Epochs: {epochs}")
         print(f"   Device: {self.device}")
@@ -196,7 +196,7 @@ class Trainer:
         for epoch in range(epochs):
             epoch_start = time.time()
             
-            print(f"\n📈 Epoch {epoch + 1}/{epochs}")
+            print(f"\nEpoch {epoch + 1}/{epochs}")
             print("-" * 50)
             
             # Training
@@ -249,7 +249,7 @@ class Trainer:
                     scheduler=self.scheduler,
                     metrics={'iou': val_metrics['iou'], 'mae': val_metrics['mae']},
                 )
-                print(f"\n   ⭐ NEW BEST IoU: {val_metrics['iou']:.4f} - Saved!")
+                print(f"\n   [BEST] NEW BEST IoU: {val_metrics['iou']:.4f} - Saved!")
             
             if val_metrics['loss'] < self.best_val_loss:
                 self.best_val_loss = val_metrics['loss']
@@ -262,14 +262,14 @@ class Trainer:
                 print(f"\n   No improvement for {self.epochs_without_improvement} epoch(s)")
                 
                 if self.epochs_without_improvement >= patience:
-                    print(f"\n⚠️  EARLY STOPPING triggered!")
+                    print(f"\n[WARNING] EARLY STOPPING triggered!")
                     break
             
             # Periodic checkpoint
             if (epoch + 1) % 5 == 0:
                 checkpoint_path = self.checkpoint_dir / f'epoch_{epoch+1}.pth'
                 save_model(self.model, str(checkpoint_path), epoch=epoch)
-                print(f"   📦 Checkpoint saved: epoch_{epoch+1}.pth")
+                print(f"   [OK] Checkpoint saved: epoch_{epoch+1}.pth")
         
         # Save final model
         final_path = self.checkpoint_dir / 'final_model.pth'
@@ -281,7 +281,7 @@ class Trainer:
             json.dump(self.history, f, indent=2)
         
         print("\n" + "=" * 70)
-        print("🎉 TRAINING COMPLETE!")
+        print("[OK] TRAINING COMPLETE!")
         print("=" * 70)
         print(f"   Best Val IoU: {self.best_val_iou:.4f}")
         print(f"   Best Val Loss: {self.best_val_loss:.4f}")
@@ -298,7 +298,7 @@ class Trainer:
 def main(args):
     """Main training function."""
     print("=" * 70)
-    print("🔥 CALIFORNIA FIRE MODEL - TRAINING")
+    print("CALIFORNIA FIRE MODEL - TRAINING")
     print("=" * 70)
     
     # Device
@@ -317,13 +317,13 @@ def main(args):
     has_data = any(Path(d).exists() and any(Path(d).iterdir()) for d in data_dirs if Path(d).exists())
     
     if not has_data:
-        print("\n❌ No data found!")
+        print("\n[ERROR] No data found!")
         print("   Please run: python data/download_fire_data.py")
         print("   Then download from Google Drive and place in data/raw/")
         return
     
     # Create datasets
-    print("\n📂 Creating datasets...")
+    print("\nCreating datasets...")
     train_dataset, val_dataset, _ = create_train_val_datasets(
         data_dirs,
         val_split=VAL_SPLIT,
@@ -351,7 +351,7 @@ def main(args):
     )
     
     # Model
-    print("\n🧠 Creating model...")
+    print("\nCreating model...")
     model = CaliforniaFireModel(**MODEL_CONFIG).to(device)
     
     params = sum(p.numel() for p in model.parameters()) / 1e6
@@ -395,7 +395,7 @@ def main(args):
     # Train
     results = trainer.train(epochs=config['epochs'])
     
-    print("\n📊 Final Results:")
+    print("\nFinal Results:")
     print(f"   Best IoU: {results['best_iou']:.4f}")
     print(f"   Best Loss: {results['best_loss']:.4f}")
 

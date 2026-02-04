@@ -54,22 +54,22 @@ def initialize_ee(project_id: str = EE_PROJECT_ID):
                 key_file=str(key_file)
             )
             ee.Initialize(credentials, project=project_id)
-            print(f"✅ Earth Engine initialized with service account")
+            print(f"[OK] Earth Engine initialized with service account")
             print(f"   Project: {project_id}")
             return True
         except Exception as e:
-            print(f"⚠️ Service account init failed: {e}")
+            print(f"[WARNING] Service account init failed: {e}")
     else:
-        print(f"⚠️ Service account key not found, trying user auth...")
+        print(f"[WARNING] Service account key not found, trying user auth...")
     
     # Fallback to user authentication (for development)
     try:
         ee.Authenticate()
         ee.Initialize(project=project_id)
-        print(f"✅ Earth Engine initialized with user auth")
+        print(f"[OK] Earth Engine initialized with user auth")
         return True
     except Exception as e:
-        print(f"❌ EE initialization failed: {e}")
+        print(f"[ERROR] EE initialization failed: {e}")
         return False
 
 
@@ -133,7 +133,7 @@ def download_for_inference(
     
     # Limit tiles to prevent excessive downloads
     if total_tiles > max_tiles:
-        print(f"   ⚠️ Too many tiles ({total_tiles}), using center {max_tiles} tiles")
+        print(f"   [WARNING] Too many tiles ({total_tiles}), using center {max_tiles} tiles")
         # Reduce grid size
         scale = np.sqrt(max_tiles / total_tiles)
         n_cols = max(1, int(n_cols * scale))
@@ -206,7 +206,7 @@ def download_for_inference(
                 })
                 
             except Exception as e:
-                print(f"   ⚠️ Tile ({row},{col}) failed: {e}")
+                print(f"   [WARNING] Tile ({row},{col}) failed: {e}")
     
     # Metadata
     metadata = {
@@ -220,7 +220,7 @@ def download_for_inference(
         'date_range': {'start': start_date, 'end': end_date},
     }
     
-    print(f"   ✅ Downloaded {len(tiles)}/{total_tiles} tiles")
+    print(f"   [OK] Downloaded {len(tiles)}/{total_tiles} tiles")
     
     return tiles, metadata
 
@@ -299,14 +299,14 @@ if __name__ == "__main__":
         print("Downloading test imagery...")
         try:
             image, meta = download_for_inference(test_bbox)
-            print(f"✅ Downloaded: {image.shape}")
+            print(f"[OK] Downloaded: {image.shape}")
             print(f"   Center: {meta['center']}")
             print(f"   Value range: {meta['min_val']:.0f} - {meta['max_val']:.0f}")
             
             # Test RGB creation
             rgb = create_rgb_from_bands(image)
-            print(f"✅ Created RGB visualization ({len(rgb)} chars)")
+            print(f"[OK] Created RGB visualization ({len(rgb)} chars)")
         except Exception as e:
-            print(f"❌ Download failed: {e}")
+            print(f"[ERROR] Download failed: {e}")
             import traceback
             traceback.print_exc()

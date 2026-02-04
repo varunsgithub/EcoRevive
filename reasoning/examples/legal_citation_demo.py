@@ -18,7 +18,7 @@ EXPECTED_OUTPUT_EXAMPLE = """
 - **Burn Severity**: 65% (moderate-high)
 - **Ecoregion**: Sierra Nevada Mixed Conifer Forest
 
-### ⚖️ Applicable Legal Framework
+### Applicable Legal Framework
 
 This site falls under **designated Wilderness** and is subject to:
 
@@ -35,22 +35,22 @@ This site falls under **designated Wilderness** and is subject to:
    - California Spotted Owl habitat - Section 7 consultation required
    - No actions that would disturb nesting sites
 
-### ✅ Allowed Actions (per Wilderness Act)
+### Allowed Actions (per Wilderness Act)
 
 | Action | Status | Legal Basis |
 |--------|--------|-------------|
-| Natural regeneration monitoring | ✅ Allowed | Wilderness Act §4(c) |
-| Invasive species removal (hand tools only) | ⚠️ Conditional | Requires MRA |
-| Research and monitoring | ✅ Allowed | With permit |
-| Active tree planting | ❌ Not allowed | Wilderness Act prohibition |
+| Natural regeneration monitoring | [OK] Allowed | Wilderness Act section 4(c) |
+| Invasive species removal (hand tools only) | [CONDITIONAL] | Requires MRA |
+| Research and monitoring | [OK] Allowed | With permit |
+| Active tree planting | [NOT ALLOWED] | Wilderness Act prohibition |
 
-### 📋 Required Permits
+### Required Permits
 
 1. **Minimum Requirements Analysis (MRA)** - For any ground-disturbing activity
 2. **USFS Research Permit** - For monitoring activities
 3. **ESA Section 7 Consultation** - Before any activity near spotted owl habitat
 
-### 🌲 Recommended Approach
+### Recommended Approach
 
 Given the legal constraints of Wilderness designation:
 
@@ -58,7 +58,7 @@ Given the legal constraints of Wilderness designation:
 2. **Document seed source availability** within 500m
 3. **If regeneration fails after 5 years**, submit MRA for active restoration consideration
 
-### ⚠️ Important Notes
+### Important Notes
 
 > Per the Wilderness Act, "wilderness areas shall be administered...so as to preserve their wilderness character" (§4(b)). Active restoration should only be considered if natural processes fail and a compelling case can be made through the MRA process.
 
@@ -70,6 +70,6 @@ Confidence: 75% (moderate - specific wilderness boundary should be verified).
 """
 
 print("=" * 70)
-print("📋 EXAMPLE: How Gemini cites laws in EcoRevive output")
+print("EXAMPLE: How Gemini cites laws in EcoRevive output")
 print("=" * 70)
 print(EXPECTED_OUTPUT_EXAMPLE)

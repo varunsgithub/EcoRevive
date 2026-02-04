@@ -61,17 +61,23 @@ BAND_STDS = None   # Will be set after computing
 DEFAULT_BAND_MEANS = [1339, 1167, 1002, 1296, 1835, 2149, 2290, 2410, 2004, 1075]
 DEFAULT_BAND_STDS = [545, 476, 571, 532, 614, 731, 811, 872, 856, 611]
 
+# Module-level flag to suppress repeated warnings
+_warned_about_stats = False
+
 def get_band_stats():
     """Get band statistics, loading from computed file if available."""
+    global _warned_about_stats
     stats_file = DATA_DIR / "band_statistics.json"
-    
+
     if stats_file.exists():
         import json
         with open(stats_file) as f:
             stats = json.load(f)
         return stats['means'], stats['stds']
     else:
-        print("⚠️  Using default band statistics. Run compute_statistics.py first!")
+        if not _warned_about_stats:
+            print("[WARNING] Using default band statistics. Run compute_statistics.py first!")
+            _warned_about_stats = True
         return DEFAULT_BAND_MEANS, DEFAULT_BAND_STDS
 
 # ============================================================
@@ -350,21 +356,21 @@ def is_test_fire(fire_key):
 def print_config_summary():
     """Print a summary of the configuration."""
     print("=" * 60)
-    print("🔥 California Fire Model Configuration")
+    print("California Fire Model Configuration")
     print("=" * 60)
-    print(f"\n📂 Directories:")
+    print(f"\nDirectories:")
     print(f"   Data: {DATA_DIR}")
     print(f"   Checkpoints: {CHECKPOINT_DIR}")
     print(f"   Logs: {LOG_DIR}")
-    print(f"\n🔥 Training Fires: {len(TRAINING_FIRES)}")
+    print(f"\nTraining Fires: {len(TRAINING_FIRES)}")
     for key, fire in TRAINING_FIRES.items():
         print(f"   - {fire['name']} ({fire['year']}): {fire['acres']:,} acres")
-    print(f"\n🧪 Test Fires (held out): {len(TEST_FIRES)}")
+    print(f"\nTest Fires (held out): {len(TEST_FIRES)}")
     for key, fire in TEST_FIRES.items():
         print(f"   - {fire['name']} ({fire['year']}): {fire['acres']:,} acres")
-    print(f"\n🌲 Healthy Reference Regions: {len(HEALTHY_REGIONS)}")
-    print(f"\n⚙️ Model: {NUM_BANDS} input bands, {MODEL_CONFIG['base_channels']} base channels")
-    print(f"\n🏋️ Training: batch={TRAINING_CONFIG['batch_size']}, "
+    print(f"\nHealthy Reference Regions: {len(HEALTHY_REGIONS)}")
+    print(f"\nModel: {NUM_BANDS} input bands, {MODEL_CONFIG['base_channels']} base channels")
+    print(f"\nTraining: batch={TRAINING_CONFIG['batch_size']}, "
           f"lr={TRAINING_CONFIG['learning_rate']}, epochs={TRAINING_CONFIG['epochs']}")
     print("=" * 60)
 

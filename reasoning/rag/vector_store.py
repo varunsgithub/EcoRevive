@@ -88,7 +88,7 @@ class SimpleVectorStore:
         self.embeddings = self.embeddings / np.maximum(norms, 1e-10)
         
         self._index_built = True
-        print(f"   ✅ Index built: {len(self.documents)} documents, {self.embedding_dimension} dimensions")
+        print(f"   [OK] Index built: {len(self.documents)} documents, {self.embedding_dimension} dimensions")
     
     def similarity_search(
         self,
@@ -181,7 +181,7 @@ class SimpleVectorStore:
         with open(path, 'w') as f:
             json.dump(data, f, indent=2)
         
-        print(f"   💾 Saved vector store to {path}")
+        print(f"   [OK] Saved vector store to {path}")
     
     def load(self, path: str):
         """
@@ -197,7 +197,7 @@ class SimpleVectorStore:
         self.documents = [Document.from_dict(d) for d in data["documents"]]
         self._index_built = False
         
-        print(f"   📂 Loaded {len(self.documents)} documents from {path}")
+        print(f"   Loaded {len(self.documents)} documents from {path}")
     
     def __len__(self):
         return len(self.documents)
@@ -228,7 +228,7 @@ def create_and_populate_store(
     
     store = SimpleVectorStore()
     
-    print("📚 Loading and embedding knowledge base...")
+    print("Loading and embedding knowledge base...")
     
     for path in json_paths:
         print(f"\n   Processing: {Path(path).name}")
@@ -257,7 +257,7 @@ def create_and_populate_store(
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🗄️ Vector Store Test")
+    print("Vector Store Test")
     print("=" * 60)
     
     # Test basic functionality without API
@@ -280,12 +280,12 @@ if __name__ == "__main__":
     store.add_documents(test_docs, fake_embeddings)
     store.build_index()
     
-    print(f"\n✅ Store created: {store}")
+    print(f"\n[OK] Store created: {store}")
     
     # Test search with fake query embedding
     fake_query = np.random.randn(768).tolist()
     results = store.similarity_search(fake_query, k=2)
     
-    print(f"\n🔍 Search results (with random embeddings):")
+    print(f"\nSearch results (with random embeddings):")
     for doc, score in results:
         print(f"   [{score:.3f}] {doc.content[:50]}...")

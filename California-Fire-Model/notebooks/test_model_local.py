@@ -140,31 +140,31 @@ def get_cmap():
 
 def main():
     print("=" * 60)
-    print("🔥 LOCAL MODEL TESTING")
+    print("LOCAL MODEL TESTING")
     print("=" * 60)
     
     device = get_device()
-    print(f"\n🖥️ Device: {device}")
-    print(f"📁 Model: {MODEL_PATH}")
+    print(f"\nDevice: {device}")
+    print(f"Model: {MODEL_PATH}")
     
     # Load model
     model = load_model(str(MODEL_PATH), device=device, **MODEL_CONFIG)
     model.eval()
-    print("✅ Model loaded!")
+    print("[OK] Model loaded!")
     
     # Test synthetic healthy
-    print("\n🌲 Testing SYNTHETIC HEALTHY FOREST...")
+    print("\nTesting SYNTHETIC HEALTHY FOREST...")
     healthy = create_synthetic_healthy_forest()
     sev_h, conf_h = predict_burn_severity(healthy, model, device)
     print(f"   Severity: {sev_h.mean():.1%} (expected: <20%)")
-    print(f"   {'✅ PASS' if sev_h.mean() < 0.3 else '⚠️ HIGH'}")
+    print(f"   {'[PASS]' if sev_h.mean() < 0.3 else '[WARNING] HIGH'}")
     
     # Test synthetic burned
-    print("\n🔥 Testing SYNTHETIC BURNED AREA...")
+    print("\nTesting SYNTHETIC BURNED AREA...")
     burned, gt = create_synthetic_burned(severity=0.7)
     sev_b, conf_b = predict_burn_severity(burned, model, device)
     print(f"   Severity: {sev_b.mean():.1%} (expected: >50%)")
-    print(f"   {'✅ PASS' if sev_b.mean() > 0.5 else '⚠️ LOW'}")
+    print(f"   {'[PASS]' if sev_b.mean() > 0.5 else '[WARNING] LOW'}")
     
     # Visualize
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
@@ -190,7 +190,7 @@ def main():
     
     plt.tight_layout()
     plt.savefig(PROJECT_ROOT / 'test_outputs' / 'local_test_results.png', dpi=150)
-    print(f"\n💾 Saved: {PROJECT_ROOT / 'test_outputs' / 'local_test_results.png'}")
+    print(f"\n[OK] Saved: {PROJECT_ROOT / 'test_outputs' / 'local_test_results.png'}")
     plt.show()
 
 if __name__ == "__main__":

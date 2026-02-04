@@ -1,272 +1,441 @@
 import { useState, useEffect, useRef } from 'react'
-import HeroEarth from './HeroEarth'
+import * as THREE from 'three'
 import './LandingPage.css'
 
-/**
- * Landing Page Component
- * Features full-screen 3D Earth hero with scroll-reveal About section
- */
-export default function LandingPage({ onEnterGlobe, isTransitioning }) {
-    const [scrollY, setScrollY] = useState(0)
-    const [isAboutVisible, setIsAboutVisible] = useState(false)
-    const [showModal, setShowModal] = useState(false)
-    const [selectedUserType, setSelectedUserType] = useState(null)
-    const aboutRef = useRef(null)
-
-    // Handle click on explore button - show modal instead of entering directly
-    const handleExploreClick = () => {
-        setShowModal(true)
-    }
-
-    // Handle user type selection
-    const handleUserTypeSelect = (userType) => {
-        setSelectedUserType(userType)
-        console.log('User selected:', userType)
-        // Close modal and enter globe after a brief delay
-        setTimeout(() => {
-            setShowModal(false)
-            onEnterGlobe(userType)
-        }, 300)
-    }
-
-    // Close modal
-    const handleCloseModal = () => {
-        setShowModal(false)
-    }
+// Animated 3D Globe Component
+function AnimatedGlobe() {
+    const containerRef = useRef(null)
+    const sceneRef = useRef(null)
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrollY(window.scrollY)
+        if (!containerRef.current || sceneRef.current) return
+
+        const container = containerRef.current
+        const width = container.clientWidth
+        const height = container.clientHeight
+
+        // Scene setup
+        const scene = new THREE.Scene()
+        const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000)
+        camera.position.z = 2.5
+
+        const renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            alpha: true
+        })
+        renderer.setSize(width, height)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        container.appendChild(renderer.domElement)
+
+        // Create dotted sphere (globe)
+        const globeGeometry = new THREE.SphereGeometry(1, 64, 64)
+
+        // Create points on sphere surface
+        const positions = []
+        const colors = []
+        const color = new THREE.Color()
+
+        for (let i = 0; i < 3000; i++) {
+            const phi = Math.acos(-1 + (2 * i) / 3000)
+            const theta = Math.sqrt(3000 * Math.PI) * phi
+
+            const x = Math.cos(theta) * Math.sin(phi)
+            const y = Math.sin(theta) * Math.sin(phi)
+            const z = Math.cos(phi)
+
+            positions.push(x, y, z)
+
+            // Color variation based on position
+            const intensity = 0.3 + Math.random() * 0.7
+            color.setRGB(0, intensity * 0.83, intensity * 0.67)
+            colors.push(color.r, color.g, color.b)
         }
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setIsAboutVisible(true)
-                    }
-                })
-            },
-            { threshold: 0.2 }
-        )
+        const pointsGeometry = new THREE.BufferGeometry()
+        pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+        pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
 
-        if (aboutRef.current) {
-            observer.observe(aboutRef.current)
+        const pointsMaterial = new THREE.PointsMaterial({
+            size: 0.015,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            sizeAttenuation: true
+        })
+
+        const globe = new THREE.Points(pointsGeometry, pointsMaterial)
+        scene.add(globe)
+
+        // Add wireframe sphere for structure
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00d4aa,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.05
+        })
+        const wireframeSphere = new THREE.Mesh(globeGeometry, wireframeMaterial)
+        scene.add(wireframeSphere)
+
+        // Create floating particles
+        const particlesGeometry = new THREE.BufferGeometry()
+        const particlePositions = []
+        const particleCount = 200
+
+        for (let i = 0; i < particleCount; i++) {
+            const radius = 1.5 + Math.random() * 1.5
+            const theta = Math.random() * Math.PI * 2
+            const phi = Math.random() * Math.PI
+
+            particlePositions.push(
+                radius * Math.sin(phi) * Math.cos(theta),
+                radius * Math.sin(phi) * Math.sin(theta),
+                radius * Math.cos(phi)
+            )
         }
 
-        window.addEventListener('scroll', handleScroll, { passive: true })
+        particlesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(particlePositions, 3))
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.02,
+            color: 0x00d4aa,
+            transparent: true,
+            opacity: 0.5,
+            sizeAttenuation: true
+        })
+
+        const particles = new THREE.Points(particlesGeometry, particlesMaterial)
+        scene.add(particles)
+
+        // Add glow ring
+        const ringGeometry = new THREE.TorusGeometry(1.2, 0.01, 2, 100)
+        const ringMaterial = new THREE.MeshBasicMaterial({
+            color: 0x00d4aa,
+            transparent: true,
+            opacity: 0.3
+        })
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial)
+        ring.rotation.x = Math.PI / 2
+        scene.add(ring)
+
+        // Animation
+        let animationId
+        const animate = () => {
+            animationId = requestAnimationFrame(animate)
+
+            globe.rotation.y += 0.002
+            wireframeSphere.rotation.y += 0.002
+            particles.rotation.y -= 0.001
+            particles.rotation.x += 0.0005
+            ring.rotation.z += 0.003
+
+            renderer.render(scene, camera)
+        }
+        animate()
+
+        // Handle resize
+        const handleResize = () => {
+            const newWidth = container.clientWidth
+            const newHeight = container.clientHeight
+            camera.aspect = newWidth / newHeight
+            camera.updateProjectionMatrix()
+            renderer.setSize(newWidth, newHeight)
+        }
+        window.addEventListener('resize', handleResize)
+
+        sceneRef.current = { scene, renderer, animationId }
 
         return () => {
-            window.removeEventListener('scroll', handleScroll)
-            observer.disconnect()
+            window.removeEventListener('resize', handleResize)
+            cancelAnimationFrame(animationId)
+            renderer.dispose()
+            container.removeChild(renderer.domElement)
+            sceneRef.current = null
         }
     }, [])
 
-    // Calculate parallax effect
-    const heroTransform = `translateY(${scrollY * 0.3}px)`
-    const heroOpacity = Math.max(0, 1 - scrollY / 600)
+    return <div ref={containerRef} className="globe-canvas" />
+}
+
+export default function LandingPage({ onEnterGlobe, isTransitioning }) {
+    const [showModal, setShowModal] = useState(false)
+    const [selectedUserType, setSelectedUserType] = useState(null)
+
+    // Scroll reveal effect
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed')
+                    }
+                })
+            },
+            { threshold: 0.1 }
+        )
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el)
+        })
+
+        return () => observer.disconnect()
+    }, [])
+
+    const handleStartClick = () => setShowModal(true)
+    const handleCloseModal = () => {
+        setShowModal(false)
+        setSelectedUserType(null)
+    }
+
+    const handleUserTypeSelect = (userType) => {
+        setSelectedUserType(userType)
+        setTimeout(() => {
+            setShowModal(false)
+            onEnterGlobe(userType)
+        }, 200)
+    }
 
     return (
-        <div className={`landing-page ${isTransitioning ? 'transitioning' : ''}`}>
-            {/* Hero Section with 3D Earth */}
-            <section className="hero-section">
-                <div
-                    className="hero-content"
-                    style={{
-                        transform: heroTransform,
-                        opacity: heroOpacity
-                    }}
-                >
-                    {/* Branding */}
-                    <div className="hero-header">
-                        <div className="logo">
-                            <span className="logo-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                                    <path d="M12 8v8M8 12h8" />
-                                </svg>
-                            </span>
-                            <span className="logo-text">EcoRevive</span>
-                        </div>
-                    </div>
+        <div className={`landing ${isTransitioning ? 'fade-out' : ''}`}>
+            {/* Ambient Background */}
+            <div className="ambient-bg">
+                <div className="gradient-orb orb-1" />
+                <div className="gradient-orb orb-2" />
+            </div>
 
-                    {/* Main headline */}
-                    <div className="hero-text">
-                        <h1 className="hero-title">
-                            <span className="title-line">Restore</span>
-                            <span className="title-line text-gradient">Our Planet</span>
-                        </h1>
-                        <p className="hero-subtitle">
-                            AI-powered ecosystem restoration from satellite imagery
-                        </p>
+            {/* Navigation */}
+            <nav className="nav">
+                <div className="logo">
+                    <div className="logo-mark">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                            <path d="M12 2C12 2 8 6 8 12s4 10 4 10" stroke="currentColor" strokeWidth="1.5"/>
+                            <path d="M12 2C12 2 16 6 16 12s-4 10-4 10" stroke="currentColor" strokeWidth="1.5"/>
+                            <path d="M2 12h20" stroke="currentColor" strokeWidth="1.5"/>
+                        </svg>
                     </div>
+                    <span>EcoRevive</span>
+                </div>
+                <button className="nav-cta" onClick={handleStartClick}>
+                    Launch Platform
+                </button>
+            </nav>
 
-                    {/* 3D Earth */}
-                    <div className="earth-container">
-                        <HeroEarth onClick={handleExploreClick} />
+            {/* Hero Section */}
+            <section className="hero">
+                <div className="hero-content">
+                    <p className="hero-eyebrow animate-fade-up delay-1">
+                        <span className="eyebrow-dot" />
+                        AI-Powered Restoration Planning
+                    </p>
+                    <h1 className="animate-fade-up delay-2">
+                        Turn Burned Land Into<br />
+                        <span className="gradient-text">Thriving Ecosystems</span>
+                    </h1>
+                    <p className="hero-description animate-fade-up delay-3">
+                        Analyze wildfire damage with satellite imagery, calculate carbon
+                        sequestration potential, and generate professional restoration plans.
+                    </p>
+                    <div className="hero-actions animate-fade-up delay-4">
+                        <button className="btn-glow" onClick={handleStartClick}>
+                            <span>Start Analysis</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M5 12h14m-7-7l7 7-7 7" />
+                            </svg>
+                        </button>
+                        <a href="#features" className="btn-ghost">
+                            Learn More
+                        </a>
                     </div>
                 </div>
-
-                {/* Scroll indicator */}
-                <div className="scroll-indicator">
-                    <div className="scroll-line" />
-                    <span className="scroll-text">Scroll to learn more</span>
+                <div className="hero-globe">
+                    <AnimatedGlobe />
+                    <div className="globe-glow" />
                 </div>
             </section>
 
-            {/* About Section */}
-            <section
-                ref={aboutRef}
-                className={`about-section ${isAboutVisible ? 'visible' : ''}`}
-                style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-            >
-                <div className="about-container" style={{ width: '100%', maxWidth: '1200px', margin: '0 auto', padding: '0 32px' }}>
-                    <div className="about-header" style={{ textAlign: 'center', width: '100%' }}>
-                        <span className="section-tag">Our Mission</span>
-                        <h2 className="about-title" style={{ textAlign: 'center', width: '100%' }}>
-                            From Burned Land to <span className="text-gradient">Green Future</span>
-                        </h2>
-                        <p className="about-lead" style={{ textAlign: 'center', margin: '0 auto' }}>
-                            EcoRevive uses advanced AI and satellite imagery to transform ecosystem restoration
-                            from guesswork into precision science.
-                        </p>
+            {/* Stats Bar */}
+            <section className="stats-section">
+                <div className="stats-bar glass-card scroll-reveal">
+                    <div className="stat">
+                        <span className="stat-num">10m</span>
+                        <span className="stat-label">Resolution</span>
                     </div>
-
-                    <div className="features-grid">
-                        <div className="feature-card">
-                            <div className="feature-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M2 12h4M18 12h4M12 2v4M12 18v4" />
-                                    <circle cx="12" cy="12" r="3" />
-                                </svg>
-                            </div>
-                            <h3 className="feature-title">Satellite Analysis</h3>
-                            <p className="feature-desc">
-                                10-band Sentinel-2 imagery processed by our deep learning model to detect
-                                degradation with unmatched accuracy.
-                            </p>
-                        </div>
-
-                        <div className="feature-card">
-                            <div className="feature-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12" />
-                                    <path d="M12 6v6l4 2" />
-                                    <circle cx="12" cy="12" r="2" />
-                                </svg>
-                            </div>
-                            <h3 className="feature-title">AI Reasoning</h3>
-                            <p className="feature-desc">
-                                Gemini-powered intelligence generates species recommendations, safety protocols,
-                                and restoration timelines.
-                            </p>
-                        </div>
-
-                        <div className="feature-card">
-                            <div className="feature-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path d="M3 3v18h18" />
-                                    <path d="M7 16l4-4 4 4 5-6" />
-                                </svg>
-                            </div>
-                            <h3 className="feature-title">Actionable Reports</h3>
-                            <p className="feature-desc">
-                                Professional-grade outputs with legal compliance, cost-benefit analysis,
-                                and monitoring frameworks.
-                            </p>
-                        </div>
-
-                        <div className="feature-card">
-                            <div className="feature-icon">
-                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                    <path d="M12 22c4-4 8-7.5 8-12a8 8 0 1 0-16 0c0 4.5 4 8 8 12z" />
-                                    <path d="M12 6v6M9 10l3 3 3-3" />
-                                </svg>
-                            </div>
-                            <h3 className="feature-title">Hope Visualizer</h3>
-                            <p className="feature-desc">
-                                See the future of your restoration site with AI-generated recovery forecasts
-                                spanning 15+ years.
-                            </p>
-                        </div>
+                    <div className="stat-divider" />
+                    <div className="stat">
+                        <span className="stat-num">Sentinel-2</span>
+                        <span className="stat-label">Satellite Data</span>
                     </div>
+                    <div className="stat-divider" />
+                    <div className="stat">
+                        <span className="stat-num">Gemini</span>
+                        <span className="stat-label">AI Analysis</span>
+                    </div>
+                    <div className="stat-divider" />
+                    <div className="stat">
+                        <span className="stat-num">IPCC</span>
+                        <span className="stat-label">Carbon Method</span>
+                    </div>
+                </div>
+            </section>
 
-                    {/* CTA */}
-                    <div className="about-cta" style={{ textAlign: 'center', width: '100%' }}>
-                        <button className="btn btn-primary btn-lg" onClick={handleExploreClick}>
-                            <span>Start Exploring</span>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M5 12h14M12 5l7 7-7 7" />
+            {/* Features */}
+            <section className="section" id="features">
+                <div className="section-header scroll-reveal">
+                    <h2>Platform Capabilities</h2>
+                    <p>Everything you need for restoration planning</p>
+                </div>
+                <div className="features-grid">
+                    <div className="feature-card glass-card scroll-reveal">
+                        <div className="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <rect x="3" y="3" width="18" height="18" rx="2" />
+                                <path d="M3 9h18M9 21V9" />
                             </svg>
-                        </button>
-                        <p className="cta-note" style={{ textAlign: 'center' }}>Select any location on Earth to begin analysis</p>
+                        </div>
+                        <h3>Burn Severity Mapping</h3>
+                        <p>Deep learning model provides pixel-level severity classification at 10m resolution</p>
                     </div>
+                    <div className="feature-card glass-card scroll-reveal">
+                        <div className="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                        <h3>Carbon Accounting</h3>
+                        <p>IPCC Tier 2 methodology calculates sequestration and carbon credit eligibility</p>
+                    </div>
+                    <div className="feature-card glass-card scroll-reveal">
+                        <div className="feature-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                            </svg>
+                        </div>
+                        <h3>AI Assistant</h3>
+                        <p>Ask questions about safety, species selection, and site-specific recommendations</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* How It Works */}
+            <section className="section section-dark">
+                <div className="section-header scroll-reveal">
+                    <h2>How It Works</h2>
+                    <p>From selection to restoration plan in minutes</p>
+                </div>
+                <div className="steps-container scroll-reveal">
+                    <div className="step-card">
+                        <div className="step-num">01</div>
+                        <h3>Select Location</h3>
+                        <p>Use the interactive globe to select any burn-affected area</p>
+                    </div>
+                    <div className="step-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M5 12h14m-7-7l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <div className="step-card">
+                        <div className="step-num">02</div>
+                        <h3>AI Analysis</h3>
+                        <p>Our model processes Sentinel-2 imagery to map severity</p>
+                    </div>
+                    <div className="step-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M5 12h14m-7-7l7 7-7 7" />
+                        </svg>
+                    </div>
+                    <div className="step-card">
+                        <div className="step-num">03</div>
+                        <h3>Get Results</h3>
+                        <p>Receive severity maps, carbon estimates, and recommendations</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA */}
+            <section className="section-cta">
+                <div className="cta-content scroll-reveal">
+                    <h2>Ready to restore?</h2>
+                    <p>Select a location and get your analysis in seconds</p>
+                    <button className="btn-glow btn-large" onClick={handleStartClick}>
+                        <span>Launch Platform</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M5 12h14m-7-7l7 7-7 7" />
+                        </svg>
+                    </button>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="landing-footer">
+            <footer className="footer">
                 <div className="footer-content">
-                    <span className="footer-logo">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                            <path d="M12 8v8M8 12h8" />
-                        </svg>
-                        EcoRevive
-                    </span>
-                    <span className="footer-text">Built for the Gemini Hackathon 2026</span>
+                    <div className="footer-brand">
+                        <div className="logo-mark-small">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5"/>
+                            </svg>
+                        </div>
+                        <span>EcoRevive</span>
+                    </div>
+                    <div className="footer-links">
+                        <span>Gemini Hackathon 2026</span>
+                    </div>
                 </div>
             </footer>
 
-            {/* User Type Selection Modal */}
+            {/* Modal */}
             {showModal && (
-                <div className="modal-overlay" onClick={handleCloseModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-backdrop" onClick={handleCloseModal}>
+                    <div className="modal glass-card" onClick={e => e.stopPropagation()}>
                         <button className="modal-close" onClick={handleCloseModal}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M18 6L6 18M6 6l12 12" />
                             </svg>
                         </button>
 
-                        <div className="modal-header">
-                            <h2>Welcome to EcoRevive</h2>
-                            <p>I will be using the results of this app for...</p>
-                        </div>
+                        <h2>Select Your Use Case</h2>
+                        <p>We'll tailor the analysis accordingly</p>
 
                         <div className="modal-options">
                             <button
-                                className={`user-type-option ${selectedUserType === 'personal' ? 'selected' : ''}`}
+                                className={`option ${selectedUserType === 'personal' ? 'selected' : ''}`}
                                 onClick={() => handleUserTypeSelect('personal')}
                             >
                                 <div className="option-icon">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                         <circle cx="12" cy="8" r="4" />
-                                        <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
-                                        <path d="M15 5l2-2m0 0l2 2m-2-2v4" opacity="0.5" />
+                                        <path d="M20 21a8 8 0 10-16 0" />
                                     </svg>
                                 </div>
-                                <div className="option-text">
-                                    <h3>Personal Use</h3>
-                                    <p>Exploring for curiosity, education, or small-scale projects</p>
+                                <div className="option-content">
+                                    <h3>Personal</h3>
+                                    <p>Community organizing, education, research</p>
+                                </div>
+                                <div className="option-check">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20 6L9 17l-5-5" />
+                                    </svg>
                                 </div>
                             </button>
 
                             <button
-                                className={`user-type-option ${selectedUserType === 'professional' ? 'selected' : ''}`}
+                                className={`option ${selectedUserType === 'professional' ? 'selected' : ''}`}
                                 onClick={() => handleUserTypeSelect('professional')}
                             >
                                 <div className="option-icon">
-                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                        <rect x="3" y="7" width="18" height="14" rx="2" />
-                                        <path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
-                                        <path d="M12 12v4" />
-                                        <path d="M8 14h8" />
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <path d="M3 21h18M5 21V7l8-4 8 4v14" />
+                                        <path d="M9 21v-4h6v4M10 9h4M10 13h4" />
                                     </svg>
                                 </div>
-                                <div className="option-text">
-                                    <h3>Professional Organization</h3>
-                                    <p>Government agencies, NGOs, or enterprise restoration projects</p>
+                                <div className="option-content">
+                                    <h3>Professional</h3>
+                                    <p>Government, NGO, enterprise projects</p>
+                                </div>
+                                <div className="option-check">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20 6L9 17l-5-5" />
+                                    </svg>
                                 </div>
                             </button>
                         </div>

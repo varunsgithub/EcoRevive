@@ -2,7 +2,7 @@
 # Layer 2: Gemini-powered restoration intelligence
 
 # Core Gemini SDK
-google-generativeai>=0.8.0
+google-genai>=1.0.0
 
 # Environment variables
 python-dotenv>=1.0.0
@@ -15,3 +15,6 @@ numpy>=1.24.0
 
 # Visualization (for severity map coloring)
 matplotlib>=3.7.0
+
+# PDF generation
+reportlab>=4.0.0

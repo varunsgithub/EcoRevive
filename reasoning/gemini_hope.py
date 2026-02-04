@@ -196,7 +196,7 @@ class HopeVisualizer:
             area_hectares=area_hectares
         )
         
-        print(f"🔮 Forecasting recovery for {profile['name']}...")
+        print(f"Forecasting recovery for {profile['name']}...")
         print(f"   Severity: {mean_severity:.1%}, Area: {area_hectares} ha")
         
         response = self.client.analyze_multimodal(prompt, use_json=True)
@@ -208,7 +208,7 @@ class HopeVisualizer:
                 "tokens_used": response["usage"]
             }
             
-            print(f"   ✅ Forecast generated")
+            print(f"   [OK] Forecast generated")
             return result
         else:
             return {
@@ -265,7 +265,7 @@ class HopeVisualizer:
             lighting=lighting
         )
         
-        print(f"🎨 Generating hope visualization...")
+        print(f"Generating hope visualization...")
         print(f"   Ecosystem: {profile['name']}")
         print(f"   Years in future: {years_in_future}")
         
@@ -291,11 +291,11 @@ class HopeVisualizer:
             if save_path and PIL:
                 images[0].save(save_path)
                 result["saved_to"] = save_path
-                print(f"   💾 Saved to: {save_path}")
+                print(f"   [OK] Saved to: {save_path}")
             
-            print(f"   ✅ Generated {len(images)} image(s)")
+            print(f"   [OK] Generated {len(images)} image(s)")
         else:
-            print(f"   ⚠️ Image generation failed (Imagen may require additional access)")
+            print(f"   [WARNING] Image generation failed (Imagen may require additional access)")
             result["fallback_description"] = self._generate_text_visualization(
                 profile, years_in_future, species
             )
@@ -455,7 +455,7 @@ def generate_hope_visualization(
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🌱 EcoRevive Hope Visualizer Demo")
+    print("EcoRevive Hope Visualizer Demo")
     print("=" * 60)
     
     try:
@@ -482,5 +482,5 @@ if __name__ == "__main__":
         print(json.dumps(card, indent=2))
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to run the demo.")

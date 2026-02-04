@@ -329,7 +329,7 @@ class EcosystemClassifier:
         """
         LEGACY ecosystem classification with severity colormap only.
         
-        ⚠️ DEPRECATED: This method only sends the severity colormap to Gemini,
+        [DEPRECATED] This method only sends the severity colormap to Gemini,
         without the original RGB satellite image. Gemini cannot understand
         WHAT is burned, only that something is burned. Use classify_multimodal()
         for true spatial reasoning.
@@ -371,8 +371,8 @@ class EcosystemClassifier:
         )
         
         # Call Gemini with multimodal input (image + text) and JSON output
-        print(f"🌲 [LEGACY] Analyzing ecosystem at ({lat:.4f}, {lon:.4f})...")
-        print(f"   ⚠️ Using legacy mode - consider classify_multimodal() for better results")
+        print(f"[LEGACY] Analyzing ecosystem at ({lat:.4f}, {lon:.4f})...")
+        print(f"   [WARNING] Using legacy mode - consider classify_multimodal() for better results")
         print(f"   Ecoregion: {ecoregion_hint}")
         print(f"   High severity: {stats['high_severity_ratio']:.1%}")
         
@@ -392,7 +392,7 @@ class EcosystemClassifier:
                 'analysis_mode': 'legacy_severity_only'
             }
             
-            print(f"   ✅ Classified as: {result.get('ecosystem_type', 'Unknown')}")
+            print(f"   [OK] Classified as: {result.get('ecosystem_type', 'Unknown')}")
             print(f"   Restoration method: {result.get('restoration_method', 'Unknown')}")
             
             return result
@@ -441,7 +441,7 @@ class EcosystemClassifier:
         survival rates in post-fire conditions.
         """
         
-        print(f"🔍 Searching for grounded species data...")
+        print(f"Searching for grounded species data...")
         
         response = self.client.search_grounded(query)
         
@@ -461,7 +461,7 @@ def classify_ecosystem(
     """
     LEGACY convenience function for ecosystem classification.
     
-    ⚠️ DEPRECATED: Use classify_ecosystem_multimodal() for true spatial reasoning.
+    [DEPRECATED] Use classify_ecosystem_multimodal() for true spatial reasoning.
     
     Args:
         location: (latitude, longitude) tuple
@@ -526,7 +526,7 @@ def classify_ecosystem_multimodal(
 if __name__ == "__main__":
     # Demo with synthetic data
     print("=" * 60)
-    print("🌲 EcoRevive Ecosystem Classifier Demo")
+    print("EcoRevive Ecosystem Classifier Demo")
     print("=" * 60)
     
     # Create synthetic data (simulating Dixie Fire)
@@ -556,7 +556,7 @@ if __name__ == "__main__":
             unet_confidence=0.87
         )
         
-        print("\n📊 Multimodal Analysis Results:")
+        print("\nMultimodal Analysis Results:")
         if result.get('status') == 'complete':
             analysis = result.get('analysis', {})
             sq = analysis.get('segmentation_quality', {})
@@ -574,16 +574,16 @@ if __name__ == "__main__":
                 print(f"     - Zone {zone.get('zone_id')}: {zone.get('urgency')} - {zone.get('recommended_intervention')}")
             
             if result.get('human_review', {}).get('required'):
-                print(f"\n   ⚠️ Human review required: {result['human_review']['triggers']}")
+                print(f"\n   [WARNING] Human review required: {result['human_review']['triggers']}")
         else:
             print(f"   Status: {result.get('status')}")
             if result.get('error'):
                 print(f"   Error: {result.get('error')}")
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to run the demo.")
-    
+
     print("\n" + "=" * 40)
     print("Testing LEGACY analysis (for comparison)")
     print("=" * 40)
@@ -591,12 +591,12 @@ if __name__ == "__main__":
     try:
         legacy_result = classify_ecosystem(location, severity_map)
         
-        print("\n📊 Legacy Results:")
+        print("\nLegacy Results:")
         print(f"   Ecosystem Type: {legacy_result.get('ecosystem_type', 'N/A')}")
         print(f"   Restoration Method: {legacy_result.get('restoration_method', 'N/A')}")
         print(f"   Mode: {legacy_result.get('_metadata', {}).get('analysis_mode', 'N/A')}")
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to run the demo.")
 

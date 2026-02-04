@@ -1,6 +1,6 @@
 """
-EcoRevive Reasoning Engine (Layer 2)
-====================================
+EcoRevive Reasoning Engine (Layers 2 & 3)
+==========================================
 Gemini-powered restoration intelligence with TRUE MULTIMODAL analysis.
 
 This package provides AI-driven ecosystem analysis for post-fire restoration,
@@ -9,6 +9,7 @@ showcasing multiple Gemini API features:
 - TRUE MULTIMODAL analysis (RGB + severity overlay + structured context)
 - Spatial pattern reasoning (fragmentation, edges, gradients)
 - Structured JSON output with machine-readable signals
+- Land use classification and contextual warnings (Layer 3)
 - Function calling for agentic behavior
 - Grounding with Google Search
 - Imagen 3 for visualization
@@ -16,16 +17,24 @@ showcasing multiple Gemini API features:
 
 Modules:
     gemini_client: Unified Gemini API client
-    gemini_multimodal: TRUE multimodal U-Net → Gemini integration (NEW)
+    gemini_multimodal: TRUE multimodal U-Net → Gemini integration
     gemini_ecosystem: Ecosystem classification and species recommendations
     gemini_orchestrator: Function calling coordinator
     gemini_hope: Recovery forecasting and hope visualization
     constraints: Safety guardrails and legal compliance
+    layer2_output: Structured Layer 2 output schema
+    layer3_context: Urban detection and contextual warnings (NEW)
 
 Example:
     >>> from reasoning import classify_ecosystem_multimodal, orchestrate_analysis
     >>> result = classify_ecosystem_multimodal((40.05, -121.20), rgb_tile, severity_map)
     >>> full_report = orchestrate_analysis(location, stats, "professional")
+    >>>
+    >>> # Layer 3: Check land use and get warnings
+    >>> from reasoning import create_layer3_response
+    >>> context = create_layer3_response(client, rgb, severity, location)
+    >>> if context['land_use']['is_urban']:
+    ...     print("Warning:", context['land_use']['caution_message'])
 """
 
 from .gemini_client import EcoReviveGemini, create_client
@@ -85,6 +94,26 @@ from .layer2_output import (
     run_layer2_analysis,
     create_layer2_response,
 )
+from .layer3_context import (
+    Layer3Output,
+    LandUseContext,
+    LandUseType,
+    CautionLevel,
+    run_layer3_analysis,
+    create_layer3_response,
+)
+from .carbon_calculator import (
+    CarbonCalculatorOutput,
+    CarbonAnalysisPersonal,
+    CarbonAnalysisProfessional,
+    calculate_carbon,
+    create_carbon_response,
+)
+from .pdf_export import (
+    generate_pdf,
+    build_personal_report,
+    build_professional_report,
+)
 
 __version__ = "0.1.0"
 __author__ = "EcoRevive Team"
@@ -137,5 +166,37 @@ __all__ = [
     "LEGAL_COMPLIANCE_PROMPT",
     "ETHICAL_SYSTEM_PROMPT",
     "UNCERTAINTY_DISCLOSURE",
+
+    # Layer 2 Output
+    "Layer2Output",
+    "LocationContext",
+    "SiteCharacteristics",
+    "EcosystemInfo",
+    "SiteMetrics",
+    "ZonePrimitive",
+    "HazardAnnotation",
+    "RiskGrid",
+    "run_layer2_analysis",
+    "create_layer2_response",
+
+    # Layer 3 Context (Urban Detection & Cautions)
+    "Layer3Output",
+    "LandUseContext",
+    "LandUseType",
+    "CautionLevel",
+    "run_layer3_analysis",
+    "create_layer3_response",
+
+    # Carbon Calculator
+    "CarbonCalculatorOutput",
+    "CarbonAnalysisPersonal",
+    "CarbonAnalysisProfessional",
+    "calculate_carbon",
+    "create_carbon_response",
+
+    # PDF Export
+    "generate_pdf",
+    "build_personal_report",
+    "build_professional_report",
 ]
 
