@@ -49,7 +49,8 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "https://ecorevive.vercel.app",
-        "https://*.vercel.app",  # Allow all Vercel preview deployments
+        "https://ecorevive-original.vercel.app",
+        "*",  # Allow all origins for hackathon demo
     ],
     allow_credentials=True,
     allow_methods=["*"],
