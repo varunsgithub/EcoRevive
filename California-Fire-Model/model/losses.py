@@ -256,7 +256,7 @@ def get_loss_function(name: str = 'combined', **kwargs) -> nn.Module:
 # ============================================================
 if __name__ == "__main__":
     print("=" * 60)
-    print("🧪 Testing Loss Functions")
+    print("Testing Loss Functions")
     print("=" * 60)
     
     # Create dummy data
@@ -280,5 +280,5 @@ if __name__ == "__main__":
         else:
             print(f"   {name:<12}: {result.item():.4f}")
     
-    print("\n✅ All loss functions working!")
+    print("\n[OK] All loss functions working!")
     print("=" * 60)

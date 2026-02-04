@@ -73,7 +73,7 @@ def initialize_ee():
         import ee
         try:
             ee.Initialize(project='hale-life-482914-r0')
-            print("✅ Earth Engine initialized")
+            print("[OK] Earth Engine initialized")
             return True
         except Exception as e:
             print(f"Trying authentication: {e}")
@@ -81,7 +81,7 @@ def initialize_ee():
             ee.Initialize(project='hale-life-482914-r0')
             return True
     except Exception as e:
-        print(f"❌ Earth Engine failed: {e}")
+        print(f"[ERROR] Earth Engine failed: {e}")
         return False
 
 def download_sentinel2_tile(bbox, start_date, end_date, tile_size=256):
@@ -159,7 +159,7 @@ def download_sentinel2_tile(bbox, start_date, end_date, tile_size=256):
         return image_array
         
     except Exception as e:
-        print(f"   ⚠️ sampleRectangle failed: {e}")
+        print(f"   [WARNING] sampleRectangle failed: {e}")
         print("   Trying reduceRegion method...")
         
         # Fallback: create grid and sample
@@ -333,14 +333,14 @@ Max Severity: {data['prediction'].max():.1%}
 Fire (>0.3): {fire_pct:.1f}%
 Expected: {data['expected_pct']*100:.1f}%
 ─────────────────
-Match: {'✅ Good' if abs(fire_pct/100 - data['expected_pct']) < 0.15 else '⚠️ Off'}
+Match: {'[OK] Good' if abs(fire_pct/100 - data['expected_pct']) < 0.15 else '[WARNING] Off'}
 """
         ax.text(0.1, 0.5, stats_text, fontsize=11, family='monospace',
                 transform=ax.transAxes, verticalalignment='center')
     
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"\n💾 Saved visualization: {output_path}")
+    print(f"\n[SAVE] Saved visualization: {output_path}")
     plt.show()
 
 # =============================================================================
@@ -348,38 +348,38 @@ Match: {'✅ Good' if abs(fire_pct/100 - data['expected_pct']) < 0.15 else '⚠�
 # =============================================================================
 def main():
     print("=" * 60)
-    print("🔥 EcoRevive Model Test - California Fires")
+    print("[FIRE] EcoRevive Model Test - California Fires")
     print("=" * 60)
     
     # Initialize Earth Engine
     if not initialize_ee():
-        print("❌ Cannot proceed without Earth Engine")
+        print("[ERROR] Cannot proceed without Earth Engine")
         return
     
     # Load model
     device = get_device()
-    print(f"\n🖥️ Device: {device}")
+    print(f"\n[DEVICE] Device: {device}")
     
     checkpoint_path = FIRE_MODEL_ROOT / "checkpoints" / "model.pth"
     if not checkpoint_path.exists():
-        print(f"❌ Model not found at {checkpoint_path}")
+        print(f"[ERROR] Model not found at {checkpoint_path}")
         return
     
-    print(f"📁 Loading model from: {checkpoint_path}")
+    print(f"[FILE] Loading model from: {checkpoint_path}")
     model = load_model(checkpoint_path, device)
-    print("✅ Model loaded!")
+    print("[OK] Model loaded!")
     
     # Test each fire
     results = {}
     
     for fire_key, fire_info in TEST_FIRES.items():
         print(f"\n{'='*40}")
-        print(f"🔥 Testing: {fire_info['name']}")
+        print(f"[FIRE] Testing: {fire_info['name']}")
         print(f"   Center: {fire_info['center']}")
         print(f"   Dates: {fire_info['post_fire_dates']}")
         
         # Download from Earth Engine
-        print("   📥 Downloading Sentinel-2 imagery...")
+        print("   [DOWNLOAD] Downloading Sentinel-2 imagery...")
         try:
             image = download_sentinel2_tile(
                 bbox=fire_info['bbox'],
@@ -387,12 +387,12 @@ def main():
                 end_date=fire_info['post_fire_dates'][1],
                 tile_size=256
             )
-            print(f"   ✅ Downloaded: {image.shape}")
+            print(f"   [OK] Downloaded: {image.shape}")
             
             # Run inference
-            print("   🔥 Running inference...")
+            print("   [FIRE] Running inference...")
             prediction = predict_severity(image, model, device)
-            print(f"   ✅ Prediction complete: mean={prediction.mean():.2%}, max={prediction.max():.2%}")
+            print(f"   [OK] Prediction complete: mean={prediction.mean():.2%}, max={prediction.max():.2%}")
             
             # Store results
             results[fire_key] = {
@@ -404,7 +404,7 @@ def main():
             }
             
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"   [ERROR] Error: {e}")
             import traceback
             traceback.print_exc()
     
@@ -415,15 +415,15 @@ def main():
         
         # Summary
         print("\n" + "=" * 60)
-        print("📊 SUMMARY")
+        print("[SUMMARY] SUMMARY")
         print("=" * 60)
         for fire_key, data in results.items():
             fire_pct = (data['prediction'] > 0.3).mean() * 100
             expected = data['expected_pct'] * 100
-            match = "✅" if abs(fire_pct - expected) < 15 else "⚠️"
+            match = "[OK]" if abs(fire_pct - expected) < 15 else "[WARNING]"
             print(f"   {data['name']}: {fire_pct:.1f}% predicted vs {expected:.1f}% expected {match}")
     else:
-        print("\n❌ No results to display")
+        print("\n[ERROR] No results to display")
 
 if __name__ == "__main__":
     main()

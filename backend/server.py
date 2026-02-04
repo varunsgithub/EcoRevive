@@ -75,6 +75,8 @@ class AnalyzeResponse(BaseModel):
     severity_stats: Optional[Dict[str, Any]] = None
     gemini_analysis: Optional[str] = None  # Legacy verbose text for display
     layer2_output: Optional[Dict[str, Any]] = None  # Structured Layer 2 JSON
+    layer3_context: Optional[Dict[str, Any]] = None  # Layer 3 contextual analysis (urban detection, cautions)
+    carbon_analysis: Optional[Dict[str, Any]] = None  # Carbon sequestration calculator
     error: Optional[str] = None
 
 
@@ -84,6 +86,84 @@ class Layer2AnalyzeResponse(BaseModel):
     layer2_output: Optional[Dict[str, Any]] = None  # Full structured Layer 2 data
     satellite_image: Optional[str] = None  # Base64 encoded RGB for reference
     severity_image: Optional[str] = None  # Base64 encoded colorized severity
+    error: Optional[str] = None
+
+
+class ChatRequest(BaseModel):
+    """Request for the AI chat endpoint."""
+    message: str  # User's message or quick action prompt
+    action_type: Optional[str] = None  # Quick action ID (safety, hope, species, etc.)
+    user_type: str = "personal"  # personal or professional
+    context: Optional[Dict[str, Any]] = None  # Analysis context (layer2_output, severity_stats, bbox)
+
+
+class ChatResponse(BaseModel):
+    """Response from the AI chat endpoint."""
+    success: bool
+    response: Optional[str] = None
+    error: Optional[str] = None
+
+
+class PDFExportRequest(BaseModel):
+    """Request for PDF export endpoint."""
+    satellite_image: str
+    severity_image: str
+    severity_stats: Dict[str, Any]
+    bbox: Dict[str, float]
+    layer2_output: Optional[Dict[str, Any]] = None
+    layer3_context: Optional[Dict[str, Any]] = None
+    carbon_analysis: Optional[Dict[str, Any]] = None
+    report_type: str = "personal"
+    user_type: str = "personal"
+    location_name: Optional[str] = None
+    analysis_id: Optional[str] = None
+
+
+class PDFExportResponse(BaseModel):
+    """Response from PDF export endpoint."""
+    success: bool
+    pdf_base64: Optional[str] = None
+    filename: Optional[str] = None
+    error: Optional[str] = None
+
+
+class WordExportRequest(BaseModel):
+    """Request for Word export endpoint."""
+    satellite_image: str
+    severity_image: str
+    severity_stats: Dict[str, Any]
+    bbox: Dict[str, float]
+    layer2_output: Optional[Dict[str, Any]] = None
+    layer3_context: Optional[Dict[str, Any]] = None
+    carbon_analysis: Optional[Dict[str, Any]] = None
+    report_type: str = "personal"
+    user_type: str = "personal"
+    location_name: Optional[str] = None
+
+
+class WordExportResponse(BaseModel):
+    """Response from Word export endpoint."""
+    success: bool
+    docx_base64: Optional[str] = None
+    filename: Optional[str] = None
+    error: Optional[str] = None
+
+
+class HopeVisualizationRequest(BaseModel):
+    """Request for hope visualization endpoint."""
+    ecosystem_type: str = "mixed_conifer"
+    years_in_future: int = 15
+    mean_severity: float = 0.5
+    area_hectares: float = 100.0
+    bbox: Optional[Dict[str, float]] = None
+
+
+class HopeVisualizationResponse(BaseModel):
+    """Response from hope visualization endpoint."""
+    success: bool
+    image_base64: Optional[str] = None
+    forecast: Optional[Dict[str, Any]] = None
+    description: Optional[str] = None
     error: Optional[str] = None
 
 
@@ -135,11 +215,11 @@ def load_fire_model():
         checkpoint_path = PROJECT_ROOT / "California-Fire-Model/checkpoints/model.pth"
         
         if not checkpoint_path.exists():
-            print(f"⚠️ Model checkpoint not found at {checkpoint_path}")
+            print(f"[WARNING] Model checkpoint not found at {checkpoint_path}")
             return False
             
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print(f"🔥 Loading Fire Model on {device}...")
+        print(f"[INFO] Loading Fire Model on {device}...")
         
         model = CaliforniaFireModel(
             input_channels=10,
@@ -160,11 +240,11 @@ def load_fire_model():
         model.to(device)
         model.eval()
         
-        print(f"✅ Fire Model loaded ({sum(p.numel() for p in model.parameters()):,} parameters)")
+        print(f"[OK] Fire Model loaded ({sum(p.numel() for p in model.parameters()):,} parameters)")
         return True
         
     except Exception as e:
-        print(f"❌ Failed to load Fire Model: {e}")
+        print(f"[ERROR] Failed to load Fire Model: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -401,7 +481,7 @@ def get_gemini_analysis(
             return _get_text_only_analysis(stats, bbox, user_type)
             
     except Exception as e:
-        print(f"⚠️ Gemini analysis failed: {e}")
+        print(f"[WARNING] Gemini analysis failed: {e}")
         import traceback
         traceback.print_exc()
         fallback_text = (
@@ -429,7 +509,7 @@ def _get_multimodal_analysis(
     )
     from reasoning import create_client
     
-    print("   🔬 Running TRUE MULTIMODAL analysis (sending images to Gemini)...")
+    print("   [INFO] Running TRUE MULTIMODAL analysis (sending images to Gemini)...")
     
     # Create Gemini client
     client = create_client()
@@ -474,7 +554,7 @@ def _get_multimodal_analysis(
         vg = analysis.get('visual_grounding', {})
         if vg:
             land_cover = ", ".join(vg.get('observed_land_cover', ['Unknown']))
-            text_parts.append(f"## 🛰️ What Gemini Sees in the Satellite Image\n")
+            text_parts.append(f"## What Gemini Sees in the Satellite Image\n")
             text_parts.append(f"**Land Cover Types Detected:** {land_cover}\n")
             if vg.get('terrain_features'):
                 text_parts.append(f"**Terrain Features:** {', '.join(vg.get('terrain_features', []))}\n")
@@ -486,18 +566,18 @@ def _get_multimodal_analysis(
         if sq:
             quality = sq.get('overall_quality', 'unknown')
             confidence = sq.get('confidence_in_prediction', 0)
-            text_parts.append(f"\n## 🔍 U-Net Prediction Quality Assessment\n")
+            text_parts.append(f"\n## U-Net Prediction Quality Assessment\n")
             text_parts.append(f"**Overall Quality:** {quality.upper()}\n")
             text_parts.append(f"**Gemini's Confidence in Predictions:** {confidence:.0%}\n")
             if sq.get('artifact_flags'):
-                text_parts.append(f"**⚠️ Artifacts Detected:** {', '.join(sq.get('artifact_flags'))}\n")
+                text_parts.append(f"**[WARNING] Artifacts Detected:** {', '.join(sq.get('artifact_flags'))}\n")
             if sq.get('quality_notes'):
                 text_parts.append(f"**Notes:** {sq.get('quality_notes')}\n")
         
         # Spatial patterns section
         sp = analysis.get('spatial_patterns', {})
         if sp:
-            text_parts.append(f"\n## 🗺️ Spatial Pattern Analysis\n")
+            text_parts.append(f"\n## Spatial Pattern Analysis\n")
             
             frag = sp.get('fragmentation_assessment', {})
             if frag:
@@ -521,7 +601,7 @@ def _get_multimodal_analysis(
         # Ecological interpretation
         ei = analysis.get('ecological_interpretation', {})
         if ei:
-            text_parts.append(f"\n## 🌲 Ecological Interpretation\n")
+            text_parts.append(f"\n## Ecological Interpretation\n")
             text_parts.append(f"**Natural Regeneration Potential:** {ei.get('natural_regeneration_potential', 'unknown')}\n")
             text_parts.append(f"**Seed Source Availability:** {ei.get('seed_source_availability', 'unknown')}\n")
             if ei.get('regeneration_rationale'):
@@ -539,16 +619,16 @@ def _get_multimodal_analysis(
         # Priority zones section
         zones = analysis.get('priority_zones', [])
         if zones:
-            text_parts.append(f"\n## 🎯 Priority Restoration Zones\n")
+            text_parts.append(f"\n## Priority Restoration Zones\n")
             for zone in zones[:5]:
-                urgency_emoji = {
-                    'immediate': '🔴',
-                    '6_months': '🟠', 
-                    '1_year': '🟡',
-                    '2_3_years': '🟢'
-                }.get(zone.get('urgency', ''), '⚪')
-                
-                text_parts.append(f"\n### {urgency_emoji} Zone {zone.get('zone_id', '?')}: {zone.get('urgency', 'unknown').replace('_', ' ').title()}\n")
+                urgency_label = {
+                    'immediate': '[URGENT]',
+                    '6_months': '[6 MONTHS]',
+                    '1_year': '[1 YEAR]',
+                    '2_3_years': '[2-3 YEARS]'
+                }.get(zone.get('urgency', ''), '[--]')
+
+                text_parts.append(f"\n### {urgency_label} Zone {zone.get('zone_id', '?')}: {zone.get('urgency', 'unknown').replace('_', ' ').title()}\n")
                 text_parts.append(f"**Location:** {zone.get('location_description', 'See overlay')}\n")
                 text_parts.append(f"**Severity:** {zone.get('severity', 'unknown')}\n")
                 text_parts.append(f"**Why Priority:** {zone.get('priority_reason', 'N/A')}\n")
@@ -557,7 +637,7 @@ def _get_multimodal_analysis(
         # Machine-readable signals section
         signals = analysis.get('signals_for_final_model', {})
         if signals:
-            text_parts.append(f"\n## 📊 Restoration Scores (Machine-Readable)\n")
+            text_parts.append(f"\n## Restoration Scores (Machine-Readable)\n")
             text_parts.append(f"| Metric | Score |\n|--------|-------|\n")
             text_parts.append(f"| Restoration Potential | {signals.get('restoration_potential_score', 0):.2f} |\n")
             text_parts.append(f"| Intervention Urgency | {signals.get('intervention_urgency_score', 0):.2f} |\n")
@@ -574,11 +654,11 @@ def _get_multimodal_analysis(
         if result.get('human_review', {}).get('required'):
             triggers = result.get('human_review', {}).get('triggers', [])
             formatted_text = (
-                f"⚠️ **Human Review Recommended:** {', '.join(triggers)}\n\n"
+                f"**[WARNING] Human Review Recommended:** {', '.join(triggers)}\n\n"
                 + formatted_text
             )
         
-        print(f"   ✅ Multimodal analysis complete! Found {len(zones)} priority zones.")
+        print(f"   [OK] Multimodal analysis complete! Found {len(zones)} priority zones.")
         
         return {
             'text': formatted_text,
@@ -589,7 +669,7 @@ def _get_multimodal_analysis(
     
     else:
         # Analysis failed - return error info
-        error_text = f"⚠️ Multimodal analysis failed: {result.get('error', result.get('status', 'unknown'))}"
+        error_text = f"[WARNING] Multimodal analysis failed: {result.get('error', result.get('status', 'unknown'))}"
         print(f"   {error_text}")
         return {'text': error_text, 'analysis': None}
 
@@ -600,7 +680,7 @@ def _get_text_only_analysis(stats: Dict[str, Any], bbox: Dict[str, float], user_
     """
     from reasoning import EcoReviveGemini
     
-    print("   ⚠️ Running LEGACY text-only analysis (no images sent to Gemini)")
+    print("   [WARNING] Running LEGACY text-only analysis (no images sent to Gemini)")
     
     client = EcoReviveGemini()
     
@@ -656,7 +736,7 @@ async def startup_event():
     """Initialize services on startup."""
     global ee_initialized
     
-    print("🚀 Starting EcoRevive API Server...")
+    print("[INFO] Starting EcoRevive API Server...")
     
     # Initialize Earth Engine
     ee_initialized = initialize_ee()
@@ -664,7 +744,7 @@ async def startup_event():
     # Load Fire Model
     load_fire_model()
     
-    print("✅ Server ready!")
+    print("[OK] Server ready!")
 
 
 @app.get("/")
@@ -706,13 +786,13 @@ async def analyze_area(request: AnalyzeRequest):
         start_date = request.start_date or "2023-06-01"
         end_date = request.end_date or "2023-09-30"
         
-        print(f"📍 Analyzing area: {bbox}")
-        print(f"📅 Date range: {start_date} to {end_date}")
+        print(f"[INFO] Analyzing area: {bbox}")
+        print(f"[INFO] Date range: {start_date} to {end_date}")
         
         # Step 1: Download Sentinel-2 imagery with TILING support
         if ee_initialized:
             try:
-                print("🛰️ Downloading Sentinel-2 imagery (with tiling)...")
+                print("[INFO] Downloading Sentinel-2 imagery (with tiling)...")
                 tiles, ee_metadata = download_sentinel2_for_model(bbox, start_date, end_date)
                 print(f"   Downloaded {len(tiles)} tiles")
                 
@@ -720,13 +800,13 @@ async def analyze_area(request: AnalyzeRequest):
                     raise Exception("No tiles downloaded")
                     
             except Exception as e:
-                print(f"⚠️ EE download failed: {e}, using synthetic data")
+                print(f"[WARNING] EE download failed: {e}, using synthetic data")
                 # Fallback to single synthetic tile
                 synthetic_image = create_synthetic_image(bbox)
                 tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
                 ee_metadata = {'n_rows': 1, 'n_cols': 1}
         else:
-            print("⚠️ Earth Engine not available, using synthetic imagery for demo")
+            print("[WARNING] Earth Engine not available, using synthetic imagery for demo")
             synthetic_image = create_synthetic_image(bbox)
             tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
             ee_metadata = {'n_rows': 1, 'n_cols': 1}
@@ -735,7 +815,7 @@ async def analyze_area(request: AnalyzeRequest):
         if model is None:
             raise HTTPException(status_code=503, detail="Fire model not loaded")
         
-        print("🔥 Running burn severity inference on tiles...")
+        print("[INFO] Running burn severity inference on tiles...")
         severity_map, satellite_rgb, stats = run_tiled_inference(tiles, ee_metadata)
         print(f"   Mean severity: {stats['mean_severity']:.1%}")
         print(f"   Output size: {severity_map.shape}")
@@ -746,7 +826,7 @@ async def analyze_area(request: AnalyzeRequest):
         raw_severity_image = severity_to_raw_image(severity_map)
         
         # Step 4: Generate Layer 2 structured output (JSON-only, single Gemini call)
-        print("📊 Generating Layer 2 structured output...")
+        print("[INFO] Generating Layer 2 structured output...")
         layer2_output = None
         try:
             from reasoning.layer2_output import create_layer2_response
@@ -782,13 +862,78 @@ async def analyze_area(request: AnalyzeRequest):
                     model_confidence=0.85,
                     imagery_date=end_date
                 )
-                print("   ✅ Layer 2 JSON generated")
+                print("   [OK] Layer 2 JSON generated")
         except Exception as e:
-            print(f"   ⚠️ Layer 2 generation failed: {e}")
+            print(f"   [WARNING] Layer 2 generation failed: {e}")
             import traceback
             traceback.print_exc()
-        
-        print("✅ Analysis complete!")
+
+        # Step 5: Run Layer 3 contextual analysis (urban detection & cautions)
+        print("[INFO] Running Layer 3 contextual analysis...")
+        layer3_context = None
+        try:
+            from reasoning.layer3_context import create_layer3_response
+
+            layer3_context = create_layer3_response(
+                client=client,
+                rgb_image=satellite_rgb,
+                severity_map=severity_map,
+                location=location,
+                use_gemini=True
+            )
+
+            # Log the land use classification
+            land_use = layer3_context.get('land_use', {})
+            caution_level = layer3_context.get('overall_caution_level', 'none')
+            print(f"   Land use: {land_use.get('land_use_type', 'unknown')} "
+                  f"(urban: {land_use.get('urban_percentage', 0):.0f}%)")
+            print(f"   Caution level: {caution_level}")
+            if caution_level in ['moderate', 'high']:
+                print(f"   [WARNING] {land_use.get('caution_message', '')[:100]}...")
+            print("   [OK] Layer 3 context generated")
+        except Exception as e:
+            print(f"   [WARNING] Layer 3 analysis failed: {e}")
+            import traceback
+            traceback.print_exc()
+
+        # Step 6: Calculate carbon sequestration potential
+        print("[INFO] Calculating carbon sequestration potential...")
+        carbon_analysis = None
+        try:
+            from reasoning.carbon_calculator import create_carbon_response
+
+            # Calculate area in hectares from bbox
+            lat_mid = (bbox['north'] + bbox['south']) / 2
+            km_per_deg_lon = 111.32 * np.cos(lat_mid * np.pi / 180)
+            km_per_deg_lat = 110.574
+            width_km = abs(bbox['east'] - bbox['west']) * km_per_deg_lon
+            height_km = abs(bbox['north'] - bbox['south']) * km_per_deg_lat
+            area_km2 = width_km * height_km
+            area_hectares = area_km2 * 100  # 1 km² = 100 hectares
+
+            # Get land use type from Layer 3 if available
+            land_use_type = None
+            if layer3_context:
+                land_use_type = layer3_context.get('land_use', {}).get('land_use_type')
+
+            carbon_analysis = create_carbon_response(
+                area_hectares=area_hectares,
+                severity_stats=stats,
+                location=location,
+                user_type=request.user_type,
+                land_use_type=land_use_type
+            )
+
+            # Log the results
+            summary = carbon_analysis.get('summary', {})
+            print(f"   Carbon potential: {summary.get('headline', 'N/A')}")
+            print("   [OK] Carbon analysis complete")
+        except Exception as e:
+            print(f"   [WARNING] Carbon calculation failed: {e}")
+            import traceback
+            traceback.print_exc()
+
+        print("[OK] Analysis complete!")
         
         return AnalyzeResponse(
             success=True,
@@ -797,13 +942,15 @@ async def analyze_area(request: AnalyzeRequest):
             raw_severity_image=raw_severity_image,
             severity_stats=stats,
             gemini_analysis=None,  # No longer sending verbose text
-            layer2_output=layer2_output
+            layer2_output=layer2_output,
+            layer3_context=layer3_context,
+            carbon_analysis=carbon_analysis
         )
         
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Analysis failed: {e}")
+        print(f"[ERROR] Analysis failed: {e}")
         import traceback
         traceback.print_exc()
         return AnalyzeResponse(
@@ -841,22 +988,22 @@ async def layer2_analyze_area(request: AnalyzeRequest):
         start_date = request.start_date or "2023-06-01"
         end_date = request.end_date or "2023-09-30"
         
-        print(f"📍 Layer 2 Analysis: {bbox}")
+        print(f"[INFO] Layer 2 Analysis: {bbox}")
         
         # Step 1: Download Sentinel-2 imagery
         if ee_initialized:
             try:
-                print("🛰️ Downloading Sentinel-2 imagery...")
+                print("[INFO] Downloading Sentinel-2 imagery...")
                 tiles, ee_metadata = download_sentinel2_for_model(bbox, start_date, end_date)
                 if not tiles:
                     raise Exception("No tiles downloaded")
             except Exception as e:
-                print(f"⚠️ EE download failed: {e}, using synthetic data")
+                print(f"[WARNING] EE download failed: {e}, using synthetic data")
                 synthetic_image = create_synthetic_image(bbox)
                 tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
                 ee_metadata = {'n_rows': 1, 'n_cols': 1}
         else:
-            print("⚠️ Earth Engine not available, using synthetic imagery")
+            print("[WARNING] Earth Engine not available, using synthetic imagery")
             synthetic_image = create_synthetic_image(bbox)
             tiles = [{'image': synthetic_image, 'row': 0, 'col': 0, 'center': (0, 0)}]
             ee_metadata = {'n_rows': 1, 'n_cols': 1}
@@ -865,7 +1012,7 @@ async def layer2_analyze_area(request: AnalyzeRequest):
         if model is None:
             raise HTTPException(status_code=503, detail="Fire model not loaded")
         
-        print("🔥 Running burn severity inference...")
+        print("[INFO] Running burn severity inference...")
         severity_map, satellite_rgb, stats = run_tiled_inference(tiles, ee_metadata)
         
         # Step 3: Calculate center location
@@ -901,10 +1048,10 @@ async def layer2_analyze_area(request: AnalyzeRequest):
                 gemini_analysis = result.get('layer2_data')
                 
         except Exception as e:
-            print(f"⚠️ Gemini analysis failed: {e}, proceeding without enhancement")
+            print(f"[WARNING] Gemini analysis failed: {e}, proceeding without enhancement")
         
         # Step 5: Generate Layer 2 structured output
-        print("📊 Generating Layer 2 structured output...")
+        print("[INFO] Generating Layer 2 structured output...")
         layer2_output = create_layer2_response(
             severity_map=severity_map,
             location=location,
@@ -918,7 +1065,7 @@ async def layer2_analyze_area(request: AnalyzeRequest):
         satellite_image = rgb_array_to_base64(satellite_rgb)
         severity_image = severity_to_image(severity_map)
         
-        print(f"✅ Layer 2 analysis complete! Found {len(layer2_output.get('zones', []))} zones, "
+        print(f"[OK] Layer 2 analysis complete! Found {len(layer2_output.get('zones', []))} zones, "
               f"{len(layer2_output.get('hazards', []))} hazards")
         
         return Layer2AnalyzeResponse(
@@ -931,10 +1078,663 @@ async def layer2_analyze_area(request: AnalyzeRequest):
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Layer 2 analysis failed: {e}")
+        print(f"[ERROR] Layer 2 analysis failed: {e}")
         import traceback
         traceback.print_exc()
         return Layer2AnalyzeResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat_with_ai(request: ChatRequest):
+    """
+    Dynamic AI Chat endpoint.
+
+    Uses Gemini to generate context-aware responses based on the analysis data.
+    Supports quick actions (predefined prompts) and free-form questions.
+    """
+    try:
+        from reasoning import create_client
+
+        print(f"[INFO] Chat request: action={request.action_type}, user={request.user_type}")
+
+        # Get the Gemini client
+        client = create_client()
+
+        # Build context from the analysis results
+        context = request.context or {}
+        severity_stats = context.get('severity_stats', {})
+        bbox = context.get('bbox', {})
+        layer2 = context.get('layer2_output', {})
+
+        # Calculate area if bbox provided
+        area_km2 = 0
+        if bbox:
+            lat_mid = (bbox.get('north', 0) + bbox.get('south', 0)) / 2
+            km_per_deg_lon = 111.32 * np.cos(lat_mid * np.pi / 180)
+            km_per_deg_lat = 110.574
+            width = abs(bbox.get('east', 0) - bbox.get('west', 0)) * km_per_deg_lon
+            height = abs(bbox.get('north', 0) - bbox.get('south', 0)) * km_per_deg_lat
+            area_km2 = width * height
+
+        # Build concise system context for faster responses
+        high_sev = severity_stats.get('high_severity_ratio', 0) * 100
+        mean_sev = severity_stats.get('mean_severity', 0) * 100
+
+        system_context = f"""Restoration ecologist for EcoRevive. Site: {area_km2:.1f}km², {mean_sev:.0f}% mean severity, {high_sev:.0f}% high severity. Be concise, use markdown."""
+
+        # Build short prompts for fast responses
+        if request.action_type:
+            action_prompts = {
+                # PERSONAL - short prompts
+                'safety': f"Safety checklist for volunteers at this {high_sev:.0f}% high-severity burn site. List: hazards, required gear, zones to avoid. Keep brief.",
+
+                'hope': f"Recovery timeline for this burn site. Show: Now, Year 5, Year 10, Year 15. Include species, cover %, carbon. Be encouraging but realistic.",
+
+                'ownership': f"Land ownership guide for California site at {bbox.get('south', 0):.2f}°N, {abs(bbox.get('west', 0)):.2f}°W. Cover: jurisdiction, permits, contacts, timeline.",
+
+                'supplies': f"Supply list & budget for 10-person restoration event at {area_km2:.1f}km² site. Table format: item, qty, cost. Include total.",
+
+                # PROFESSIONAL - short prompts
+                'legal': f"Legal/tenure analysis for professional restoration grant. Cover: ownership verification, protected status, encumbrances, compliance requirements.",
+
+                'biophysical': f"Biophysical characterization: soil, hydrology, topography, land use history. Recommend species for {mean_sev:.0f}% severity site.",
+
+                'species': f"Native species palette for California burn site ({high_sev:.0f}% high severity). Tables: pioneers (0-2yr), mid-succession (2-5yr), climax (5-10yr). Include scientific names.",
+
+                'monitoring': f"Monitoring framework for restoration. Include: baseline metrics, schedule table (Year 0-10), carbon protocol eligibility, uncertainty bounds."
+            }
+
+            prompt = action_prompts.get(request.action_type, request.message)
+        else:
+            prompt = f"Question: {request.message}\nAnswer concisely based on site data."
+
+        full_prompt = f"{system_context}\n\n{prompt}"
+
+        response = client.analyze_multimodal(
+            prompt=full_prompt,
+            use_json=False
+        )
+
+        print(f"   [OK] Generated response ({response['usage']['response_tokens']} tokens)")
+
+        return ChatResponse(
+            success=True,
+            response=response['text']
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Chat failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return ChatResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+@app.post("/api/export/pdf", response_model=PDFExportResponse)
+async def export_pdf(request: PDFExportRequest):
+    """
+    Generate a PDF report for burn severity analysis.
+
+    Supports two report types:
+    - "personal": 1-2 page Impact Card (shareable, emotional)
+    - "professional": 5-10 page grant-ready document (technical, comprehensive)
+    """
+    try:
+        from reasoning.pdf_export import generate_pdf
+        import base64
+
+        print(f"[INFO] PDF Export request: type={request.report_type}, user={request.user_type}")
+
+        # Determine report type (use user_type if report_type not explicitly set)
+        report_type = request.report_type
+        if report_type not in ["personal", "professional"]:
+            report_type = request.user_type
+
+        # Generate PDF
+        pdf_bytes, metadata = generate_pdf(
+            report_type=report_type,
+            satellite_image=request.satellite_image,
+            severity_image=request.severity_image,
+            severity_stats=request.severity_stats,
+            bbox=request.bbox,
+            layer2_output=request.layer2_output,
+            layer3_context=request.layer3_context,
+            carbon_analysis=request.carbon_analysis,
+            location_name=request.location_name,
+            analysis_id=request.analysis_id,
+        )
+
+        # Encode to base64
+        pdf_base64 = base64.b64encode(pdf_bytes).decode('utf-8')
+
+        print(f"   [OK] PDF generated: {metadata['filename']} ({metadata['file_size_bytes']} bytes)")
+
+        return PDFExportResponse(
+            success=True,
+            pdf_base64=pdf_base64,
+            filename=metadata['filename']
+        )
+
+    except Exception as e:
+        print(f"[ERROR] PDF export failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return PDFExportResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+@app.post("/api/export/word", response_model=WordExportResponse)
+async def export_word(request: WordExportRequest):
+    """
+    Generate a Word document report for burn severity analysis.
+    Matches PDF content so users can edit and customize.
+    """
+    try:
+        from docx import Document
+        from docx.shared import Inches, Pt, RGBColor, Cm
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        from docx.enum.table import WD_TABLE_ALIGNMENT
+        from docx.oxml.ns import qn
+        from docx.oxml import OxmlElement
+        import base64
+        import io
+        from PIL import Image
+        from datetime import datetime
+
+        print(f"[INFO] Word Export request: type={request.report_type}")
+
+        # Create document
+        doc = Document()
+
+        # Set document margins
+        for section in doc.sections:
+            section.top_margin = Inches(0.75)
+            section.bottom_margin = Inches(0.75)
+            section.left_margin = Inches(0.75)
+            section.right_margin = Inches(0.75)
+
+        # Calculate values
+        location_name = request.location_name or "Analysis Site"
+        timestamp = datetime.now().strftime("%B %d, %Y")
+        area_km2 = _calculate_area_km2(request.bbox)
+        area_hectares = area_km2 * 100
+
+        # Safely extract severity values
+        high_sev = float(request.severity_stats.get('high_severity_ratio', 0) or 0) * 100
+        mod_sev = float(request.severity_stats.get('moderate_severity_ratio', 0) or 0) * 100
+        low_sev = float(request.severity_stats.get('low_severity_ratio', 0) or 0) * 100
+        mean_sev = float(request.severity_stats.get('mean_severity', 0) or 0) * 100
+
+        # ==================== TITLE ====================
+        title = doc.add_heading('EcoRevive Burn Severity Analysis', 0)
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Location header
+        header_para = doc.add_paragraph()
+        header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        header_para.add_run(f"{location_name}\n").bold = True
+
+        # Coordinates
+        center_lat = (request.bbox['north'] + request.bbox['south']) / 2
+        center_lon = (request.bbox['west'] + request.bbox['east']) / 2
+        lat_dir = 'N' if center_lat >= 0 else 'S'
+        lon_dir = 'E' if center_lon >= 0 else 'W'
+        coords = f"{abs(center_lat):.4f}°{lat_dir}, {abs(center_lon):.4f}°{lon_dir}"
+        header_para.add_run(f"{coords}  |  {area_km2:.2f} km² ({area_hectares:.0f} ha)  |  {timestamp}")
+
+        doc.add_paragraph()
+
+        # ==================== IMAGES ====================
+        doc.add_heading('Satellite Analysis', level=1)
+
+        # Add images side by side if available
+        if request.satellite_image and request.severity_image:
+            # Create a table for side-by-side images
+            img_table = doc.add_table(rows=2, cols=2)
+
+            # Add satellite image
+            try:
+                sat_data = request.satellite_image.split(',')[1] if ',' in request.satellite_image else request.satellite_image
+                sat_bytes = base64.b64decode(sat_data)
+                sat_stream = io.BytesIO(sat_bytes)
+                cell = img_table.rows[0].cells[0]
+                cell_para = cell.paragraphs[0]
+                run = cell_para.add_run()
+                run.add_picture(sat_stream, width=Inches(2.8))
+                cell_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            except:
+                img_table.rows[0].cells[0].text = "[Satellite Image]"
+
+            # Add severity image
+            try:
+                sev_data = request.severity_image.split(',')[1] if ',' in request.severity_image else request.severity_image
+                sev_bytes = base64.b64decode(sev_data)
+                sev_stream = io.BytesIO(sev_bytes)
+                cell = img_table.rows[0].cells[1]
+                cell_para = cell.paragraphs[0]
+                run = cell_para.add_run()
+                run.add_picture(sev_stream, width=Inches(2.8))
+                cell_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            except:
+                img_table.rows[0].cells[1].text = "[Severity Map]"
+
+            # Captions
+            img_table.rows[1].cells[0].text = "Sentinel-2 Satellite View"
+            img_table.rows[1].cells[0].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            img_table.rows[1].cells[1].text = "AI Burn Severity Map"
+            img_table.rows[1].cells[1].paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        doc.add_paragraph()
+
+        # ==================== EXECUTIVE SUMMARY ====================
+        doc.add_heading('Executive Summary', level=1)
+
+        summary = doc.add_paragraph()
+        summary.add_run(f"This {area_km2:.1f} km² site shows ")
+        if mean_sev > 60:
+            run = summary.add_run("SEVERE IMPACT")
+            run.bold = True
+        elif mean_sev > 35:
+            run = summary.add_run("MODERATE IMPACT")
+            run.bold = True
+        else:
+            run = summary.add_run("LOW-MODERATE IMPACT")
+            run.bold = True
+        summary.add_run(f" with {mean_sev:.0f}% average burn severity and {high_sev:.0f}% high-severity areas.")
+
+        doc.add_paragraph()
+
+        # ==================== SEVERITY TABLE ====================
+        doc.add_heading('Burn Severity Breakdown', level=1)
+
+        table = doc.add_table(rows=4, cols=4)
+        table.style = 'Table Grid'
+
+        # Header row
+        headers = ['Category', 'Percentage', 'Area (km²)', 'What This Means']
+        for i, header in enumerate(headers):
+            cell = table.rows[0].cells[i]
+            cell.text = header
+            cell.paragraphs[0].runs[0].bold = True
+
+        # Data rows
+        severity_data = [
+            ['High Severity', f'{high_sev:.1f}%', f'{high_sev * area_km2 / 100:.2f}', 'Complete vegetation loss, may need replanting'],
+            ['Moderate', f'{mod_sev:.1f}%', f'{mod_sev * area_km2 / 100:.2f}', 'Partial damage, natural recovery likely'],
+            ['Low/Unburned', f'{low_sev:.1f}%', f'{low_sev * area_km2 / 100:.2f}', 'Minimal impact, seed source preserved'],
+        ]
+
+        for row_idx, row_data in enumerate(severity_data):
+            for col_idx, cell_data in enumerate(row_data):
+                table.rows[row_idx + 1].cells[col_idx].text = cell_data
+
+        doc.add_paragraph()
+
+        # ==================== CARBON IMPACT ====================
+        if request.carbon_analysis:
+            doc.add_heading('Restoration Impact Potential', level=1)
+
+            if request.user_type == 'personal' and request.carbon_analysis.get('personal'):
+                personal = request.carbon_analysis['personal']
+                total_co2 = int(personal.get('total_co2_capture_20yr', 0))
+
+                carbon_para = doc.add_paragraph()
+                run = carbon_para.add_run(f"{total_co2:,} tons CO₂")
+                run.bold = True
+                run.font.size = Pt(18)
+                carbon_para.add_run(" captured over 20 years of restoration")
+                carbon_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                equivs = personal.get('equivalencies', {})
+                if equivs:
+                    doc.add_paragraph()
+                    doc.add_paragraph("That's equivalent to:")
+                    doc.add_paragraph(f"    • {int(equivs.get('cars_off_road_for_year', 0)):,} cars removed from road for 1 year")
+                    doc.add_paragraph(f"    • {int(equivs.get('tree_seedlings_grown_10yr', 0)):,} tree seedlings grown for 10 years")
+                    doc.add_paragraph(f"    • {int(equivs.get('round_trip_flights_nyc_la', 0)):,} round-trip flights NYC to LA offset")
+                    doc.add_paragraph(f"    • {int(equivs.get('homes_electricity_year', 0)):,} homes powered for 1 year")
+
+            elif request.carbon_analysis.get('professional'):
+                pro = request.carbon_analysis['professional']
+
+                # Methodology badge
+                method_para = doc.add_paragraph()
+                run = method_para.add_run(f"Methodology: {pro.get('methodology', 'IPCC Tier 2')}")
+                run.bold = True
+                method_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                doc.add_paragraph()
+
+                # Carbon Stock Summary Table
+                doc.add_heading('Carbon Stock Summary', level=2)
+                carbon_table = doc.add_table(rows=5, cols=3)
+                carbon_table.style = 'Table Grid'
+
+                # Headers
+                carbon_headers = ['Metric', 'Value', 'Unit']
+                for i, header in enumerate(carbon_headers):
+                    cell = carbon_table.rows[0].cells[i]
+                    cell.text = header
+                    cell.paragraphs[0].runs[0].bold = True
+
+                # Data
+                carbon_data = [
+                    ['Baseline Carbon Stock', f"{pro.get('baseline_carbon_tc', 0):,.1f}", 'tC'],
+                    ['Carbon Lost to Fire', f"-{pro.get('carbon_lost_tc', 0):,.1f}", 'tC'],
+                    ['Current Carbon Stock', f"{pro.get('current_carbon_tc', 0):,.1f}", 'tC'],
+                    ['Annual Sequestration Rate', f"{pro.get('annual_sequestration_tco2e', 0):,.1f}", 'tCO₂e/year'],
+                ]
+
+                for row_idx, row_data in enumerate(carbon_data):
+                    for col_idx, cell_data in enumerate(row_data):
+                        carbon_table.rows[row_idx + 1].cells[col_idx].text = cell_data
+
+                doc.add_paragraph()
+
+                # Sequestration Projections
+                doc.add_heading('Sequestration Projections', level=2)
+
+                projections = pro.get('projections', [])
+                if projections:
+                    proj_table = doc.add_table(rows=len(projections) + 1, cols=3)
+                    proj_table.style = 'Table Grid'
+
+                    # Headers
+                    proj_headers = ['Timeframe', 'Cumulative tCO₂e', 'Annual Rate']
+                    for i, header in enumerate(proj_headers):
+                        cell = proj_table.rows[0].cells[i]
+                        cell.text = header
+                        cell.paragraphs[0].runs[0].bold = True
+
+                    # Data
+                    for row_idx, proj in enumerate(projections):
+                        proj_table.rows[row_idx + 1].cells[0].text = f"{proj.get('years', 0)} years"
+                        proj_table.rows[row_idx + 1].cells[1].text = f"{proj.get('cumulative_tco2e', 0):,.0f}"
+                        proj_table.rows[row_idx + 1].cells[2].text = f"{proj.get('annual_rate_tco2e', 0):,.1f} tCO₂e/yr"
+                else:
+                    # Generate default projections
+                    annual_rate = pro.get('annual_sequestration_tco2e', 0)
+                    proj_table = doc.add_table(rows=5, cols=3)
+                    proj_table.style = 'Table Grid'
+
+                    proj_headers = ['Timeframe', 'Cumulative tCO₂e', 'Annual Rate']
+                    for i, header in enumerate(proj_headers):
+                        cell = proj_table.rows[0].cells[i]
+                        cell.text = header
+                        cell.paragraphs[0].runs[0].bold = True
+
+                    for row_idx, years in enumerate([5, 10, 15, 20]):
+                        proj_table.rows[row_idx + 1].cells[0].text = f"{years} years"
+                        proj_table.rows[row_idx + 1].cells[1].text = f"{(annual_rate * years):,.0f}"
+                        proj_table.rows[row_idx + 1].cells[2].text = f"{annual_rate:,.1f} tCO₂e/yr"
+
+                doc.add_paragraph()
+
+                # Protocol Eligibility
+                doc.add_heading('Carbon Credit Protocol Eligibility', level=2)
+
+                protocols = pro.get('protocols', {})
+                if protocols:
+                    proto_table = doc.add_table(rows=len(protocols) + 1, cols=2)
+                    proto_table.style = 'Table Grid'
+
+                    proto_table.rows[0].cells[0].text = 'Protocol'
+                    proto_table.rows[0].cells[0].paragraphs[0].runs[0].bold = True
+                    proto_table.rows[0].cells[1].text = 'Eligibility'
+                    proto_table.rows[0].cells[1].paragraphs[0].runs[0].bold = True
+
+                    for row_idx, (protocol, eligible) in enumerate(protocols.items()):
+                        proto_name = protocol.replace('_', ' ').replace('eligible', '').strip().title()
+                        proto_table.rows[row_idx + 1].cells[0].text = proto_name
+                        proto_table.rows[row_idx + 1].cells[1].text = 'Eligible' if eligible else 'Not Eligible'
+                else:
+                    doc.add_paragraph("Protocol eligibility assessment pending. Contact EcoRevive for detailed analysis.")
+
+                doc.add_paragraph()
+
+                # Uncertainty Quantification
+                doc.add_heading('Uncertainty Analysis', level=2)
+
+                ci_low = pro.get('confidence_interval_low', 0)
+                ci_high = pro.get('confidence_interval_high', 0)
+                uncertainty = pro.get('uncertainty_pct', 25)
+
+                uncert_para = doc.add_paragraph()
+                uncert_para.add_run("95% Confidence Interval (20-year projection): ").bold = True
+                uncert_para.add_run(f"{ci_low:,.0f} - {ci_high:,.0f} tCO₂e")
+                doc.add_paragraph(f"Combined Uncertainty: ±{uncertainty}%")
+
+                doc.add_paragraph()
+
+                # Limitations
+                doc.add_heading('Methodological Limitations', level=2)
+
+                limitations = pro.get('limitations', [
+                    'Remote sensing estimates require ground-truth verification',
+                    'Carbon stock calculations assume typical forest composition',
+                    'Sequestration rates may vary based on management practices',
+                    'Does not account for natural disturbance risk',
+                    'Baseline estimates derived from regional averages'
+                ])
+
+                for lim in limitations:
+                    doc.add_paragraph(f"• {lim}")
+
+                doc.add_paragraph()
+
+                # Data Sources
+                doc.add_heading('Data Sources', level=2)
+
+                sources = pro.get('data_sources', [
+                    'Sentinel-2 MSI multispectral imagery (10m resolution)',
+                    'U-Net deep learning model trained on California wildfires',
+                    'IPCC Guidelines for National GHG Inventories (2006, 2019 Refinement)',
+                    'FIA forest inventory regional parameters',
+                    'Gemini multimodal AI for contextual analysis'
+                ])
+
+                for src in sources:
+                    doc.add_paragraph(f"• {src}")
+
+        doc.add_paragraph()
+
+        # ==================== SITE CONTEXT ====================
+        if request.layer3_context and request.layer3_context.get('land_use'):
+            doc.add_heading('Site Context', level=1)
+            land_use = request.layer3_context.get('land_use', {})
+            land_type = land_use.get('land_use_type', 'Unknown').title()
+            doc.add_paragraph(f"Land Classification: {land_type}")
+            if land_use.get('land_use_description'):
+                doc.add_paragraph(land_use.get('land_use_description'))
+
+        # ==================== SAFETY NOTICE ====================
+        doc.add_heading('Safety Notice', level=1)
+
+        if high_sev > 40:
+            level = "HIGH"
+            message = "This site has significant high-severity burn areas. Before visiting, be aware of hazards like standing dead trees (widowmakers), unstable slopes, and ash pits. Always go with a buddy and inform someone of your plans."
+        elif high_sev > 20:
+            level = "MODERATE"
+            message = "Exercise caution when visiting this site. Some areas may have standing dead trees and loose soil. Wear sturdy boots and bring plenty of water."
+        else:
+            level = "LOW"
+            message = "This site appears relatively safe for visits, but always be aware of your surroundings. Standard outdoor safety precautions apply."
+
+        safety_para = doc.add_paragraph()
+        run = safety_para.add_run(f"SAFETY LEVEL: {level}")
+        run.bold = True
+        doc.add_paragraph(message)
+
+        doc.add_paragraph()
+
+        # ==================== HOW YOU CAN HELP ====================
+        doc.add_heading('How You Can Help', level=1)
+
+        actions = [
+            ("Learn About Native Species", "Research which native plants thrive in your region. Focus on fire-adapted species."),
+            ("Join Restoration Events", "Connect with local conservation groups that organize volunteer planting days."),
+            ("Support Organizations", "Donate to or volunteer with groups like One Tree Planted or local land trusts."),
+            ("Monitor & Document", "If you visit the site, document recovery with photos for citizen science."),
+            ("Reduce Fire Risk", "Create defensible space around homes and practice fire-safe behaviors."),
+            ("Spread Awareness", "Share information about wildfire recovery with your community."),
+        ]
+
+        for i, (title_text, desc) in enumerate(actions, 1):
+            action_para = doc.add_paragraph()
+            action_para.add_run(f"{i}. {title_text}: ").bold = True
+            action_para.add_run(desc)
+
+        doc.add_paragraph()
+
+        # ==================== RECOVERY TIMELINE ====================
+        doc.add_heading('Recovery Timeline', level=1)
+
+        timeline_table = doc.add_table(rows=5, cols=2)
+        timeline_table.style = 'Table Grid'
+
+        timeline_data = [
+            ['Timeframe', 'What to Expect'],
+            ['Year 1-2', 'Ground cover begins returning. Pioneer grasses and shrubs establish.'],
+            ['Year 3-5', 'Shrub layer develops. Tree seedlings visible. Wildlife returns.'],
+            ['Year 5-10', 'Young forest structure emerges. Canopy begins closing.'],
+            ['Year 10-20', 'Maturing forest. Carbon sequestration accelerates.'],
+        ]
+
+        for row_idx, row_data in enumerate(timeline_data):
+            for col_idx, cell_data in enumerate(row_data):
+                cell = timeline_table.rows[row_idx].cells[col_idx]
+                cell.text = cell_data
+                if row_idx == 0:
+                    cell.paragraphs[0].runs[0].bold = True
+
+        doc.add_paragraph()
+
+        # ==================== FOOTER ====================
+        doc.add_paragraph()
+        footer = doc.add_paragraph()
+        footer.add_run(f"Generated by EcoRevive on {timestamp}").italic = True
+        footer.add_run("\nData sources: Sentinel-2 satellite imagery, U-Net deep learning model, Gemini AI analysis")
+        footer.add_run("\nThis report is for informational purposes. Verify with ground-truth data before making decisions.")
+        footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+        # Save to bytes
+        docx_buffer = io.BytesIO()
+        doc.save(docx_buffer)
+        docx_buffer.seek(0)
+        docx_bytes = docx_buffer.read()
+
+        # Encode to base64
+        docx_base64 = base64.b64encode(docx_bytes).decode('utf-8')
+
+        filename = f"EcoRevive_{location_name.replace(' ', '_').replace(',', '')}_{datetime.now().strftime('%Y%m%d')}.docx"
+
+        print(f"   [OK] Word document generated: {filename}")
+
+        return WordExportResponse(
+            success=True,
+            docx_base64=docx_base64,
+            filename=filename
+        )
+
+    except ImportError:
+        return WordExportResponse(
+            success=False,
+            error="python-docx library not installed. Install with: pip install python-docx"
+        )
+    except Exception as e:
+        print(f"[ERROR] Word export failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return WordExportResponse(
+            success=False,
+            error=str(e)
+        )
+
+
+def _calculate_area_km2(bbox: Dict[str, float]) -> float:
+    """Calculate area in km² from bbox."""
+    import math
+    lat_mid = (bbox['north'] + bbox['south']) / 2
+    km_per_deg_lat = 110.574
+    km_per_deg_lon = 111.32 * math.cos(math.radians(lat_mid))
+    width = abs(bbox['east'] - bbox['west']) * km_per_deg_lon
+    height = abs(bbox['north'] - bbox['south']) * km_per_deg_lat
+    return width * height
+
+
+@app.post("/api/hope-visualization", response_model=HopeVisualizationResponse)
+async def generate_hope_visualization(request: HopeVisualizationRequest):
+    """
+    Generate hope visualization using Imagen 3.
+
+    Creates AI-generated photorealistic images showing ecosystem recovery
+    at different time points (5, 10, 15 years).
+    """
+    try:
+        from reasoning.gemini_hope import HopeVisualizer
+        from reasoning import create_client
+        import io
+
+        print(f"[INFO] Hope visualization request: {request.ecosystem_type}, {request.years_in_future} years")
+
+        # Create Gemini client and visualizer
+        client = create_client()
+        visualizer = HopeVisualizer(gemini_client=client)
+
+        # Generate recovery forecast first (text-based timeline)
+        forecast = visualizer.forecast_recovery(
+            ecosystem_type=request.ecosystem_type,
+            mean_severity=request.mean_severity,
+            restoration_method="combination",
+            area_hectares=request.area_hectares
+        )
+
+        # Try to generate image with Imagen 3
+        image_result = visualizer.generate_hope_image(
+            ecosystem_type=request.ecosystem_type,
+            years_in_future=request.years_in_future,
+        )
+
+        image_base64 = None
+        description = None
+
+        # Check if we got an image
+        if image_result.get("image"):
+            # Convert PIL image to base64
+            img = image_result["image"]
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            image_base64 = f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
+            print(f"   [OK] Generated Imagen 3 visualization")
+        elif image_result.get("fallback_description"):
+            # Use text description as fallback
+            description = image_result["fallback_description"]
+            print(f"   [WARNING] Using text fallback (Imagen unavailable)")
+
+        # Extract hope message from forecast
+        hope_message = forecast.get("hope_message", "")
+        if not description and hope_message:
+            description = hope_message
+
+        return HopeVisualizationResponse(
+            success=True,
+            image_base64=image_base64,
+            forecast=forecast,
+            description=description
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Hope visualization failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return HopeVisualizationResponse(
             success=False,
             error=str(e)
         )

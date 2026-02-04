@@ -116,7 +116,7 @@ def plot_prediction(
     
     if save_path:
         plt.savefig(save_path, dpi=150, bbox_inches='tight')
-        print(f"💾 Saved: {save_path}")
+        print(f"[OK] Saved: {save_path}")
     
     return fig
 
@@ -295,7 +295,7 @@ def plot_severity_legend(
 # ============================================================
 if __name__ == "__main__":
     print("=" * 60)
-    print("🎨 Testing Visualization")
+    print("Testing Visualization")
     print("=" * 60)
     
     # Create dummy data
@@ -305,19 +305,19 @@ if __name__ == "__main__":
     ground_truth = np.clip(np.random.randn(256, 256) * 0.3 + 0.5, 0, 1)
     
     # Test plotting
-    print("\n📊 Creating visualizations...")
+    print("\nCreating visualizations...")
     
     fig1 = plot_prediction(image, prediction, ground_truth, title="Test Prediction")
     plt.close(fig1)
-    print("   ✅ plot_prediction")
+    print("   [OK] plot_prediction")
     
     fig2 = plot_comparison([prediction, ground_truth], ['Prediction', 'Ground Truth'])
     plt.close(fig2)
-    print("   ✅ plot_comparison")
+    print("   [OK] plot_comparison")
     
     fig3 = plot_error_map(prediction, ground_truth)
     plt.close(fig3)
-    print("   ✅ plot_error_map")
+    print("   [OK] plot_error_map")
     
     fig4 = plot_temporal_series({
         'pre_fire': np.zeros((256, 256)) + 0.1,
@@ -325,11 +325,11 @@ if __name__ == "__main__":
         'recovery_1yr': np.clip(prediction * 0.7, 0, 1),
     })
     plt.close(fig4)
-    print("   ✅ plot_temporal_series")
+    print("   [OK] plot_temporal_series")
     
     fig5 = plot_severity_legend()
     plt.close(fig5)
-    print("   ✅ plot_severity_legend")
+    print("   [OK] plot_severity_legend")
     
-    print("\n✅ All visualizations working!")
+    print("\n[OK] All visualizations working!")
     print("=" * 60)

@@ -90,7 +90,7 @@ def initialize_ee():
         import ee
         try:
             ee.Initialize(project='hale-life-482914-r0')
-            print("✅ Earth Engine initialized")
+            print("[OK] Earth Engine initialized")
             return True
         except Exception as e:
             print(f"Trying authentication: {e}")
@@ -98,7 +98,7 @@ def initialize_ee():
             ee.Initialize(project='hale-life-482914-r0')
             return True
     except Exception as e:
-        print(f"❌ Earth Engine failed: {e}")
+        print(f"[ERROR] Earth Engine failed: {e}")
         return False
 
 def center_to_bbox(center_lat, center_lon, size_m=2560):
@@ -192,7 +192,7 @@ def download_sentinel2_tile(center, start_date, end_date):
         return image_array
         
     except Exception as e:
-        print(f"   ⚠️ Error: {e}")
+        print(f"   [WARNING] Error: {e}")
         raise
 
 # =============================================================================

@@ -66,11 +66,11 @@ class EcologyRAG:
         cache_path = CACHE_DIR / "ecology_vectors.json"
         
         if cache_path.exists() and not self.rebuild_index:
-            print("📂 Loading cached ecology vector store...")
+            print("Loading cached ecology vector store...")
             self.store = SimpleVectorStore()
             self.store.load(str(cache_path))
         else:
-            print("🔨 Building ecology vector store...")
+            print("Building ecology vector store...")
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             
             # Find all ecology knowledge base files
@@ -86,7 +86,7 @@ class EcologyRAG:
             )
         
         self._initialized = True
-        print(f"✅ Ecology RAG initialized with {len(self.store)} documents")
+        print(f"[OK] Ecology RAG initialized with {len(self.store)} documents")
     
     def get_species_recommendations(
         self,
@@ -298,11 +298,11 @@ class LegalRAG:
         cache_path = CACHE_DIR / "legal_vectors.json"
         
         if cache_path.exists() and not self.rebuild_index:
-            print("📂 Loading cached legal vector store...")
+            print("Loading cached legal vector store...")
             self.store = SimpleVectorStore()
             self.store.load(str(cache_path))
         else:
-            print("🔨 Building legal vector store...")
+            print("Building legal vector store...")
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
             
             legal_files = list(LEGAL_DIR.glob("*.json"))
@@ -317,7 +317,7 @@ class LegalRAG:
             )
         
         self._initialized = True
-        print(f"✅ Legal RAG initialized with {len(self.store)} documents")
+        print(f"[OK] Legal RAG initialized with {len(self.store)} documents")
     
     def get_land_ownership(
         self,
@@ -496,7 +496,7 @@ class CombinedRAG:
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🌲 EcoRevive RAG Test")
+    print("EcoRevive RAG Test")
     print("=" * 60)
     
     try:
@@ -510,7 +510,7 @@ if __name__ == "__main__":
             "fire-resistant trees for Sierra Nevada high elevation"
         )
         
-        print(f"\n🌲 Species recommendations:")
+        print(f"\nSpecies recommendations:")
         for s in species[:3]:
             print(f"   [{s['score']:.2f}] {s.get('scientific_name', 'Unknown')}")
         
@@ -519,13 +519,13 @@ if __name__ == "__main__":
             "Dixie Fire area Plumas County"
         )
         
-        print(f"\n🗺️ Ecoregion info:")
+        print(f"\nEcoregion info:")
         for e in ecoregions[:2]:
             print(f"   [{e['score']:.2f}] {e.get('ecoregion_id', 'Unknown')}")
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to test the RAG system.")
     except FileNotFoundError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Create knowledge base files first.")

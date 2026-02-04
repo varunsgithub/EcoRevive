@@ -252,7 +252,7 @@ def compute_severity_metrics(
 # ============================================================
 if __name__ == "__main__":
     print("=" * 60)
-    print("🧪 Testing Metrics")
+    print("Testing Metrics")
     print("=" * 60)
     
     # Create dummy predictions
@@ -292,5 +292,5 @@ if __name__ == "__main__":
         if metrics.get('count', 0) > 0:
             print(f"   {sev}: MAE={metrics['mae']:.4f}, bias={metrics['bias']:+.4f}")
     
-    print("\n✅ All metrics working!")
+    print("\n[OK] All metrics working!")
     print("=" * 60)

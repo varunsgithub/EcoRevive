@@ -865,7 +865,7 @@ class MultimodalAnalyzer:
         )
         
         # Call Gemini with multimodal input
-        print(f"🔬 Running multimodal analysis at ({location[0]:.4f}, {location[1]:.4f})...")
+        print(f"Running multimodal analysis at ({location[0]:.4f}, {location[1]:.4f})...")
         print(f"   Sending {len(images)} images to Gemini")
         
         response = self.client.analyze_multimodal(
@@ -914,9 +914,9 @@ class MultimodalAnalyzer:
             result['status'] = 'quality_gate_failed'
             result['reason'] = sq.get('quality_notes', 'Segmentation unusable')
         
-        print(f"   ✅ Analysis complete. Quality: {sq.get('overall_quality', 'unknown')}")
+        print(f"   [OK] Analysis complete. Quality: {sq.get('overall_quality', 'unknown')}")
         if needs_review:
-            print(f"   ⚠️ Human review required: {', '.join(review_triggers)}")
+            print(f"   [WARNING] Human review required: {', '.join(review_triggers)}")
         
         return result
     
@@ -965,7 +965,7 @@ class MultimodalAnalyzer:
         prompt = build_layer2_prompt(context=context)
         
         # Call Gemini with multimodal input
-        print(f"📊 Running Layer 2 structured analysis at ({location[0]:.4f}, {location[1]:.4f})...")
+        print(f"Running Layer 2 structured analysis at ({location[0]:.4f}, {location[1]:.4f})...")
         print(f"   Sending {len(images)} images for JSON extraction")
         
         response = self.client.analyze_multimodal(
@@ -986,7 +986,7 @@ class MultimodalAnalyzer:
         # Map Gemini output to Layer2Output-compatible structure
         layer2_data = self._transform_to_layer2_schema(gemini_output)
         
-        print(f"   ✅ Layer 2 extraction complete")
+        print(f"   [OK] Layer 2 extraction complete")
         
         return {
             'status': 'complete',
@@ -1091,7 +1091,7 @@ def analyze_with_multimodal(
 if __name__ == "__main__":
     # Demo mode
     print("=" * 60)
-    print("🔬 EcoRevive Multimodal Analyzer Demo")
+    print("EcoRevive Multimodal Analyzer Demo")
     print("=" * 60)
     
     # Create synthetic test data
@@ -1109,14 +1109,14 @@ if __name__ == "__main__":
     location = (40.05, -121.20)  # Dixie Fire location
     
     # Test image pack creation
-    print("\n📸 Testing image pack creation...")
+    print("\nTesting image pack creation...")
     images = create_image_pack(rgb, severity)
     print(f"   Created {len(images)} images:")
     for i, img in enumerate(images):
         print(f"   - Image {i+1}: {img.size}, mode={img.mode}")
     
     # Test context building
-    print("\n📋 Testing context building...")
+    print("\nTesting context building...")
     context = build_gemini_context(
         location=location,
         severity_map=severity,
@@ -1127,11 +1127,11 @@ if __name__ == "__main__":
     print(f"   Burn stats: mean={context['burn_statistics']['mean_severity']:.2%}")
     
     # Test prompt building
-    print("\n📝 Testing prompt building...")
+    print("\nTesting prompt building...")
     prompt = build_multimodal_prompt(context)
     print(f"   Prompt length: {len(prompt)} characters")
     
-    print("\n✅ All module components working correctly!")
+    print("\n[OK] All module components working correctly!")
     print("\nTo run full analysis, set GOOGLE_API_KEY and use:")
     print("   from reasoning.gemini_multimodal import analyze_with_multimodal")
     print("   result = analyze_with_multimodal(rgb, severity, location)")

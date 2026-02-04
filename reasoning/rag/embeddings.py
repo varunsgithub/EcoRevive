@@ -42,7 +42,7 @@ class GeminiEmbeddings:
             )
         genai.configure(api_key=self.api_key)
         
-        print(f"✅ Gemini Embeddings initialized")
+        print(f"[OK] Gemini Embeddings initialized")
         print(f"   Model: {self.MODEL_NAME}")
         print(f"   Dimension: {self.EMBEDDING_DIMENSION}")
     
@@ -96,7 +96,7 @@ class GeminiEmbeddings:
             embeddings.append(embedding)
         
         if show_progress:
-            print(f"   ✅ Embedded {total} documents")
+            print(f"   [OK] Embedded {total} documents")
             
         return embeddings
     
@@ -760,7 +760,7 @@ def _format_indigenous_rights_document(right_id: str, data: Dict) -> str:
     if "constraints_absolute" in data:
         lines.append("ABSOLUTE CONSTRAINTS (non-negotiable):")
         for c in data["constraints_absolute"]:
-            lines.append(f"  ⚠️ {c}")
+            lines.append(f"  [WARNING] {c}")
     
     # General constraints
     if "constraints" in data:
@@ -839,7 +839,7 @@ def _format_site_legal_template(site_type: str, data: Dict) -> str:
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🔢 Gemini Embeddings Test")
+    print("Gemini Embeddings Test")
     print("=" * 60)
     
     try:
@@ -849,10 +849,10 @@ if __name__ == "__main__":
         test_text = "Ponderosa Pine grows at elevations of 1000-2500 meters in the Sierra Nevada."
         embedding = embeddings.embed_text(test_text)
         
-        print(f"\n📝 Test text: {test_text[:50]}...")
+        print(f"\nTest text: {test_text[:50]}...")
         print(f"   Embedding dimension: {len(embedding)}")
         print(f"   First 5 values: {embedding[:5]}")
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to test embeddings.")

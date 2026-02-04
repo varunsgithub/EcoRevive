@@ -273,7 +273,7 @@ class RestorationOrchestrator:
         prompt_template = USER_TYPE_PROMPTS.get(user_type, USER_TYPE_PROMPTS["professional"])
         prompt = prompt_template.format(lat=lat, lon=lon, severity=severity)
         
-        print(f"🎯 Starting orchestrated analysis for {user_type} user")
+        print(f"Starting orchestrated analysis for {user_type} user")
         print(f"   Location: ({lat:.4f}, {lon:.4f})")
         print(f"   Mean severity: {severity:.1%}")
         print()
@@ -299,7 +299,7 @@ class RestorationOrchestrator:
             func_name = call["name"]
             func_args = call["args"]
             
-            print(f"   📞 Gemini requested: {func_name}")
+            print(f"   Gemini requested: {func_name}")
             
             # Add location to args if not present
             if "latitude" not in func_args and "longitude" not in func_args:
@@ -316,7 +316,7 @@ class RestorationOrchestrator:
                         "args": func_args,
                         "status": "success"
                     })
-                    print(f"      ✅ {func_name} completed")
+                    print(f"      [OK] {func_name} completed")
                 except Exception as e:
                     results["function_calls"].append({
                         "name": func_name,
@@ -324,9 +324,9 @@ class RestorationOrchestrator:
                         "status": "error",
                         "error": str(e)
                     })
-                    print(f"      ❌ {func_name} failed: {e}")
+                    print(f"      [ERROR] {func_name} failed: {e}")
             else:
-                print(f"      ⚠️ No handler for {func_name}")
+                print(f"      [WARNING] No handler for {func_name}")
         
         # Synthesize final report
         results["synthesis"] = self._synthesize_results(results, user_type)
@@ -512,7 +512,7 @@ def orchestrate_analysis(
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🎯 EcoRevive Orchestrator Demo")
+    print("EcoRevive Orchestrator Demo")
     print("=" * 60)
     
     # Demo data
@@ -534,5 +534,5 @@ if __name__ == "__main__":
             print(f"  - {call['name']}: {call['status']}")
         
     except ValueError as e:
-        print(f"\n⚠️ {e}")
+        print(f"\n[WARNING] {e}")
         print("Set GOOGLE_API_KEY to run the demo.")

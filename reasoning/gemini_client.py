@@ -54,7 +54,7 @@ class EcoReviveGemini:
         # Model names
         self.model_name = 'gemini-3-flash-preview'  # Use stable model
         
-        print("✅ EcoRevive Gemini client initialized")
+        print("[OK] EcoRevive Gemini client initialized")
         print(f"   - Model: {self.model_name}")
         print(f"   - SDK: google.genai (unified)")
     
@@ -90,10 +90,10 @@ class EcoReviveGemini:
         # Add text prompt
         contents.append(prompt)
         
-        # Configure generation
+        # Configure generation - use smaller token limit for faster responses
         config = types.GenerateContentConfig(
             temperature=0.1 if use_json else 0.2,
-            max_output_tokens=8192,
+            max_output_tokens=2048,  # Reduced from 8192 for faster responses
         )
         
         # Add JSON response format if requested
@@ -135,10 +135,10 @@ class EcoReviveGemini:
         Returns:
             Response with grounded answer and sources
         """
-        # Configure with Google Search tool
+        # Configure with Google Search tool - smaller token limit for speed
         config = types.GenerateContentConfig(
             temperature=0.2,
-            max_output_tokens=8192,
+            max_output_tokens=2048,
             tools=[types.Tool(google_search=types.GoogleSearch())]
         )
         
@@ -192,10 +192,10 @@ class EcoReviveGemini:
         Returns:
             Response with text and/or function calls
         """
-        # Configure with function tools
+        # Configure with function tools - smaller token limit for speed
         config = types.GenerateContentConfig(
             temperature=0.2,
-            max_output_tokens=8192,
+            max_output_tokens=2048,
             tools=tools
         )
         
@@ -255,7 +255,7 @@ class EcoReviveGemini:
         """
         config = types.GenerateContentConfig(
             temperature=0.2,
-            max_output_tokens=8192,
+            max_output_tokens=2048,
             system_instruction=system_instruction
         )
         
@@ -284,9 +284,9 @@ if __name__ == "__main__":
             "What are the key factors in post-fire ecosystem recovery?",
             use_json=False
         )
-        print(f"\n📝 Response preview: {response['text'][:200]}...")
+        print(f"\nResponse preview: {response['text'][:200]}...")
         print(f"   Tokens used: {response['usage']}")
         
     except ValueError as e:
-        print(f"⚠️ {e}")
+        print(f"[WARNING] {e}")
         print("   Set GOOGLE_API_KEY to test the client.")

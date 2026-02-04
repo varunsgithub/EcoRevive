@@ -1,4 +1,4 @@
-# EcoRevive 🌲🔥
+# EcoRevive
 
 AI-powered wildfire damage assessment and ecosystem restoration planning using satellite imagery, deep learning, and Gemini 3.
 
@@ -61,4 +61,4 @@ EcoRevive/
 
 ---
 
-Built for the Gemini 3 Hackathon 🚀
+Built for the Gemini 3 Hackathon

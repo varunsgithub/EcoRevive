@@ -320,7 +320,7 @@ def save_model(
 # ============================================================
 if __name__ == "__main__":
     print("=" * 60)
-    print("🧪 Testing CaliforniaFireModel")
+    print("Testing CaliforniaFireModel")
     print("=" * 60)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -351,5 +351,5 @@ if __name__ == "__main__":
     print(f"Logits range: [{logits.min():.3f}, {logits.max():.3f}]")
     print(f"Probs range: [{probs.min():.3f}, {probs.max():.3f}]")
     
-    print("\n✅ Model test passed!")
+    print("\n[OK] Model test passed!")
     print("=" * 60)

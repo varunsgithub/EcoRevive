@@ -3,7 +3,7 @@
 
 ---
 
-## 🎯 What is EcoRevive?
+## What is EcoRevive?
 
 EcoRevive is an AI-powered ecosystem restoration tool that turns satellite imagery into **actionable restoration plans**.
 
@@ -11,7 +11,7 @@ EcoRevive is an AI-powered ecosystem restoration tool that turns satellite image
 
 ---
 
-## 👥 Two Users, Two Needs
+## Two Users, Two Needs
 
 We built this system backwards—starting from what real users need, not what's technically cool.
 
@@ -37,7 +37,7 @@ We built this system backwards—starting from what real users need, not what's 
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -77,7 +77,7 @@ We built this system backwards—starting from what real users need, not what's 
 │                    LAYER 1: VISION ENGINE                            │
 │  ┌─────────────────────────────────────────────────────────────────┐│
 │  │              California Fire Model (U-Net)                       ││
-│  │              ✅ ALREADY BUILT                                    ││
+│  │              [BUILT]                                             ││
 │  │                                                                  ││
 │  │  Input:  10-band Sentinel-2 imagery                             ││
 │  │  Output: Burn severity map (0-1 continuous)                     ││
@@ -98,7 +98,7 @@ We built this system backwards—starting from what real users need, not what's 
 
 ---
 
-## 📦 Expected Outputs (What the System Produces)
+## Expected Outputs (What the System Produces)
 
 ### For Professionals: The Restoration Report Package
 
@@ -143,18 +143,18 @@ EcoRevive_Report_[Site]_[Date]/
 
 ---
 
-## 🔧 Component Details
+## Component Details
 
-### Layer 1: Vision Engine (✅ BUILT)
+### Layer 1: Vision Engine (BUILT)
 
 **File:** `California-Fire-Model/`
 
 | Component | Status | Description |
 |-----------|--------|-------------|
-| `model/architecture.py` | ✅ Done | U-Net with attention gates |
-| `config.py` | ✅ Done | 7 training fires, 2 test fires |
-| `data/dataset.py` | ✅ Done | Sentinel-2 10-band loader |
-| `inference/predict.py` | ✅ Done | Run model on new imagery |
+| `model/architecture.py` | Done | U-Net with attention gates |
+| `config.py` | Done | 7 training fires, 2 test fires |
+| `data/dataset.py` | Done | Sentinel-2 10-band loader |
+| `inference/predict.py` | Done | Run model on new imagery |
 
 **What it produces:**
 ```python
@@ -165,7 +165,7 @@ EcoRevive_Report_[Site]_[Date]/
 
 ---
 
-### Layer 2: Reasoning Engine (🚧 TO BUILD)
+### Layer 2: Reasoning Engine (TO BUILD)
 
 **Purpose:** Take vision outputs + location and generate restoration intelligence.
 
@@ -217,7 +217,7 @@ def forecast_recovery(ecosystem_type: str, severity: float, intervention: str, y
 
 ---
 
-### Layer 3: Output Generator (🚧 TO BUILD)
+### Layer 3: Output Generator (TO BUILD)
 
 **Purpose:** Format Layer 2 outputs for consumption.
 
@@ -230,7 +230,7 @@ def forecast_recovery(ecosystem_type: str, severity: float, intervention: str, y
 
 ---
 
-## 📊 Data Flow Example
+## Data Flow Example
 
 ### Scenario: Scanning Blackwood Ridge (100 hectares, burned in 2025)
 
@@ -249,8 +249,8 @@ Step 3: LAYER 2 (Reasoning)
 │   └── "Reference ecosystem: Mixed Conifer Forest"
 │   └── "Species: Ponderosa Pine, Black Oak, Manzanita"
 ├── gemini_safety.py
-│   └── "⚠️ 47 widowmaker hazard zones detected"
-│   └── "🟠 3 landslide-risk slopes"
+│   └── "47 widowmaker hazard zones detected"
+│   └── "3 landslide-risk slopes"
 ├── gemini_legal.py
 │   └── "Tahoe National Forest (USFS)"
 │   └── "Contact: Jennifer Walsh, (530) 555-0142"
@@ -264,7 +264,7 @@ Step 4: LAYER 3 (Output)
 
 ---
 
-## 🚀 Implementation Priority
+## Implementation Priority
 
 ### Phase 1: Connect Vision to Reasoning (Week 1)
 - [ ] Create `gemini_ecosystem.py` - classify ecosystem from location
@@ -288,7 +288,7 @@ Step 4: LAYER 3 (Output)
 
 ---
 
-## 🔑 Key Insight
+## Key Insight
 
 **We already have the hardest part done.**
 
@@ -300,16 +300,16 @@ The remaining work is integration, not new ML training.
 
 ---
 
-## 📁 Proposed Directory Structure
+## Proposed Directory Structure
 
 ```
 EcoRevive/
-├── California-Fire-Model/     ← ✅ EXISTING (Vision Layer)
+├── California-Fire-Model/     <- EXISTING (Vision Layer)
 │   ├── model/
 │   ├── inference/
 │   └── ...
 │
-├── reasoning/                  ← 🚧 NEW (Layer 2)
+├── reasoning/                  <- NEW (Layer 2)
 │   ├── gemini_ecosystem.py
 │   ├── gemini_safety.py
 │   ├── gemini_legal.py
@@ -318,21 +318,21 @@ EcoRevive/
 │       ├── ecology_prompts.md
 │       └── legal_rules.json
 │
-├── outputs/                    ← 🚧 NEW (Layer 3)
+├── outputs/                    <- NEW (Layer 3)
 │   ├── report_builder.py
 │   ├── visualizer.py
 │   ├── impact_tracker.py
 │   └── templates/
 │
-├── frontend/                   ← 🚧 NEW (UI)
+├── frontend/                   <- NEW (UI)
 │   └── app.py                 # Streamlit dashboard
 │
-└── ARCHITECTURE.md            ← 📍 YOU ARE HERE
+└── ARCHITECTURE.md            <- YOU ARE HERE
 ```
 
 ---
 
-## ✅ Success Criteria
+## Success Criteria
 
 **For Professionals:**
 > "I can use this report to allocate my $500K budget and defend my decisions to donors."
@@ -342,4 +342,4 @@ EcoRevive/
 
 ---
 
-*Built with 🌲 by the EcoRevive Team*
+*Built by the EcoRevive Team*

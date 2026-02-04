@@ -2,7 +2,7 @@
 
 ---
 
-## 🐳 Option A: Docker (Recommended - Easiest!)
+## Option A: Docker (Recommended - Easiest!)
 
 If you have Docker Desktop installed, this is the simplest way:
 

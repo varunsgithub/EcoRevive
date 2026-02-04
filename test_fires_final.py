@@ -85,14 +85,14 @@ def initialize_ee():
         import ee
         try:
             ee.Initialize(project='hale-life-482914-r0')
-            print("✅ Earth Engine initialized")
+            print("[OK] Earth Engine initialized")
             return True
         except:
             ee.Authenticate()
             ee.Initialize(project='hale-life-482914-r0')
             return True
     except Exception as e:
-        print(f"❌ Earth Engine failed: {e}")
+        print(f"[ERROR] Earth Engine failed: {e}")
         return False
 
 def download_tile(center, start_date, end_date):
@@ -283,7 +283,7 @@ High (>70%): {(data['prediction'] > 0.7).mean()*100:.1f}%
     
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"\n💾 Saved: {output_path}")
+    print(f"\n[SAVE] Saved: {output_path}")
     plt.show()
 
 # =============================================================================
@@ -291,28 +291,28 @@ High (>70%): {(data['prediction'] > 0.7).mean()*100:.1f}%
 # =============================================================================
 def main():
     print("=" * 60)
-    print("🔥 EcoRevive Model Test - Using getDownloadURL")
+    print("[FIRE] EcoRevive Model Test - Using getDownloadURL")
     print("=" * 60)
     
     if not initialize_ee():
         return
     
     device = get_device()
-    print(f"\n🖥️ Device: {device}")
+    print(f"\n[DEVICE] Device: {device}")
     
     checkpoint = FIRE_MODEL_ROOT / "checkpoints" / "model.pth"
     if not checkpoint.exists():
-        print(f"❌ Model not found: {checkpoint}")
+        print(f"[ERROR] Model not found: {checkpoint}")
         return
     
     model = load_model(checkpoint, device)
-    print("✅ Model loaded!")
+    print("[OK] Model loaded!")
     
     results = {}
     
     for key, info in TEST_TILES.items():
         print(f"\n{'='*50}")
-        print(f"📍 {info['name']}")
+        print(f"[LOCATION] {info['name']}")
         print(f"   Center: {info['center']}")
         print(f"   {info['description']}")
         
@@ -325,7 +325,7 @@ def main():
             
             prediction = predict_severity(image, model, device)
             pct = (prediction > 0.3).mean() * 100
-            print(f"   ✅ Prediction: mean={prediction.mean():.1%}, max={prediction.max():.1%}, fire={pct:.1f}%")
+            print(f"   [OK] Prediction: mean={prediction.mean():.1%}, max={prediction.max():.1%}, fire={pct:.1f}%")
             
             results[key] = {
                 'name': info['name'],
@@ -337,7 +337,7 @@ def main():
             }
             
         except Exception as e:
-            print(f"   ❌ Error: {e}")
+            print(f"   [ERROR] Error: {e}")
             import traceback
             traceback.print_exc()
     
@@ -346,12 +346,12 @@ def main():
         visualize_results(results, output_path)
         
         print("\n" + "=" * 60)
-        print("📊 SUMMARY")
+        print("[SUMMARY] SUMMARY")
         print("=" * 60)
         for key, data in results.items():
             pct = (data['prediction'] > 0.3).mean() * 100
             high_pct = (data['prediction'] > 0.7).mean() * 100
-            status = "🔥" if pct > 20 else "🌲"
+            status = "[FIRE]" if pct > 20 else "[TREE]"
             print(f"   {status} {data['name']}: {pct:.1f}% fire, {high_pct:.1f}% high severity")
 
 if __name__ == "__main__":
