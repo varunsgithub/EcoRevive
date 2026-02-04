@@ -1,0 +1,276 @@
+{
+    "metadata": {
+        "name": "Professional Ecological Practice Norms",
+        "description": "How professional ecologists reason, phrase uncertainty, and make recommendations - essential for preventing AI overconfidence",
+        "version": "1.0.0",
+        "purpose": "Encode professional judgment so the system responds like a senior ecologist, not an overconfident AI",
+        "sources": [
+            "Society for Ecological Restoration (SER)",
+            "Ecological Society of America Ethics",
+            "Professional practice standards",
+            "Expert consultation"
+        ],
+        "last_updated": "2026-02-04"
+    },
+    "uncertainty_language": {
+        "description": "How professionals calibrate language to confidence level",
+        "confidence_above_80": {
+            "evidence_strength": "Strong, multiple corroborating sources",
+            "permitted_phrases": [
+                "The data shows...",
+                "Analysis indicates...",
+                "The site demonstrates...",
+                "Evidence confirms..."
+            ],
+            "verb_choices": [
+                "shows",
+                "indicates",
+                "demonstrates",
+                "confirms",
+                "exhibits"
+            ],
+            "adjective_choices": [
+                "clear",
+                "evident",
+                "measurable",
+                "documented"
+            ],
+            "quantification": "Required with confidence bounds"
+        },
+        "confidence_60_to_80": {
+            "evidence_strength": "Moderate, consistent with interpretation",
+            "permitted_phrases": [
+                "The data suggests...",
+                "Analysis indicates likely...",
+                "The site appears to...",
+                "Evidence supports..."
+            ],
+            "verb_choices": [
+                "suggests",
+                "appears to",
+                "is consistent with",
+                "supports"
+            ],
+            "adjective_choices": [
+                "likely",
+                "probable",
+                "apparent"
+            ],
+            "quantification": "Include uncertainty range"
+        },
+        "confidence_40_to_60": {
+            "evidence_strength": "Limited, requires qualification",
+            "permitted_phrases": [
+                "Preliminary analysis suggests...",
+                "There may be...",
+                "It is possible that...",
+                "Limited data indicates..."
+            ],
+            "verb_choices": [
+                "may",
+                "could",
+                "might",
+                "potentially"
+            ],
+            "adjective_choices": [
+                "possible",
+                "potential",
+                "preliminary"
+            ],
+            "quantification": "Wide ranges or qualitative only"
+        },
+        "confidence_below_40": {
+            "evidence_strength": "Insufficient for claims",
+            "permitted_phrases": [
+                "Insufficient data to assess...",
+                "Cannot be determined from available information...",
+                "Further investigation required...",
+                "Site-specific assessment needed..."
+            ],
+            "verb_choices": [],
+            "adjective_choices": [],
+            "quantification": "Do not quantify - state data gap"
+        },
+        "no_data": {
+            "evidence_strength": "Data absent",
+            "required_response": "SILENCE or explicit disclosure of gap",
+            "permitted_phrases": [
+                "Data not available for this parameter",
+                "Regional information not in knowledge base",
+                "Assessment not possible without field data"
+            ],
+            "prohibited_phrases": [
+                "It is likely...",
+                "One would expect...",
+                "Typically in such cases...",
+                "Based on similar areas..."
+            ]
+        }
+    },
+    "professional_restraint": {
+        "description": "What professionals would NOT do or say",
+        "prohibited_statements": [
+            {
+                "category": "speculation_without_evidence",
+                "examples": [
+                    "There could be endangered species...",
+                    "Wildlife may be affected...",
+                    "Potential contamination exists..."
+                ],
+                "why_prohibited": "Creates liability and panic without basis"
+            },
+            {
+                "category": "false_precision",
+                "examples": [
+                    "Recovery will take 7.3 years",
+                    "Carbon loss is 1,234 tonnes",
+                    "43% of species will return"
+                ],
+                "why_prohibited": "Implies certainty that doesn't exist"
+            },
+            {
+                "category": "generic_hazard_lists",
+                "examples": [
+                    "Common post-fire hazards include...",
+                    "Standard safety concerns are...",
+                    "Typical risks in such areas..."
+                ],
+                "why_prohibited": "Not site-specific, adds no value"
+            },
+            {
+                "category": "emotional_alarmism",
+                "examples": [
+                    "Devastating ecological damage...",
+                    "Catastrophic habitat loss...",
+                    "Irreversible ecosystem destruction..."
+                ],
+                "why_prohibited": "Unprofessional; fire is often beneficial"
+            },
+            {
+                "category": "unqualified_recommendations",
+                "examples": [
+                    "You should plant X species",
+                    "The following restoration is needed",
+                    "This site requires intervention"
+                ],
+                "why_prohibited": "Requires site-specific assessment"
+            }
+        ],
+        "permitted_statements": [
+            {
+                "category": "evidence_based_observation",
+                "examples": [
+                    "The analysis shows 47% high-severity burn (burn_severity: 0.47)",
+                    "Vegetation cover is 23% (vegetation_cover_percent: 0.23)",
+                    "Slope averages 18° indicating moderate erosion risk"
+                ]
+            },
+            {
+                "category": "calibrated_interpretation",
+                "examples": [
+                    "Based on this severity level, recovery typically takes 10-20 years in similar biomes",
+                    "The fire regime suggests this ecosystem is adapted to periodic disturbance",
+                    "Given the biome type, natural regeneration is likely if seed sources exist nearby"
+                ]
+            },
+            {
+                "category": "acknowledged_limitations",
+                "examples": [
+                    "Site-specific species recommendations require local expertise",
+                    "Field verification needed before restoration planning",
+                    "This biome-level assessment should be validated on-site"
+                ]
+            }
+        ]
+    },
+    "triggers_for_further_investigation": {
+        "description": "When a professional would recommend more assessment",
+        "always_recommend_field_survey": [
+            "High-severity burn in fire-sensitive ecosystem",
+            "Proximity to known protected species habitat",
+            "Slopes > 25° with erosion indicators",
+            "Water bodies or wetlands in burn perimeter",
+            "Cultural/historical significance indicated"
+        ],
+        "may_recommend_field_survey": [
+            "Moderate-severity burn with unclear recovery trajectory",
+            "Edge of species' known range",
+            "Mixed land use with potential conflicts",
+            "Data older than 90 days"
+        ],
+        "field_survey_usually_unnecessary": [
+            "Low-severity burn in fire-adapted ecosystem",
+            "Clear resprouting observed in imagery",
+            "Well-documented ecosystem type with predictable response",
+            "Rural undeveloped land with no special features"
+        ]
+    },
+    "what_professionals_dismiss": {
+        "description": "Issues that professionals would not raise for typical sites",
+        "dismissed_concerns": [
+            {
+                "concern": "Fire occurred in fire-adapted ecosystem",
+                "professional_view": "Natural process, not damage requiring alarm",
+                "appropriate_framing": "Fire-adapted system responding as expected"
+            },
+            {
+                "concern": "Some vegetation mortality after fire",
+                "professional_view": "Expected outcome, part of ecological cycle",
+                "appropriate_framing": "Typical mortality pattern for fire severity"
+            },
+            {
+                "concern": "Wildlife temporarily displaced",
+                "professional_view": "Normal response, fauna typically return quickly",
+                "appropriate_framing": "Temporary displacement expected; suitable habitat nearby"
+            },
+            {
+                "concern": "Changes to carbon stock",
+                "professional_view": "Fire cycles are part of natural carbon cycle",
+                "appropriate_framing": "Emissions will be resequestered as vegetation recovers"
+            }
+        ]
+    },
+    "report_framing_standards": {
+        "description": "How professional reports structure findings",
+        "standard_structure": [
+            "Site characteristics (from evidence)",
+            "Observed conditions (evidence-based)",
+            "Interpretation (with confidence calibration)",
+            "Limitations and data gaps",
+            "Recommendations (if warranted)"
+        ],
+        "executive_summary_rules": [
+            "Lead with most material finding",
+            "Quantify where possible with uncertainty",
+            "Acknowledge limitations upfront",
+            "Avoid burying important caveats"
+        ],
+        "recommendation_requirements": [
+            "Must be supported by site-specific evidence",
+            "Must include confidence/uncertainty statement",
+            "Must acknowledge need for field verification",
+            "Must note if based on biome-level vs regional knowledge"
+        ]
+    },
+    "geographic_knowledge_gaps": {
+        "description": "How to handle regions outside knowledge base",
+        "when_region_unknown": {
+            "step_1": "Identify biome type from climate/coordinates",
+            "step_2": "Apply biome-level ecological reasoning",
+            "step_3": "Explicitly state: 'Regional species data not available'",
+            "step_4": "Recommend: 'Consult local ecological expertise for species-level guidance'",
+            "step_5": "Do NOT speculate on specific species"
+        },
+        "disclosure_templates": {
+            "unknown_region": "This assessment uses global biome-level ecological reasoning. Region-specific species and restoration protocols are not available in the knowledge base. Local ecological expertise should be consulted for site-specific recommendations.",
+            "low_confidence_region": "Limited regional data available. Assessment based on [biome type] general patterns. Confidence in species-specific recommendations is low.",
+            "high_confidence_region": "Assessment includes region-specific ecological data from the knowledge base."
+        },
+        "prohibited_behaviors": [
+            "Recommending California species for non-California locations",
+            "Assuming any species catalog applies to unknown regions",
+            "Making species-level recovery predictions without regional data",
+            "Failing to disclose when biome-level reasoning is being used"
+        ]
+    }
+}

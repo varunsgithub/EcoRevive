@@ -61,6 +61,7 @@ app.add_middleware(
 ee_initialized = False
 model = None
 device = None
+rag_system = None  # RAG system for knowledge-grounded responses
 
 
 # Request/Response Models
@@ -299,15 +300,36 @@ def run_inference(image_array: np.ndarray) -> tuple:
         output = model(tensor)
         severity_map = torch.sigmoid(output).squeeze().cpu().numpy()
     
+    # Standardized Thresholds (matching reasoning engine)
+    THRESH_HIGH = 0.66
+    THRESH_MODERATE = 0.27
+    THRESH_LOW = 0.1
+    
+    # Basic masks
+    pixel_count = severity_map.size
+    burned_mask = severity_map > THRESH_LOW
+    burned_pixel_count = np.sum(burned_mask)
+    
     # Compute statistics
     stats = {
+        # Raw field-wide stats (legacy compatibility)
         'mean_severity': float(severity_map.mean()),
         'max_severity': float(severity_map.max()),
         'min_severity': float(severity_map.min()),
-        'burned_ratio': float((severity_map > 0.5).mean()),
-        'high_severity_ratio': float((severity_map > 0.75).mean()),
-        'moderate_severity_ratio': float(((severity_map > 0.25) & (severity_map <= 0.75)).mean()),
-        'low_severity_ratio': float((severity_map <= 0.25).mean()),
+        'burned_ratio': float(np.mean(severity_map > 0.5)), # Keep legacy definition for now
+        
+        # Standardized Ratios (Field-wide)
+        'high_severity_ratio': float(np.mean(severity_map > THRESH_HIGH)),
+        'moderate_severity_ratio': float(np.mean((severity_map > THRESH_MODERATE) & (severity_map <= THRESH_HIGH))),
+        'low_severity_ratio': float(np.mean((severity_map <= THRESH_MODERATE))),
+        
+        # Ecologically Valid Metrics (Within Burn Scar)
+        'burned_area_ratio': float(burned_pixel_count / pixel_count) if pixel_count > 0 else 0,
+        'mean_severity_in_burn_area': float(severity_map[burned_mask].mean()) if burned_pixel_count > 0 else 0.0,
+        
+        'high_severity_in_burn_area': float(np.sum(severity_map > THRESH_HIGH) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+        'moderate_severity_in_burn_area': float(np.sum((severity_map > THRESH_MODERATE) & (severity_map <= THRESH_HIGH)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+        'low_severity_in_burn_area': float(np.sum((severity_map > THRESH_LOW) & (severity_map <= THRESH_MODERATE)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
     }
     
     return severity_map, stats
@@ -361,15 +383,36 @@ def run_tiled_inference(tiles: list, metadata: dict) -> tuple:
     # Compute combined statistics
     if all_severities:
         combined = np.concatenate([s.flatten() for s in all_severities])
+        
+        # Standardized Thresholds
+        THRESH_HIGH = 0.66
+        THRESH_MODERATE = 0.27
+        THRESH_LOW = 0.1
+        
+        pixel_count = combined.size
+        burned_mask = combined > THRESH_LOW
+        burned_pixel_count = np.sum(burned_mask)
+        
         stats = {
+            # Raw field-wide
             'mean_severity': float(combined.mean()),
             'max_severity': float(combined.max()),
             'min_severity': float(combined.min()),
             'burned_ratio': float((combined > 0.5).mean()),
-            'high_severity_ratio': float((combined > 0.75).mean()),
-            'moderate_severity_ratio': float(((combined > 0.25) & (combined <= 0.75)).mean()),
-            'low_severity_ratio': float((combined <= 0.25).mean()),
             'n_tiles_processed': len(tiles),
+            
+             # Standardized Ratios (Field-wide)
+            'high_severity_ratio': float(np.mean(combined > THRESH_HIGH)),
+            'moderate_severity_ratio': float(np.mean((combined > THRESH_MODERATE) & (combined <= THRESH_HIGH))),
+            'low_severity_ratio': float(np.mean((combined <= THRESH_MODERATE))),
+            
+            # Ecologically Valid Metrics (Within Burn Scar)
+            'burned_area_ratio': float(burned_pixel_count / pixel_count) if pixel_count > 0 else 0,
+            'mean_severity_in_burn_area': float(combined[burned_mask].mean()) if burned_pixel_count > 0 else 0.0,
+            
+            'high_severity_in_burn_area': float(np.sum(combined > THRESH_HIGH) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+            'moderate_severity_in_burn_area': float(np.sum((combined > THRESH_MODERATE) & (combined <= THRESH_HIGH)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+            'low_severity_in_burn_area': float(np.sum((combined > THRESH_LOW) & (combined <= THRESH_MODERATE)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
         }
     else:
         stats = {'mean_severity': 0, 'n_tiles_processed': 0}
@@ -695,7 +738,7 @@ def _get_text_only_analysis(stats: Dict[str, Any], bbox: Dict[str, float], user_
     if user_type == "professional":
         prompt = f"""You are an expert wildfire restoration ecologist. Analyze this burn severity assessment:
 
-**Location**: {bbox['south']:.4f}°N to {bbox['north']:.4f}°N, {bbox['west']:.4f}°W to {bbox['east']:.4f}°W
+**Location**: {abs(bbox['south']):.4f}°{'N' if bbox['south'] >= 0 else 'S'} to {abs(bbox['north']):.4f}°{'N' if bbox['north'] >= 0 else 'S'}, {abs(bbox['west']):.4f}°{'E' if bbox['west'] >= 0 else 'W'} to {abs(bbox['east']):.4f}°{'E' if bbox['east'] >= 0 else 'W'}
 
 **Burn Severity Analysis**:
 - Mean Severity: {stats['mean_severity']:.1%}
@@ -716,7 +759,7 @@ Keep the response concise but actionable for grant proposals and project plannin
     else:
         prompt = f"""You are a friendly environmental guide helping someone understand wildfire damage. Explain this burn severity assessment in simple terms:
 
-**Location**: Near {bbox['south']:.2f}°N, {abs(bbox['west']):.2f}°W
+**Location**: Near {abs(bbox['south']):.2f}°{'N' if bbox['south'] >= 0 else 'S'}, {abs(bbox['west']):.2f}°{'E' if bbox['west'] >= 0 else 'W'}
 
 **What the satellite analysis found**:
 - Overall burn damage: {stats['mean_severity']:.0%}
@@ -741,7 +784,7 @@ Keep it encouraging and accessible - this person cares about the environment but
 @app.on_event("startup")
 async def startup_event():
     """Initialize services on startup."""
-    global ee_initialized
+    global ee_initialized, rag_system
     
     print("[INFO] Starting EcoRevive API Server...")
     
@@ -750,6 +793,18 @@ async def startup_event():
     
     # Load Fire Model
     load_fire_model()
+    
+    # Initialize RAG system for knowledge-grounded responses
+    try:
+        from reasoning.rag.ecology_rag import CombinedRAG
+        print("[INFO] Initializing RAG knowledge retrieval system...")
+        rag_system = CombinedRAG()
+        rag_system.initialize()
+        print("[OK] RAG system ready!")
+    except Exception as e:
+        print(f"[WARNING] RAG initialization failed: {e}")
+        print("   Chat will work but without knowledge grounding")
+        rag_system = None
     
     print("[OK] Server ready!")
 
@@ -1097,10 +1152,14 @@ async def layer2_analyze_area(request: AnalyzeRequest):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_with_ai(request: ChatRequest):
     """
-    Dynamic AI Chat endpoint.
+    RAG-Augmented AI Chat endpoint.
 
-    Uses Gemini to generate context-aware responses based on the analysis data.
-    Supports quick actions (predefined prompts) and free-form questions.
+    Uses Gemini with Retrieval-Augmented Generation to produce
+    knowledge-grounded, expert-level responses backed by:
+    - Ecological knowledge base (species, ecoregions, fire ecology)
+    - Legal knowledge base (permits, land ownership, regulations)
+    
+    The response is suitable for direct display in chat AND export to Word/PDF.
     """
     try:
         from reasoning import create_client
@@ -1118,6 +1177,7 @@ async def chat_with_ai(request: ChatRequest):
 
         # Calculate area if bbox provided
         area_km2 = 0
+        center_lat, center_lon = 0, 0
         if bbox:
             lat_mid = (bbox.get('north', 0) + bbox.get('south', 0)) / 2
             km_per_deg_lon = 111.32 * np.cos(lat_mid * np.pi / 180)
@@ -1125,47 +1185,362 @@ async def chat_with_ai(request: ChatRequest):
             width = abs(bbox.get('east', 0) - bbox.get('west', 0)) * km_per_deg_lon
             height = abs(bbox.get('north', 0) - bbox.get('south', 0)) * km_per_deg_lat
             area_km2 = width * height
+            center_lat = lat_mid
+            center_lon = (bbox.get('east', 0) + bbox.get('west', 0)) / 2
 
-        # Build concise system context for faster responses
-        high_sev = severity_stats.get('high_severity_ratio', 0) * 100
-        mean_sev = severity_stats.get('mean_severity', 0) * 100
+        # Build severity context (prioritize robust "in_burn_area" metrics)
+        if 'mean_severity_in_burn_area' in severity_stats:
+            # New robust metrics available
+            mean_sev = severity_stats.get('mean_severity_in_burn_area', 0) * 100
+            high_sev = severity_stats.get('high_severity_in_burn_area', 0) * 100
+        else:
+            # Fallback to legacy
+            mean_sev = severity_stats.get('mean_severity', 0) * 100
+            high_sev = severity_stats.get('high_severity_ratio', 0) * 100
+        
+        # Derive severity level for RAG queries
+        if mean_sev > 60:
+            severity_level = "high"
+        elif mean_sev > 30:
+            severity_level = "moderate"
+        else:
+            severity_level = "low"
 
-        system_context = f"""Restoration ecologist for EcoRevive. Site: {area_km2:.1f}km², {mean_sev:.0f}% mean severity, {high_sev:.0f}% high severity. Be concise, use markdown."""
+        # Build location description for RAG queries
+        # Format coordinates correctly: N/S for lat, E/W for lon
+        lat_dir = "N" if center_lat >= 0 else "S"
+        lon_dir = "E" if center_lon >= 0 else "W"
+        location_description = f"Site at {abs(center_lat):.4f}°{lat_dir}, {abs(center_lon):.4f}°{lon_dir}, {area_km2:.1f} km²"
 
-        # Build short prompts for fast responses
+        # =====================================================
+        # GEOGRAPHIC AWARENESS: Detect region and knowledge level
+        # =====================================================
+        geographic_context = ""
+        biome_fire_ecology = ""
+        try:
+            from reasoning.rag.geographic_awareness import (
+                get_region_info, 
+                format_geographic_context,
+                get_biome_fire_ecology_summary
+            )
+            
+            region_info = get_region_info(center_lat, center_lon)
+            geographic_context = format_geographic_context(region_info)
+            biome_fire_ecology = get_biome_fire_ecology_summary(region_info.biome_type)
+            
+            print(f"   [GEO] Region: {region_info.region_name}, Knowledge Level: {region_info.knowledge_level}")
+            print(f"   [GEO] Biome: {region_info.biome_type}, Fire Regime: {region_info.fire_regime}")
+            if region_info.disclosure_required:
+                print(f"   [GEO] ⚠️ Disclosure required: {region_info.knowledge_level} knowledge")
+            
+        except Exception as e:
+            print(f"   [GEO] Geographic awareness failed: {e}, proceeding with California defaults")
+            geographic_context = ""
+            biome_fire_ecology = ""
+
+        # =====================================================
+        # REASONING GUARDRAILS: Apply cognitive constraints
+        # =====================================================
+        reasoning_constraints = ""
+        try:
+            from reasoning.rag.reasoning_framework import apply_reasoning_guardrails
+            
+            # Get land use type from Layer 3 if available
+            layer3 = context.get('layer3_output', {})
+            land_use = layer3.get('land_use', {})
+            area_type = land_use.get('type', 'mixed_use')
+            
+            # Build Layer 2 JSON for evidence anchoring
+            layer2_evidence = {
+                "burn_severity_mean": mean_sev / 100.0, # Use robust metric
+                "burn_severity_high_ratio": high_sev / 100.0, # Use robust metric
+                "vegetation_cover_percent": layer2.get('vegetation_cover', 50),
+                "urban_percentage": land_use.get('urban_percent', 0),
+                "structures_detected": layer3.get('structures_detected', False),
+                "water_body_present": layer3.get('water_bodies', False),
+                "overall_confidence": layer2.get('confidence', 0.7),
+            }
+            
+            # Apply reasoning guardrails
+            reasoning_constraints = apply_reasoning_guardrails(
+                area_type=area_type,
+                layer2_json=layer2_evidence
+            )
+            print(f"   [GUARDRAILS] Applied area-type reasoning constraints: {area_type}")
+            
+        except Exception as e:
+            print(f"   [GUARDRAILS] Constraint loading failed: {e}, using standard prompts")
+            reasoning_constraints = ""
+
+        # =====================================================
+        # RAG RETRIEVAL: Get relevant knowledge base context
+        # =====================================================
+        rag_context = ""
+        if rag_system is not None and request.action_type:
+            try:
+                print(f"   [RAG] Retrieving knowledge for action: {request.action_type}")
+                
+                # Map action types to appropriate RAG queries
+                if request.action_type in ['species', 'biophysical', 'hope']:
+                    # Ecology-focused actions
+                    rag_context = rag_system.ecology_rag.get_restoration_context(
+                        location_description=location_description,
+                        severity_level=severity_level,
+                        k=5
+                    )
+                    print(f"   [RAG] Retrieved ecological context")
+                    
+                elif request.action_type in ['legal', 'ownership']:
+                    # Legal-focused actions
+                    rag_context = rag_system.legal_rag.get_legal_context(
+                        location_description=location_description,
+                        activity_type="restoration"
+                    )
+                    print(f"   [RAG] Retrieved legal context")
+                    
+                elif request.action_type == 'monitoring':
+                    # Combined context for monitoring
+                    rag_context = rag_system.get_full_context(
+                        location_description=location_description,
+                        severity_level=severity_level,
+                        activity_type="monitoring"
+                    )
+                    print(f"   [RAG] Retrieved combined context")
+                    
+                else:
+                    # General queries get combined context
+                    rag_context = rag_system.get_full_context(
+                        location_description=location_description,
+                        severity_level=severity_level,
+                        activity_type="restoration"
+                    )
+                    print(f"   [RAG] Retrieved general context")
+                    
+            except Exception as e:
+                print(f"   [RAG] Retrieval failed: {e}, proceeding without RAG")
+                rag_context = ""
+
+        # =====================================================
+        # BUILD RAG-AUGMENTED PROMPT
+        # =====================================================
+        
+        # System context with RAG grounding instruction and reasoning guardrails
+        system_context = f"""You are a Senior Restoration Ecologist and RAG-Augmented Reasoning Engine for EcoRevive.
+
+{geographic_context}
+
+{biome_fire_ecology}
+
+{reasoning_constraints}
+
+SITE ANALYSIS DATA (Derived from Satellite):
+- Location: {abs(center_lat):.4f}°{lat_dir}, {abs(center_lon):.4f}°{lon_dir}
+- Area: {area_km2:.1f} km² ({area_km2 * 100:.0f} hectares)
+- Mean burn severity (within burn scar): {mean_sev:.0f}%
+- High severity coverage (within burn scar): {high_sev:.0f}%
+- User type: {request.user_type}
+
+VISUAL ANALYSIS EVIDENCE:
+- Detected Area Type: {layer2.get('location_enhancement', {}).get('area_type', 'unknown')}
+- Terrain Features: {', '.join(layer2.get('location_enhancement', {}).get('terrain_features', []))}
+- Soil Inference: {layer2.get('characteristics', {}).get('soil_type', 'unknown')}
+- Slope/Drainage: {layer2.get('characteristics', {}).get('slope_category', 'unknown')}, {layer2.get('characteristics', {}).get('drainage_pattern', 'unknown')}
+- Land Use History: {layer2.get('characteristics', {}).get('land_use_history', 'unknown')}
+- Ecosystem State: {layer2.get('ecosystem', {}).get('current_state', 'unknown')}
+- Vegetation Types: {', '.join(layer2.get('ecosystem', {}).get('vegetation_types', []))}
+- Key Species Observed/Likely: {', '.join(layer2.get('ecosystem', {}).get('key_species', []))}
+
+ZONATION & HAZARDS:
+- Zones: {', '.join([f"{z.get('zone_type')} ({z.get('severity_category', '')}, {z.get('area_estimate_pct', 0)}%)" for z in layer2.get('visual_zones', [])])}
+- Hazards: {', '.join([f"{h.get('hazard_type')} ({h.get('severity', '')})" for h in layer2.get('visual_hazards', [])])}
+
+ASSESSMENT SIGNALS:
+- Restoration Potential: {layer2.get('signals', {}).get('restoration_potential_score', 0.0)}/1.0
+- Intervention Urgency: {layer2.get('signals', {}).get('intervention_urgency_score', 0.0)}/1.0
+- Ecological Complexity: {layer2.get('signals', {}).get('ecological_complexity_score', 0.0)}/1.0
+
+{rag_context}
+
+EVIDENCE-GROUNDED INSTRUCTIONS:
+1. Speak naturally as an expert. Do NOT cite the JSON structure (e.g. avoid saying "(JSON: ...)" or "Visual Analysis: ...").
+2. Use the provided data as facts. For example, say "The site has rocky soil" instead of "The JSON indicates rocky soil".
+3. ONLY discuss risks that are BOTH: (a) eligible for this area type AND (b) supported by evidence.
+4. Scale severity language to evidence strength (minor claims for low values, significant for high).
+5. For missing data: remain silent or state "insufficient data" - do NOT speculate.
+6. Do NOT list generic hazards or encyclopedic risks without evidence.
+7. For professional users: include scientific names, quantitative data, uncertainty bounds.
+8. For personal users: be approachable but still evidence-grounded.
+9. **CRITICAL: NEVER state 'Data confidence is 0%' or similar.** If data is limited, simply advise verifying on the ground. Do not mention internal confidence scores.
+"""
+
+        # Build action-specific prompts with explicit grounding instructions
         if request.action_type:
             action_prompts = {
-                # PERSONAL - short prompts
-                'safety': f"Safety checklist for volunteers at this {high_sev:.0f}% high-severity burn site. List: hazards, required gear, zones to avoid. Keep brief.",
+                # PERSONAL - grounded prompts
+                'safety': f"""Generate a comprehensive safety checklist for volunteers at this {high_sev:.0f}% high-severity burn site.
 
-                'hope': f"Recovery timeline for this burn site. Show: Now, Year 5, Year 10, Year 15. Include species, cover %, carbon. Be encouraging but realistic.",
+Structure your response:
+## Immediate Hazards
+(List hazards specific to burn severity level)
 
-                'ownership': f"Land ownership guide for California site at {bbox.get('south', 0):.2f}°N, {abs(bbox.get('west', 0)):.2f}°W. Cover: jurisdiction, permits, contacts, timeline.",
+## Required Safety Gear
+(Table format: Item | Purpose | Priority)
 
-                'supplies': f"Supply list & budget for 10-person restoration event at {area_km2:.1f}km² site. Table format: item, qty, cost. Include total.",
+## Zones to Avoid
+(Based on severity map and retrieved ecological data)
 
-                # PROFESSIONAL - short prompts
-                'legal': f"Legal/tenure analysis for professional restoration grant. Cover: ownership verification, protected status, encumbrances, compliance requirements.",
+## Emergency Contacts
+(Relevant ranger districts from retrieved data if available)
+""",
 
-                'biophysical': f"Biophysical characterization: soil, hydrology, topography, land use history. Recommend species for {mean_sev:.0f}% severity site.",
+                'hope': f"""Generate an evidence-based recovery timeline for this burn site.
 
-                'species': f"Native species palette for California burn site ({high_sev:.0f}% high severity). Tables: pioneers (0-2yr), mid-succession (2-5yr), climax (5-10yr). Include scientific names.",
+Use the retrieved ecological data to provide realistic estimates. Structure:
 
-                'monitoring': f"Monitoring framework for restoration. Include: baseline metrics, schedule table (Year 0-10), carbon protocol eligibility, uncertainty bounds."
+## Current State (Year 0)
+## Year 5 Projection
+## Year 10 Projection  
+## Year 15 Projection
+
+For each period include:
+- Expected species succession (use scientific names from retrieved data)
+- Estimated vegetation cover %
+- Carbon sequestration potential
+- Key milestones
+
+Be encouraging but scientifically grounded.
+""",
+
+                'ownership': f"""Provide a land ownership and jurisdiction analysis for this California restoration site.
+
+Use retrieved legal knowledge to identify:
+
+## Land Ownership Determination
+- Likely managing agency based on location
+- How to verify ownership (specific steps)
+
+## Permit Requirements
+(From retrieved permit data)
+
+## Key Contacts
+(Ranger districts, agency offices from retrieved data)
+
+## Timeline for Approval
+""",
+
+                'supplies': f"""Generate a detailed supply list and budget for a 10-person restoration event at this {area_km2:.1f} km² site.
+
+## Equipment List
+| Item | Quantity | Unit Cost | Total |
+|------|----------|-----------|-------|
+
+## Safety Equipment
+
+## Planting Materials
+(Based on retrieved species recommendations for {severity_level} severity)
+
+## Logistics
+
+## Total Budget Estimate
+""",
+
+                # PROFESSIONAL - grounded prompts
+                'legal': f"""Provide a professional-grade legal and tenure analysis for a restoration grant application.
+
+Use retrieved legal framework data to address:
+
+## Ownership Verification Protocol
+## Protected Status Assessment
+(Endangered species, cultural resources, watershed protections)
+
+## Regulatory Compliance
+(CEQA, NEPA, Clean Water Act as applicable)
+
+## Encumbrances and Easements
+## Timeline and Cost Estimates
+## Required Certifications
+
+Include uncertainty where verification is needed.
+""",
+
+                'biophysical': f"""Generate a professional biophysical site characterization.
+
+Use retrieved ecoregion and ecological data:
+
+## Ecoregion Classification
+(From retrieved California ecoregion data)
+
+## Soil Characteristics
+## Hydrology Assessment
+## Topographic Analysis
+## Historical Land Use
+## Fire Regime Analysis
+(From retrieved fire ecology data)
+
+## Recommended Species Palette
+(Scientific names, source: retrieved species catalog)
+
+## Microsite Matching Matrix
+""",
+
+                'species': f"""Generate a comprehensive native species palette for this California burn site.
+
+Use retrieved species catalog and ecoregion data. Structure:
+
+## Pioneer Species (Year 0-2)
+| Scientific Name | Common Name | Planting Density | Survival Rate | Source |
+|-----------------|-------------|------------------|---------------|--------|
+
+## Mid-Succession Species (Year 2-5)
+(Table format)
+
+## Climax Community Species (Year 5-10)
+(Table format)
+
+## Invasive Species to Monitor
+(From retrieved invasive warnings)
+
+## Planting Prescriptions by Microsite
+""",
+
+                'monitoring': f"""Generate a professional monitoring framework for restoration verification.
+
+## Baseline Metrics (Year 0)
+| Metric | Measurement Protocol | Target Value | Uncertainty |
+|--------|---------------------|--------------|-------------|
+
+## Monitoring Schedule
+| Year | Metrics | Method | Estimated Cost |
+|------|---------|--------|----------------|
+
+## Carbon Protocol Eligibility
+(CAR, ACR, VCS based on retrieved data)
+
+## Uncertainty Quantification
+## Adaptive Management Triggers
+## Reporting Requirements
+"""
             }
 
             prompt = action_prompts.get(request.action_type, request.message)
         else:
-            prompt = f"Question: {request.message}\nAnswer concisely based on site data."
+            prompt = f"""Answer this question using the site analysis data and retrieved knowledge:
+
+{request.message}
+
+Provide an expert-level response with citations where applicable.
+"""
 
         full_prompt = f"{system_context}\n\n{prompt}"
 
+        # Generate response
         response = client.analyze_multimodal(
             prompt=full_prompt,
             use_json=False
         )
 
-        print(f"   [OK] Generated response ({response['usage']['response_tokens']} tokens)")
+        rag_status = "with RAG" if rag_context else "no RAG"
+        print(f"   [OK] Generated response ({response['usage']['response_tokens']} tokens, {rag_status})")
 
         return ChatResponse(
             success=True,

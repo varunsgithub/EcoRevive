@@ -75,9 +75,9 @@
                 "section_10": "Incidental take permits for non-federal actions"
             },
             "constraints": [
-                "No actions that harm listed species or critical habitat",
-                "Section 7 consultation required for federal projects",
-                "Habitat Conservation Plans may be required"
+                "No actions that result in 'take' of listed species without permit",
+                "Section 7 consultation triggered if federal action 'may affect' listed species",
+                "Habitat Conservation Plan (HCP) required for incidental take on non-federal land"
             ],
             "listed_species_examples": [
                 "California Spotted Owl",
@@ -97,9 +97,9 @@
                 "section_402": "NPDES permits for point source discharges"
             },
             "constraints": [
-                "Section 404 permit required for wetland fill/dredging",
-                "Avoid and minimize impacts to waters of the US",
-                "Mitigation required for unavoidable impacts"
+                "Section 404 permit required for discharge of dredged/fill material into Waters of the US (WOTUS)",
+                "No net loss of wetland acreage/function policy applies",
+                "Mitigation required for unavoidable impacts (hierarchy: avoid, minimize, compensate)"
             ],
             "implications_for_restoration": [
                 "Wetland restoration may require 404 permit",
@@ -117,9 +117,9 @@
                 "environmental_impact_statement": "Significant impacts, full review"
             },
             "constraints": [
-                "Federal actions require NEPA compliance",
-                "Public comment periods for EAs and EISs",
-                "Alternatives analysis required"
+                "Federal Nexus (funding, permit, or land) triggers NEPA compliance",
+                "Documentation level (CX, EA, EIS) depends on 'significance' of impacts",
+                "Alternatives analysis required for EA and EIS levels"
             ]
         },
         "wilderness_act": {
@@ -193,9 +193,9 @@
                 "Statutory exemption for some fire prevention"
             ],
             "constraints": [
-                "Most restoration projects need CEQA compliance",
-                "Public notice and comment periods apply",
-                "Mitigation monitoring required"
+                "Discretionary approval by public agency triggers CEQA",
+                "Exemptions must be verified (cannot rely on 'minor' label without checking exceptions)",
+                "Mitigation monitoring required for MND and EIR projects"
             ]
         },
         "california_endangered_species_act": {

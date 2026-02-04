@@ -258,11 +258,19 @@ def compute_severity_statistics(severity_map: np.ndarray) -> Dict[str, float]:
     """
     thresholds = SeverityThresholds()
     
-    return {
+    # Calculate masks
+    pixel_count = severity_map.size
+    burned_mask = severity_map > thresholds.low
+    burned_pixel_count = np.sum(burned_mask)
+    
+    # Base stats
+    stats = {
         "mean_severity": float(np.mean(severity_map)),
         "max_severity": float(np.max(severity_map)),
         "min_severity": float(np.min(severity_map)),
         "std_severity": float(np.std(severity_map)),
+        
+        # Field-wide ratios
         "high_severity_ratio": float(np.mean(severity_map > thresholds.high)),
         "moderate_severity_ratio": float(
             np.mean((severity_map > thresholds.moderate) & (severity_map <= thresholds.high))
@@ -271,7 +279,17 @@ def compute_severity_statistics(severity_map: np.ndarray) -> Dict[str, float]:
             np.mean((severity_map > thresholds.low) & (severity_map <= thresholds.moderate))
         ),
         "unburned_ratio": float(np.mean(severity_map <= thresholds.low)),
+        
+        # Ecologically valid (in-burn-scar) metrics
+        "burned_area_ratio": float(burned_pixel_count / pixel_count) if pixel_count > 0 else 0,
+        "mean_severity_in_burn_area": float(severity_map[burned_mask].mean()) if burned_pixel_count > 0 else 0.0,
+        
+        "high_severity_in_burn_area": float(np.sum(severity_map > thresholds.high) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+        "moderate_severity_in_burn_area": float(np.sum((severity_map > thresholds.moderate) & (severity_map <= thresholds.high)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
+        "low_severity_in_burn_area": float(np.sum((severity_map > thresholds.low) & (severity_map <= thresholds.moderate)) / burned_pixel_count) if burned_pixel_count > 0 else 0.0,
     }
+    
+    return stats
 
 
 def compute_spatial_metrics(

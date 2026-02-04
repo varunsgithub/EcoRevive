@@ -166,19 +166,34 @@ class LandUseContext:
 
 @dataclass
 class Layer3Output:
-    """Complete Layer 3 contextual analysis output."""
+    """Complete Layer 3 contextual analysis output with RAG context."""
     land_use: LandUseContext
     analysis_suitable: bool
     overall_caution_level: str
     user_guidance: str
+    # RAG-retrieved context
+    ecological_context: Optional[str] = None
+    legal_context: Optional[str] = None
+    ecoregion_info: Optional[List[Dict[str, Any]]] = None
+    species_recommendations: Optional[List[Dict[str, Any]]] = None
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        result = {
             "land_use": self.land_use.to_dict(),
             "analysis_suitable": self.analysis_suitable,
             "overall_caution_level": self.overall_caution_level,
             "user_guidance": self.user_guidance
         }
+        # Include RAG context if available
+        if self.ecological_context:
+            result["ecological_context"] = self.ecological_context
+        if self.legal_context:
+            result["legal_context"] = self.legal_context
+        if self.ecoregion_info:
+            result["ecoregion_info"] = self.ecoregion_info
+        if self.species_recommendations:
+            result["species_recommendations"] = self.species_recommendations
+        return result
 
 
 # =============================================================================
@@ -213,7 +228,7 @@ def classify_land_use_with_gemini(
 
     prompt = f"""Analyze this satellite image and classify the land use type.
 
-Location: {lat:.4f}°N, {lon:.4f}°W
+Location: {abs(lat):.4f}°{'N' if lat >= 0 else 'S'}, {abs(lon):.4f}°{'E' if lon >= 0 else 'W'}
 
 Examine the image carefully and identify:
 1. The PRIMARY land use type
@@ -314,7 +329,8 @@ def run_layer3_analysis(
     rgb_image: np.ndarray,
     severity_map: np.ndarray,
     location: Tuple[float, float],
-    use_gemini: bool = True
+    use_gemini: bool = True,
+    use_rag: bool = True
 ) -> Layer3Output:
     """
     Run Layer 3 contextual analysis.
@@ -332,6 +348,9 @@ def run_layer3_analysis(
     Returns:
         Layer3Output with land use context and cautions
     """
+    # Unpack location
+    lat, lon = location
+
     # Step 1: Classify land use
     if use_gemini and client is not None:
         classification = classify_land_use_with_gemini(client, rgb_image, location)
@@ -387,12 +406,75 @@ def run_layer3_analysis(
             "Results are usable but should be verified for the specific conditions present."
         )
 
-    # Step 7: Build output
+    # Step 7: RAG Retrieval (if enabled)
+    ecological_context = None
+    legal_context = None
+    ecoregion_info = None
+    species_recommendations = None
+    
+    if use_rag:
+        try:
+            from .rag.ecology_rag import CombinedRAG
+            
+            lat_dir = 'N' if lat >= 0 else 'S'
+            lon_dir = 'E' if lon >= 0 else 'W'
+            location_desc = f"Site at {abs(lat):.4f}°{lat_dir}, {abs(lon):.4f}°{lon_dir}, land use: {land_use_type.value}"
+            
+            # Determine severity level
+            mean_severity = float(np.mean(severity_map))
+            if mean_severity > 0.6:
+                severity_level = "high"
+            elif mean_severity > 0.3:
+                severity_level = "moderate"
+            else:
+                severity_level = "low"
+            
+            # Initialize RAG and retrieve context
+            rag = CombinedRAG()
+            rag.initialize()
+            
+            # Get ecological context
+            ecological_context = rag.ecology_rag.get_restoration_context(
+                location_description=location_desc,
+                severity_level=severity_level,
+                k=3
+            )
+            
+            # Get legal context
+            legal_context = rag.legal_rag.get_legal_context(
+                location_description=location_desc,
+                activity_type="restoration"
+            )
+            
+            # Get specific ecoregion info
+            ecoregion_info = rag.ecology_rag.get_ecoregion_info(
+                query=location_desc,
+                k=2
+            )
+            
+            # Get species recommendations if suitable for analysis
+            if is_suitable:
+                species_recommendations = rag.ecology_rag.get_species_recommendations(
+                    query=f"{severity_level} severity burn site in {location_desc}",
+                    k=5
+                )
+            
+            logger.info(f"Layer 3 RAG retrieval complete: {len(ecoregion_info or [])} ecoregions, {len(species_recommendations or [])} species")
+            
+        except Exception as e:
+            logger.warning(f"Layer 3 RAG retrieval failed: {e}")
+            # Continue without RAG context
+    
+    # Step 8: Build output
     return Layer3Output(
         land_use=land_use_context,
         analysis_suitable=land_use_context.suitable_for_analysis,
         overall_caution_level=land_use_context.caution_level,
-        user_guidance=user_guidance
+        user_guidance=user_guidance,
+        ecological_context=ecological_context,
+        legal_context=legal_context,
+        ecoregion_info=ecoregion_info,
+        species_recommendations=species_recommendations
     )
 
 
@@ -401,18 +483,22 @@ def create_layer3_response(
     rgb_image: np.ndarray,
     severity_map: np.ndarray,
     location: Tuple[float, float],
-    use_gemini: bool = True
+    use_gemini: bool = True,
+    use_rag: bool = True
 ) -> Dict[str, Any]:
     """
     Convenience function that returns Layer3Output as a dict.
 
     This is the function to call from the server endpoint.
+    Includes RAG-retrieved ecological and legal context when available.
     """
     output = run_layer3_analysis(
         client=client,
         rgb_image=rgb_image,
         severity_map=severity_map,
         location=location,
-        use_gemini=use_gemini
+        use_gemini=use_gemini,
+        use_rag=use_rag
     )
     return output.to_dict()
+

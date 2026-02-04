@@ -16,6 +16,8 @@
     "national_forests": {
         "plumas_nf": {
             "name": "Plumas National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 1146000,
@@ -75,6 +77,8 @@
         },
         "lassen_nf": {
             "name": "Lassen National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 1059000,
@@ -119,6 +123,8 @@
         },
         "eldorado_nf": {
             "name": "Eldorado National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 597000,
@@ -170,6 +176,8 @@
         },
         "sierra_nf": {
             "name": "Sierra National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 1305000,
@@ -214,6 +222,8 @@
         },
         "stanislaus_nf": {
             "name": "Stanislaus National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 898000,
@@ -257,6 +267,8 @@
         },
         "mendocino_nf": {
             "name": "Mendocino National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 913000,
@@ -309,6 +321,8 @@
         },
         "los_padres_nf": {
             "name": "Los Padres National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 1752000,
@@ -353,6 +367,8 @@
         },
         "angeles_nf": {
             "name": "Angeles National Forest",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "USDA Forest Service",
             "region": "Pacific Southwest Region (R5)",
             "total_acres": 655000,
@@ -385,6 +401,8 @@
     "bureau_of_land_management": {
         "ukiah_field_office": {
             "name": "Ukiah Field Office",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "Bureau of Land Management",
             "total_acres": 270000,
             "bbox": [
@@ -403,6 +421,8 @@
         },
         "central_california_district": {
             "name": "Central California District",
+            "jurisdiction_type": "federal_surface",
+            "authority_level": "federal_lead",
             "agency": "Bureau of Land Management",
             "fires_affected": [
                 "creek_2020",
@@ -467,6 +487,8 @@
     "national_park_service": {
         "santa_monica_mountains_nra": {
             "name": "Santa Monica Mountains National Recreation Area",
+            "jurisdiction_type": "federal_surface_mixed",
+            "authority_level": "federal_lead_cooperative",
             "agency": "National Park Service",
             "total_acres": 150000,
             "fires_affected": [

@@ -1,0 +1,104 @@
+{
+    "metadata": {
+        "name": "Legal Jurisdiction & Authority Logic",
+        "description": "Decision matrix for determining regulatory authority based on land status, funding, and activity triggers",
+        "version": "1.0.0",
+        "purpose": "Distinguish ownership from regulatory jurisdiction (Federal Nexus)"
+    },
+    "jurisdiction_matrix": {
+        "federal_lands_surface": {
+            "primary_authority": "Federal Land Management Agency (USFS, BLM, NPS, USFWS)",
+            "state_authority_overlay": "State environmental laws often apply via 'Savings Clauses' or cooperative federalism (e.g., CWA Section 401)",
+            "key_preemption_rule": "Federal law preempts state law where conflict exists, but states can often be stricter"
+        },
+        "state_lands": {
+            "primary_authority": "State Land Management Agency (State Parks, SLC)",
+            "federal_authority_overlay": "Federal layout ONLY if Federal Nexus exists (ESA, CWA, Federal Funding)",
+            "governing_process": "State specific (e.g., CEQA in California)"
+        },
+        "private_lands": {
+            "primary_authority": "Local Government (County/City) + State Regulatory Agencies",
+            "federal_authority_overlay": "Apply ONLY if Federal Nexus exists (Waters of US, Listed Species, Federal Funding)",
+            "property_rights": "High protection; access requires permission"
+        },
+        "tribal_lands_trust": {
+            "primary_authority": "Tribal Government + BIA (Federal Trustee)",
+            "state_authority": "Generally limited; PL-280 states have some criminal/civil jurisdiction but limited regulatory power",
+            "key_principle": "Tribal Sovereignty"
+        }
+    },
+    "federal_nexus_triggers": {
+        "description": "Conditions that trigger federal jurisdiction on non-federal land",
+        "triggers": [
+            {
+                "trigger_type": "funding",
+                "condition": "Project receives ANY federal funding (grants, loans, cost-share)",
+                "consequence": "NEPA compliance required (Lead Federal Agency must analyze)",
+                "common_examples": [
+                    "FEMA hazard mitigation grants",
+                    "NRCS EQIP funding",
+                    "USFS state & private forestry grants"
+                ]
+            },
+            {
+                "trigger_type": "permitting_cwa_404",
+                "condition": "Discharge of dredged or fill material into Waters of the United States (WOTUS)",
+                "consequence": "US Army Corps of Engineers permit required + NEPA + ESA Section 7",
+                "common_examples": [
+                    "Stream crossing replacement",
+                    "Wetland restoration with fill",
+                    "Levee modification"
+                ]
+            },
+            {
+                "trigger_type": "permitting_esa",
+                "condition": "Take of Federally Listed Species (on private land)",
+                "consequence": "ESA Section 10 Incidental Take Permit (HCP) OR Section 7 if other federal nexus exists",
+                "common_examples": [
+                    "Grading in endangered frog habitat",
+                    "Timber harvest in spotted owl territory"
+                ]
+            },
+            {
+                "trigger_type": "federal_action",
+                "condition": "Action requiring federal approval or on federal land",
+                "consequence": "Full federal compliance suite (NEPA, NHPA, ESA)",
+                "common_examples": [
+                    "Right-of-way across BLM land",
+                    "Special Use Permit on National Forest"
+                ]
+            }
+        ]
+    },
+    "state_jurisdiction_triggers_california": {
+        "description": "Conditions triggering California state jurisdiction regardless of land ownership",
+        "triggers": [
+            {
+                "trigger_type": "lake_streambed_alteration",
+                "legal_basis": "Fish & Game Code 1602",
+                "condition": "Alteration of bed, bank, or channel of ANY stream (ephemeral, intermittent, perennial)",
+                "scope": "Applies to private, state, and local public lands; federal agencies may assert immunity but often coordinate",
+                "consequence": "Notification/Agreement required"
+            },
+            {
+                "trigger_type": "water_quality_certification",
+                "legal_basis": "CWA Section 401 / Porter-Cologne Act",
+                "condition": "Any federal license/permit that may result in discharge to waters",
+                "scope": "State has veto power over federal permits (e.g., 404)",
+                "consequence": "State Water Board certification required"
+            },
+            {
+                "trigger_type": "coastal_zone",
+                "legal_basis": "California Coastal Act",
+                "condition": "Development within Coastal Zone",
+                "scope": "Extremely strict regulation of land use",
+                "consequence": "Coastal Development Permit (CDP) required"
+            }
+        ]
+    },
+    "jurisdictional_conflict_resolution": {
+        "rule_1_stricter_standard": "Generally, the stricter environmental standard applies",
+        "rule_2_federal_supremacy": "Federal agencies on Federal land follow federal law primarily; state law application is complex/negotiated",
+        "rule_3_private_land_layering": "Private land is subject to Local Zoning AND State Regulation AND Federal Nexus (if present) - All layers must be satisfied"
+    }
+}

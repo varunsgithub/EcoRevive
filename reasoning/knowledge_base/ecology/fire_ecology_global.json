@@ -1,0 +1,441 @@
+{
+    "metadata": {
+        "name": "Global Fire Ecology Reasoning Framework",
+        "description": "Fire-adapted ecosystem knowledge for any geographic location - prevents hallucination by encoding reasoning logic, not location-specific facts",
+        "version": "2.0.0",
+        "philosophy": "This KB encodes HOW to reason about fire ecology, not WHAT species exist in specific regions",
+        "sources": [
+            "FAO Global Fire Assessment",
+            "IPCC Land-Climate Reports",
+            "USFS Fire Effects Information System (FEIS)",
+            "CSIRO Australian Fire Research",
+            "European Forest Fire Information System (EFFIS)",
+            "Peer-reviewed fire ecology literature"
+        ],
+        "last_updated": "2026-02-04"
+    },
+    "fire_regime_classification": {
+        "description": "Global fire regime types - applicable to any location",
+        "regime_types": {
+            "surface_fire_regime": {
+                "description": "Low-intensity fires that burn along forest floor",
+                "typical_ecosystems": [
+                    "temperate_conifer_forest",
+                    "savanna",
+                    "open_woodland"
+                ],
+                "fire_return_interval_years": [
+                    5,
+                    35
+                ],
+                "vegetation_adaptation": "thick_bark_resprouting",
+                "burn_severity_typical": "low_to_moderate",
+                "recovery_timeline_years": [
+                    1,
+                    5
+                ],
+                "ecological_role": "Maintains open structure, cycles nutrients, reduces fuel",
+                "suppression_effects": "Fuel buildup leads to more severe fires"
+            },
+            "crown_fire_regime": {
+                "description": "High-intensity fires that reach tree canopy",
+                "typical_ecosystems": [
+                    "boreal_forest",
+                    "lodgepole_pine",
+                    "dense_conifer"
+                ],
+                "fire_return_interval_years": [
+                    100,
+                    300
+                ],
+                "vegetation_adaptation": "serotinous_cones_stand_replacement",
+                "burn_severity_typical": "high",
+                "recovery_timeline_years": [
+                    20,
+                    100
+                ],
+                "ecological_role": "Stand replacement, mosaic creation, successional reset",
+                "suppression_effects": "Larger, more uniform patches when fires occur"
+            },
+            "shrubland_fire_regime": {
+                "description": "Intense fires in shrub-dominated ecosystems",
+                "typical_ecosystems": [
+                    "mediterranean_shrubland",
+                    "chaparral",
+                    "fynbos",
+                    "matorral"
+                ],
+                "fire_return_interval_years": [
+                    30,
+                    100
+                ],
+                "vegetation_adaptation": "obligate_seeding_lignotuber_resprouting",
+                "burn_severity_typical": "high",
+                "recovery_timeline_years": [
+                    5,
+                    15
+                ],
+                "ecological_role": "Triggers seed germination, maintains shrub dominance",
+                "suppression_effects": "Type conversion if fire excluded too long"
+            },
+            "grassland_fire_regime": {
+                "description": "Frequent, fast-moving fires in grass-dominated systems",
+                "typical_ecosystems": [
+                    "savanna",
+                    "prairie",
+                    "steppe",
+                    "grassland"
+                ],
+                "fire_return_interval_years": [
+                    1,
+                    10
+                ],
+                "vegetation_adaptation": "below_ground_meristems_rapid_regrowth",
+                "burn_severity_typical": "low",
+                "recovery_timeline_years": [
+                    0.5,
+                    2
+                ],
+                "ecological_role": "Prevents woody encroachment, nutrient cycling",
+                "suppression_effects": "Shrub/tree invasion"
+            },
+            "peatland_fire_regime": {
+                "description": "Smoldering fires in organic soils",
+                "typical_ecosystems": [
+                    "tropical_peatland",
+                    "boreal_peatland",
+                    "wetland"
+                ],
+                "fire_return_interval_years": [
+                    500,
+                    2000
+                ],
+                "vegetation_adaptation": "NOT_FIRE_ADAPTED",
+                "burn_severity_typical": "extreme_when_dry",
+                "recovery_timeline_years": [
+                    100,
+                    1000
+                ],
+                "ecological_role": "NONE - peatland fires are disturbance outside natural regime",
+                "suppression_effects": "N/A - fire should be prevented"
+            }
+        }
+    },
+    "post_fire_processes": {
+        "description": "Universal post-fire ecological processes",
+        "immediate_phase_0_to_1_year": {
+            "physical_changes": [
+                "Hydrophobic soil layer formation (high severity)",
+                "Increased runoff and erosion risk",
+                "Ash nutrient pulse (short-term)",
+                "Soil heating kills mycorrhizal fungi to 5-10cm depth"
+            ],
+            "biological_responses": [
+                "Herbaceous pioneer species establish first",
+                "Resprouting species begin basal regeneration",
+                "Seed bank activation (fire-stimulated germinants)",
+                "Wildlife may temporarily flee but return quickly"
+            ],
+            "professional_assessment_focus": [
+                "Erosion risk on slopes >15°",
+                "Seed source availability within 200-500m",
+                "Resprouting vigor of remnant vegetation",
+                "Invasive species colonization risk"
+            ]
+        },
+        "early_recovery_1_to_5_years": {
+            "physical_changes": [
+                "Soil stability improves with vegetation cover",
+                "Hydrophobic layer breaks down",
+                "Nutrient availability stabilizes"
+            ],
+            "biological_responses": [
+                "Shrub canopy closure in shrubland systems",
+                "Grass dominance in open systems",
+                "Pioneer trees establish if seed source present",
+                "Wildlife populations recover"
+            ],
+            "professional_assessment_focus": [
+                "Natural regeneration success (seedling counts)",
+                "Type conversion risk (forest → shrubland)",
+                "Invasive species dominance",
+                "Need for active intervention"
+            ]
+        },
+        "mid_recovery_5_to_20_years": {
+            "physical_changes": [
+                "Soil organic matter rebuilding",
+                "Hydrological regime stabilizing"
+            ],
+            "biological_responses": [
+                "Canopy development in forest systems",
+                "Successional trajectory becomes clear",
+                "Late-successional species begin establishing"
+            ],
+            "professional_assessment_focus": [
+                "Trajectory toward pre-fire composition",
+                "Structural complexity development",
+                "Long-term type conversion"
+            ]
+        },
+        "long_term_recovery_20_plus_years": {
+            "forest_systems": [
+                "Canopy closure and structural complexity",
+                "Return of late-successional wildlife",
+                "Full carbon stock recovery (50-200 years)"
+            ],
+            "shrubland_systems": [
+                "Mature shrub structure (10-40 years)",
+                "Senescence and increased fire risk as fuel accumulates"
+            ]
+        }
+    },
+    "vegetation_response_types": {
+        "description": "How plants respond to fire - applicable globally",
+        "resprouters": {
+            "definition": "Survive fire and regrow from protected buds",
+            "mechanisms": [
+                "basal_burls",
+                "lignotubers",
+                "root_crown",
+                "epicormic_buds"
+            ],
+            "fire_survival": "high",
+            "recovery_speed": "fast (months to 1-2 years)",
+            "restoration_implication": "Often do NOT need replanting - check for resprouts first",
+            "global_examples": "Eucalyptus (Australia), Quercus (Mediterranean, California), many tropical trees"
+        },
+        "obligate_seeders": {
+            "definition": "Adults killed by fire, regenerate from seed",
+            "mechanisms": [
+                "soil_seed_bank",
+                "serotinous_cones",
+                "canopy_seed_bank"
+            ],
+            "fire_survival": "adults die, seeds survive",
+            "recovery_speed": "moderate (1-5 years to establish)",
+            "restoration_implication": "May need seeding if seed bank depleted or no seed source",
+            "global_examples": "Many Pinus spp., Banksia (Australia), many annual forbs"
+        },
+        "fire_stimulated_germinants": {
+            "definition": "Seeds require fire cues (heat, smoke) to germinate",
+            "mechanisms": [
+                "heat_scarification",
+                "smoke_chemicals",
+                "charred_wood_signals"
+            ],
+            "fire_survival": "seeds enhanced by fire",
+            "recovery_speed": "fast germination post-fire",
+            "restoration_implication": "Natural regeneration often excellent - wait before planting",
+            "global_examples": "Ceanothus, many Fabaceae, many fynbos species"
+        },
+        "fire_sensitive": {
+            "definition": "Killed by fire, no fire-adaptive traits",
+            "mechanisms": [
+                "thin_bark",
+                "no_seed_bank",
+                "no_sprouting"
+            ],
+            "fire_survival": "low",
+            "recovery_speed": "slow, depends on seed dispersal",
+            "restoration_implication": "May require active planting if seed source distant",
+            "global_examples": "Many rainforest species, some high-elevation conifers"
+        }
+    },
+    "biome_fire_ecology": {
+        "description": "Fire ecology by major biome type - use when region is unknown",
+        "mediterranean_ecosystems": {
+            "regions": [
+                "California",
+                "Mediterranean Basin",
+                "Chile",
+                "South Africa (fynbos)",
+                "SW Australia"
+            ],
+            "fire_regime": "shrubland_fire_regime",
+            "key_adaptations": [
+                "fire_stimulated_germination",
+                "lignotubers",
+                "serotiny"
+            ],
+            "typical_severity": "high",
+            "recovery_notes": "Fire-adapted, natural regeneration usually excellent",
+            "professional_caution": "Post-fire invasive grass invasion is major concern"
+        },
+        "temperate_conifer_forest": {
+            "regions": [
+                "Western North America",
+                "Siberia",
+                "Northern Europe",
+                "New Zealand"
+            ],
+            "fire_regime": "surface_fire_regime to crown_fire_regime (varies)",
+            "key_adaptations": [
+                "thick_bark",
+                "self_pruning",
+                "serotiny_in_some"
+            ],
+            "typical_severity": "variable - historically low, increasing",
+            "recovery_notes": "Depends on severity; high severity may need intervention",
+            "professional_caution": "Long regeneration times for conifers (decades)"
+        },
+        "boreal_forest": {
+            "regions": [
+                "Canada",
+                "Alaska",
+                "Russia",
+                "Scandinavia"
+            ],
+            "fire_regime": "crown_fire_regime",
+            "key_adaptations": [
+                "serotinous_cones",
+                "stand_replacement_adapted"
+            ],
+            "typical_severity": "high",
+            "recovery_notes": "Stand replacement is natural; mosaic pattern important",
+            "professional_caution": "Climate change increasing fire frequency beyond adaptation"
+        },
+        "tropical_savanna": {
+            "regions": [
+                "Africa",
+                "Australia",
+                "South America (cerrado)",
+                "India"
+            ],
+            "fire_regime": "grassland_fire_regime",
+            "key_adaptations": [
+                "thick_bark_trees",
+                "below_ground_grass_meristems"
+            ],
+            "typical_severity": "low to moderate",
+            "recovery_notes": "Very fast grass recovery, tree recovery slower",
+            "professional_caution": "Fire is necessary - suppression causes woody encroachment"
+        },
+        "eucalyptus_forest": {
+            "regions": [
+                "Australia",
+                "naturalized in California, Portugal, Chile"
+            ],
+            "fire_regime": "crown_fire_regime",
+            "key_adaptations": [
+                "epicormic_sprouting",
+                "lignotubers",
+                "serotiny_in_some"
+            ],
+            "typical_severity": "extreme (highest intensity fires globally)",
+            "recovery_notes": "Eucalypts resprout vigorously; understory varies",
+            "professional_caution": "Extremely high fuel loads and fire intensity"
+        },
+        "tropical_rainforest": {
+            "regions": [
+                "Amazon",
+                "Congo",
+                "Southeast Asia",
+                "Papua New Guinea"
+            ],
+            "fire_regime": "NO_NATURAL_FIRE_REGIME",
+            "key_adaptations": "NONE - not fire adapted",
+            "typical_severity": "any fire is damaging",
+            "recovery_notes": "Very slow recovery; may not recover to rainforest",
+            "professional_caution": "Fire indicates ecosystem degradation, not natural process"
+        }
+    },
+    "active_vs_passive_restoration_logic": {
+        "description": "Decision framework for when to intervene",
+        "passive_restoration_indicators": {
+            "conditions_favoring_natural_recovery": [
+                "Burn severity < 50%",
+                "Seed source within 200m (trees) or 500m (wind-dispersed)",
+                "Resprouting species present and showing vigor",
+                "Low invasive species pressure",
+                "Fire regime historically frequent (vegetation adapted)",
+                "Not at risk of type conversion"
+            ],
+            "professional_recommendation": "Wait 1-3 years before deciding on active intervention",
+            "monitoring_focus": [
+                "Seedling establishment counts",
+                "Resprouting vigor",
+                "Invasive species cover",
+                "Erosion evidence"
+            ]
+        },
+        "active_restoration_indicators": {
+            "conditions_requiring_intervention": [
+                "Burn severity > 70% with no nearby seed source",
+                "High erosion risk requiring rapid cover",
+                "Type conversion imminent (forest → shrubland, native → invasive)",
+                "Fire regime historically infrequent (vegetation not adapted)",
+                "Little resprouting observed after 1 growing season",
+                "Invasive species dominating (>30% cover)"
+            ],
+            "intervention_types": [
+                "Erosion control (immediate)",
+                "Invasive species removal (before seeding)",
+                "Direct seeding (less intensive)",
+                "Container planting (high-value sites)"
+            ],
+            "professional_caution": "Intervention can be counterproductive if done too early"
+        }
+    },
+    "uncertainty_and_data_gaps": {
+        "description": "How to handle regions without specific knowledge",
+        "when_region_unknown": {
+            "approach": "Use biome-level reasoning, not species-specific claims",
+            "permitted_statements": [
+                "Based on the [biome type], typical recovery patterns include...",
+                "Fire-adapted ecosystems in this climate zone generally...",
+                "Without region-specific data, general principles suggest..."
+            ],
+            "prohibited_statements": [
+                "This species should be planted... (without regional data)",
+                "The following native species occur here... (speculation)",
+                "Recovery will take X years... (false precision)"
+            ],
+            "must_disclose": [
+                "Regional species data not available in knowledge base",
+                "Recommend consultation with local ecological expertise",
+                "General biome-level assessment only - site-specific verification needed"
+            ]
+        },
+        "confidence_calibration": {
+            "high_confidence_regions": [
+                "California",
+                "Australian eucalyptus zones"
+            ],
+            "moderate_confidence_regions": [
+                "Mediterranean Basin",
+                "Western US"
+            ],
+            "low_confidence_regions": [
+                "Tropics",
+                "Africa",
+                "Asia",
+                "South America"
+            ],
+            "action": "Calibrate language uncertainty to match regional data quality"
+        }
+    },
+    "professional_judgment_rules": {
+        "description": "Rules that prevent hallucination and enforce professional standards",
+        "core_principles": [
+            "Absence of evidence is NOT evidence of anything",
+            "Silence is preferable to speculation",
+            "Biome-level reasoning when region-specific data unavailable",
+            "Always disclose data limitations"
+        ],
+        "prohibited_behaviors": [
+            "Recommending specific species without regional data",
+            "Claiming precise recovery timelines without site data",
+            "Applying California species knowledge to other regions",
+            "Treating fire as inherently destructive (it is often beneficial)",
+            "Ignoring that some ecosystems are NOT fire-adapted"
+        ],
+        "required_behaviors": [
+            "Check if region has specific data before making claims",
+            "Use biome-level reasoning for unknown regions",
+            "Explicitly state when data is limited",
+            "Recommend local expert consultation for unknown regions",
+            "Distinguish fire-adapted vs fire-sensitive ecosystems"
+        ]
+    }
+}

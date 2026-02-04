@@ -74,7 +74,7 @@ const renderMarkdown = (text) => {
         // Escape HTML (but not our table tags)
         .replace(/&(?!amp;|lt;|gt;)/g, '&amp;')
         .replace(/<(?!\/?(?:table|thead|tbody|tr|th|td)[^>]*>)/g, '&lt;')
-        .replace(/>(?!<)/g, function(match, offset, string) {
+        .replace(/>(?!<)/g, function (match, offset, string) {
             // Don't escape > that are part of our table tags
             const before = string.substring(Math.max(0, offset - 10), offset)
             if (before.match(/<\/?(?:table|thead|tbody|tr|th|td)/)) return match
@@ -651,14 +651,24 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
 
             if (data.success) {
                 setAnalysisResults(data)
-                // Add initial chat message with dynamic stats
-                const highSev = data.severity_stats ? Math.round(data.severity_stats.high_severity_ratio * 100) : 0
-                const meanSev = data.severity_stats ? Math.round(data.severity_stats.mean_severity * 100) : 0
-                const lowSev = data.severity_stats ? Math.round(data.severity_stats.low_severity_ratio * 100) : 0
+
+                // Add initial chat message with dynamic stats (prioritize rigorous metrics if available)
+                let highSev, meanSev, lowSev
+                const stats = data.severity_stats || {}
+
+                if (stats.mean_severity_in_burn_area !== undefined) {
+                    highSev = Math.round(stats.high_severity_in_burn_area * 100)
+                    meanSev = Math.round(stats.mean_severity_in_burn_area * 100)
+                    lowSev = Math.round(stats.low_severity_in_burn_area * 100)
+                } else {
+                    highSev = Math.round(stats.high_severity_ratio * 100)
+                    meanSev = Math.round(stats.mean_severity * 100)
+                    lowSev = Math.round(stats.low_severity_ratio * 100)
+                }
 
                 const welcomeMsg = userType === 'professional'
-                    ? `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\n**Severity Breakdown:**\n- High severity: ${highSev}%\n- Mean severity: ${meanSev}%\n- Unburned/low: ${lowSev}%\n\nI can help with legal compliance, species recommendations, or monitoring frameworks. Select a quick action or ask me anything.`
-                    : `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\nI found that ${highSev}% of this area has high burn severity, while ${lowSev}% is lightly affected or unburned.\n\nWant to know if it's safe to volunteer here? Curious what it could look like in 15 years? Click a button below or just ask me.`
+                    ? `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\n**Severity Breakdown (Within Burn Area):**\n- High severity: ${highSev}%\n- Mean severity: ${meanSev}%\n- Unburned/low: ${lowSev}%\n\nI can help with legal compliance, species recommendations, or monitoring frameworks. Select a quick action or ask me anything.`
+                    : `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\nI found that ${highSev}% of the burned area has high severity damage, while ${lowSev}% is lightly affected.\n\nWant to know if it's safe to volunteer here? Curious what it could look like in 15 years? Click a button below or just ask me.`
 
                 setChatMessages([{
                     role: 'assistant',
@@ -1204,7 +1214,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                             </span>
                                             <span className="caution-level">
                                                 {analysisResults.layer3_context.overall_caution_level === 'high' ? 'High Caution' :
-                                                 analysisResults.layer3_context.overall_caution_level === 'moderate' ? 'Moderate Caution' : 'Low Caution'}
+                                                    analysisResults.layer3_context.overall_caution_level === 'moderate' ? 'Moderate Caution' : 'Low Caution'}
                                             </span>
                                         </div>
                                         <p className="warning-message">
@@ -1326,7 +1336,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                                     <div>
                                                         <span className="land-use-type">
                                                             {analysisResults.layer3_context.land_use.land_use_type?.charAt(0).toUpperCase() +
-                                                             analysisResults.layer3_context.land_use.land_use_type?.slice(1) || 'Unknown'} Area
+                                                                analysisResults.layer3_context.land_use.land_use_type?.slice(1) || 'Unknown'} Area
                                                         </span>
                                                         <span className={`reliability-badge ${analysisResults.layer3_context.analysis_suitable ? 'good' : 'caution'}`}>
                                                             {analysisResults.layer3_context.analysis_suitable ? 'High Reliability' : 'Use with Caution'}

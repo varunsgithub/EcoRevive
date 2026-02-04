@@ -1,0 +1,257 @@
+{
+    "metadata": {
+        "name": "Geographic Awareness and Knowledge Gap Detection",
+        "description": "Enables the system to detect when a location is outside its detailed knowledge base and respond appropriately rather than hallucinating",
+        "version": "1.0.0",
+        "purpose": "CRITICAL: Prevent the model from applying California species knowledge to non-California locations",
+        "last_updated": "2026-02-04"
+    },
+    "regions_with_detailed_knowledge": {
+        "california": {
+            "bounds": {
+                "lat_min": 32.5,
+                "lat_max": 42.0,
+                "lon_min": -124.5,
+                "lon_max": -114.0
+            },
+            "knowledge_level": "detailed",
+            "available_data": [
+                "species_catalog",
+                "ecoregion_classification",
+                "fire_history",
+                "restoration_protocols",
+                "legal_framework"
+            ],
+            "species_recommendations": "PERMITTED",
+            "ecoregion_references": "PERMITTED",
+            "disclosure_required": false
+        }
+    },
+    "regions_with_moderate_knowledge": {
+        "western_usa": {
+            "bounds": {
+                "lat_min": 31.0,
+                "lat_max": 49.0,
+                "lon_min": -125.0,
+                "lon_max": -102.0
+            },
+            "excludes": [
+                "california"
+            ],
+            "knowledge_level": "moderate",
+            "available_data": [
+                "fire_ecology_general",
+                "biome_classification",
+                "federal_land_types"
+            ],
+            "species_recommendations": "BIOME_LEVEL_ONLY",
+            "ecoregion_references": "GENERAL",
+            "disclosure_required": true,
+            "disclosure_text": "Detailed species data not available for this region. Biome-level ecological reasoning applied."
+        },
+        "mediterranean_basin": {
+            "bounds": {
+                "lat_min": 30.0,
+                "lat_max": 47.0,
+                "lon_min": -10.0,
+                "lon_max": 40.0
+            },
+            "knowledge_level": "moderate",
+            "available_data": [
+                "fire_ecology_general",
+                "biome_classification",
+                "mediterranean_shrubland_ecology"
+            ],
+            "species_recommendations": "BIOME_LEVEL_ONLY",
+            "disclosure_required": true,
+            "disclosure_text": "Mediterranean shrubland ecology applied. Region-specific species recommendations require local expertise."
+        },
+        "southeastern_australia": {
+            "bounds": {
+                "lat_min": -44.0,
+                "lat_max": -28.0,
+                "lon_min": 140.0,
+                "lon_max": 154.0
+            },
+            "knowledge_level": "moderate",
+            "available_data": [
+                "eucalyptus_fire_ecology",
+                "biome_classification",
+                "bushfire_dynamics"
+            ],
+            "species_recommendations": "BIOME_LEVEL_ONLY",
+            "disclosure_required": true,
+            "disclosure_text": "Eucalyptus forest fire ecology applied. Australian-specific species data not in knowledge base."
+        }
+    },
+    "regions_with_limited_knowledge": {
+        "south_america": {
+            "bounds": {
+                "lat_min": -56.0,
+                "lat_max": 13.0,
+                "lon_min": -82.0,
+                "lon_max": -34.0
+            },
+            "knowledge_level": "limited",
+            "available_data": [
+                "biome_classification_only"
+            ],
+            "species_recommendations": "NOT_PERMITTED",
+            "disclosure_required": true,
+            "disclosure_text": "Limited regional data available. Assessment based on biome-level fire ecology only. Local ecological expertise required for species-level guidance."
+        },
+        "africa": {
+            "bounds": {
+                "lat_min": -35.0,
+                "lat_max": 37.0,
+                "lon_min": -18.0,
+                "lon_max": 52.0
+            },
+            "knowledge_level": "limited",
+            "available_data": [
+                "biome_classification_only"
+            ],
+            "species_recommendations": "NOT_PERMITTED",
+            "disclosure_required": true,
+            "disclosure_text": "Limited regional ecological data. Savanna/grassland fire ecology principles applied where appropriate. Consult local expertise."
+        },
+        "asia": {
+            "bounds": {
+                "lat_min": 5.0,
+                "lat_max": 77.0,
+                "lon_min": 60.0,
+                "lon_max": 180.0
+            },
+            "knowledge_level": "limited",
+            "available_data": [
+                "biome_classification_only"
+            ],
+            "species_recommendations": "NOT_PERMITTED",
+            "disclosure_required": true,
+            "disclosure_text": "Regional fire ecology data limited. General biome principles applied. Local ecological consultation strongly recommended."
+        }
+    },
+    "classification_algorithm": {
+        "description": "How to determine region and knowledge level for any coordinates",
+        "step_1_check_detailed_regions": {
+            "action": "Check if coordinates fall within regions_with_detailed_knowledge bounds",
+            "if_match": "Set knowledge_level = 'detailed', species_permitted = true"
+        },
+        "step_2_check_moderate_regions": {
+            "action": "Check if coordinates fall within regions_with_moderate_knowledge bounds",
+            "if_match": "Set knowledge_level = 'moderate', apply disclosure, use biome reasoning"
+        },
+        "step_3_check_limited_regions": {
+            "action": "Check if coordinates fall within regions_with_limited_knowledge bounds",
+            "if_match": "Set knowledge_level = 'limited', apply strong disclosure, biome only"
+        },
+        "step_4_fallback": {
+            "action": "If no region match, use climate zone to infer biome",
+            "knowledge_level": "minimal",
+            "disclosure": "No regional data available. Assessment based on global biome classification from climate zone only. Local expertise essential for any site-specific guidance."
+        }
+    },
+    "biome_inference_from_coordinates": {
+        "description": "When region is unknown, infer biome from latitude and climate",
+        "latitude_based_inference": {
+            "tropical": {
+                "lat_range": [
+                    -23,
+                    23
+                ]
+            },
+            "subtropical": {
+                "lat_range": [
+                    23,
+                    35
+                ]
+            },
+            "temperate": {
+                "lat_range": [
+                    35,
+                    55
+                ]
+            },
+            "boreal": {
+                "lat_range": [
+                    55,
+                    70
+                ]
+            },
+            "arctic": {
+                "lat_range": [
+                    70,
+                    90
+                ]
+            }
+        },
+        "precipitation_refinement": {
+            "required_data": "precipitation or vegetation index from imagery",
+            "high_precipitation": "forest biomes",
+            "moderate_precipitation": "woodland/savanna biomes",
+            "low_precipitation": "grassland/steppe biomes",
+            "very_low_precipitation": "desert/scrubland biomes"
+        },
+        "fire_regime_assignment": {
+            "tropical_wet": "NOT_FIRE_ADAPTED",
+            "tropical_dry": "FIRE_DEPENDENT_SAVANNA",
+            "subtropical_west_coast": "MEDITERRANEAN_FIRE_REGIME",
+            "subtropical_interior": "GRASSLAND_FIRE_REGIME",
+            "temperate_forest": "VARIABLE_FIRE_REGIME",
+            "temperate_conifer": "HISTORICALLY_FIRE_MAINTAINED",
+            "boreal": "STAND_REPLACEMENT_FIRE_REGIME"
+        }
+    },
+    "response_templates_by_knowledge_level": {
+        "detailed_knowledge": {
+            "species_section": "Based on the [ecoregion], the following native species are suitable for restoration: [species list from catalog]",
+            "fire_ecology_section": "The [ecoregion] has a typical fire return interval of [X] years. Fire-adapted species include [list].",
+            "legal_section": "For sites in [jurisdiction], the following permits and consultations may apply: [specifics]"
+        },
+        "moderate_knowledge": {
+            "species_section": "Regional species data not available in the knowledge base. Based on the [biome type], typical species groups include [biome-level description]. Local botanical expertise should be consulted for specific planting recommendations.",
+            "fire_ecology_section": "This site appears to be in a [biome type] ecosystem with [fire regime description]. General fire ecology principles for this biome suggest [recovery patterns].",
+            "disclosure": "⚠️ Assessment based on biome-level ecological reasoning. Region-specific data not available."
+        },
+        "limited_knowledge": {
+            "species_section": "Species-level recommendations cannot be provided for this region. The biome type ([biome]) has general characteristics including [biome description]. Consult local ecological expertise for species selection.",
+            "fire_ecology_section": "Based on the inferred biome type ([biome]), fires in this ecosystem typically [general description]. This is general guidance only.",
+            "disclosure": "⚠️ IMPORTANT: Limited regional data available. This assessment uses global biome-level ecological principles only. Site-specific guidance requires consultation with local ecological professionals."
+        },
+        "minimal_knowledge": {
+            "full_disclosure": "⚠️ CRITICAL LIMITATION: No regional ecological data available for this location. The only available assessment is based on inferred biome type from climate zone: [biome]. All findings are highly general and should NOT be used for site-specific decisions without extensive local consultation. This tool is not a substitute for local ecological expertise in this region."
+        }
+    },
+    "hallucination_prevention_rules": {
+        "description": "Hard rules to prevent the model from making up region-specific information",
+        "absolute_prohibitions": [
+            {
+                "rule": "NEVER recommend California species for non-California locations",
+                "enforcement": "Species recommendations require knowledge_level = 'detailed' for that region"
+            },
+            {
+                "rule": "NEVER cite California ecoregions for non-California locations",
+                "enforcement": "Ecoregion references require coordinates within California bounds"
+            },
+            {
+                "rule": "NEVER claim species presence without regional species data",
+                "enforcement": "Species presence claims require species_catalog: true for region"
+            },
+            {
+                "rule": "NEVER provide recovery timelines without regional historical data",
+                "enforcement": "Recovery timelines limited to biome-level ranges with explicit uncertainty"
+            },
+            {
+                "rule": "NEVER fail to disclose knowledge limitations",
+                "enforcement": "All responses for knowledge_level < 'detailed' MUST include disclosure"
+            }
+        ],
+        "required_behaviors": [
+            "Always identify region and knowledge level before generating response",
+            "Always include appropriate disclosure for limited knowledge regions",
+            "Always recommend local consultation when species-level guidance requested for unknown regions",
+            "Always use biome-level reasoning when regional data unavailable",
+            "Always explicitly state what data IS and IS NOT available"
+        ]
+    }
+}

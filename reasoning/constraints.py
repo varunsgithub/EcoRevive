@@ -555,7 +555,7 @@ def create_constrained_prompt(
     if site:
         site_context = f"""
 # SITE-SPECIFIC CONSTRAINTS:
-- Location: {site.latitude:.4f}°N, {site.longitude:.4f}°W
+- Location: {abs(site.latitude):.4f}°{'N' if site.latitude >= 0 else 'S'}, {abs(site.longitude):.4f}°{'E' if site.longitude >= 0 else 'W'}
 - Elevation: {site.elevation_m:.0f}m
 - Land ownership: {site.land_owner}
 - Protection status: {site.protected_status.value}

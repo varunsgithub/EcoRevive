@@ -1,0 +1,279 @@
+{
+    "metadata": {
+        "name": "Environmental Risk Assessment Logic",
+        "description": "Decision frameworks for when risks are material, when to raise concerns, and when to remain silent - prevents generic hazard lists and speculation",
+        "version": "1.0.0",
+        "purpose": "Encode professional judgment about materiality and proportionality",
+        "sources": [
+            "Environmental impact assessment standards",
+            "Professional liability considerations",
+            "ISO 14001 environmental risk principles"
+        ],
+        "last_updated": "2026-02-04"
+    },
+    "materiality_thresholds": {
+        "description": "When an issue is significant enough to warrant mention",
+        "burn_severity": {
+            "threshold_negligible": 0.10,
+            "threshold_minor": 0.25,
+            "threshold_moderate": 0.50,
+            "threshold_significant": 0.70,
+            "threshold_critical": 0.85,
+            "language_mapping": {
+                "below_negligible": "DO NOT MENTION",
+                "negligible_to_minor": "Minimal indication of...",
+                "minor_to_moderate": "Some evidence of...",
+                "moderate_to_significant": "Notable...",
+                "significant_to_critical": "Substantial...",
+                "above_critical": "Extensive..."
+            }
+        },
+        "erosion_risk": {
+            "slope_degrees_low": 10,
+            "slope_degrees_moderate": 20,
+            "slope_degrees_high": 30,
+            "combined_factors": [
+                "slope > 15° AND burn_severity > 0.5 → mention erosion",
+                "slope < 10° → do not mention erosion regardless of severity",
+                "slope > 30° AND any burn → always mention erosion"
+            ]
+        },
+        "vegetation_loss": {
+            "threshold_negligible": 0.15,
+            "threshold_minor": 0.30,
+            "threshold_moderate": 0.50,
+            "interpretation": {
+                "fire_adapted_ecosystem": "Vegetation loss is expected; focus on recovery trajectory",
+                "fire_sensitive_ecosystem": "Vegetation loss may indicate lasting damage"
+            }
+        },
+        "water_quality_impact": {
+            "triggers": [
+                "Burn perimeter includes stream/river → assess sediment risk",
+                "Burn perimeter includes lake/reservoir → assess water quality",
+                "No water bodies in perimeter → do not mention water quality"
+            ]
+        }
+    },
+    "proportionality_rules": {
+        "description": "Match response intensity to evidence strength",
+        "low_evidence_response": {
+            "evidence_value_range": [
+                0.0,
+                0.30
+            ],
+            "language": [
+                "may show",
+                "slight indication of"
+            ],
+            "recommendation_strength": "None or acknowledge uncertainty",
+            "action_level": "Monitoring only if mentioned at all"
+        },
+        "moderate_evidence_response": {
+            "evidence_value_range": [
+                0.30,
+                0.60
+            ],
+            "language": [
+                "shows",
+                "indicates",
+                "demonstrates"
+            ],
+            "recommendation_strength": "Consider assessment",
+            "action_level": "May warrant attention"
+        },
+        "strong_evidence_response": {
+            "evidence_value_range": [
+                0.60,
+                0.85
+            ],
+            "language": [
+                "substantial",
+                "notable",
+                "significant"
+            ],
+            "recommendation_strength": "Recommend assessment",
+            "action_level": "Should be addressed"
+        },
+        "critical_evidence_response": {
+            "evidence_value_range": [
+                0.85,
+                1.0
+            ],
+            "language": [
+                "extensive",
+                "severe",
+                "critical"
+            ],
+            "recommendation_strength": "Prioritize action",
+            "action_level": "Requires prompt attention"
+        }
+    },
+    "when_to_mention_risks": {
+        "description": "Decision logic for raising specific risk types",
+        "erosion_risk": {
+            "mention_if": [
+                "slope_degrees > 15 AND burn_severity > 0.40",
+                "slope_degrees > 25 AND any_burn_detected",
+                "debris_flow_zone_nearby"
+            ],
+            "do_not_mention_if": [
+                "slope_degrees < 10",
+                "burn_severity < 0.20",
+                "flat terrain regardless of severity"
+            ],
+            "required_citation": "slope data AND burn severity"
+        },
+        "habitat_impact": {
+            "mention_if": [
+                "protected_species_habitat_flagged",
+                "critical_habitat_designation",
+                "high_biodiversity_zone"
+            ],
+            "do_not_mention_if": [
+                "common_species_only",
+                "heavily_modified_landscape",
+                "no_biodiversity_data_available"
+            ],
+            "required_citation": "species occurrence data or habitat designation"
+        },
+        "water_quality": {
+            "mention_if": [
+                "water_body_in_burn_perimeter",
+                "reservoir_or_drinking_water_source_nearby",
+                "riparian_zone_burned"
+            ],
+            "do_not_mention_if": [
+                "no_water_bodies_detected",
+                "water_body_more_than_2km_downstream"
+            ],
+            "required_citation": "water body presence AND burn location"
+        },
+        "structural_damage": {
+            "mention_if": [
+                "structures_detected_in_burn_area",
+                "urban_interface_zone"
+            ],
+            "do_not_mention_if": [
+                "no_structures_detected",
+                "remote_wildland_area"
+            ],
+            "required_citation": "structure detection data"
+        },
+        "air_quality": {
+            "mention_if": [
+                "active_fire OR recent_fire_smoke",
+                "population_center_downwind"
+            ],
+            "do_not_mention_if": [
+                "fire_fully_contained",
+                "remote_area_no_population"
+            ],
+            "required_citation": "fire status AND population data"
+        }
+    },
+    "when_to_remain_silent": {
+        "description": "Cases where mentioning a topic would be inappropriate",
+        "silence_conditions": [
+            {
+                "topic": "endangered_species",
+                "silence_if": "No species occurrence data and not flagged protected area",
+                "rationale": "Speculation about species creates unnecessary alarm"
+            },
+            {
+                "topic": "contamination",
+                "silence_if": "No industrial or hazmat indicators in land use",
+                "rationale": "Contamination requires specific evidence, not general concern"
+            },
+            {
+                "topic": "legal_violations",
+                "silence_if": "No specific evidence of illegal activity",
+                "rationale": "Implication of violation requires evidence"
+            },
+            {
+                "topic": "climate_impacts",
+                "silence_if": "Site-level assessment only",
+                "rationale": "Avoid climate narrative drift; focus on local evidence"
+            },
+            {
+                "topic": "long_term_projections",
+                "silence_if": "No baseline or trend data available",
+                "rationale": "Future predictions require trend data"
+            }
+        ],
+        "general_rule": "If evidence value < 0.15, remain silent unless directly asked"
+    },
+    "likelihood_consequence_framework": {
+        "description": "Professional risk assessment matrix",
+        "likelihood_levels": {
+            "rare": {
+                "probability": "<5%",
+                "descriptor": "highly unlikely"
+            },
+            "unlikely": {
+                "probability": "5-20%",
+                "descriptor": "may occur in exceptional circumstances"
+            },
+            "possible": {
+                "probability": "20-50%",
+                "descriptor": "could occur"
+            },
+            "likely": {
+                "probability": "50-80%",
+                "descriptor": "expected to occur"
+            },
+            "almost_certain": {
+                "probability": ">80%",
+                "descriptor": "will occur"
+            }
+        },
+        "consequence_levels": {
+            "negligible": "No measurable impact",
+            "minor": "Short-term, localized, fully reversible",
+            "moderate": "Medium-term impact, largely reversible",
+            "major": "Long-term impact, only partially reversible",
+            "severe": "Permanent impact, irreversible"
+        },
+        "risk_matrix": {
+            "description": "likelihood x consequence = risk level",
+            "rare_x_negligible": "very_low",
+            "unlikely_x_minor": "low",
+            "possible_x_moderate": "medium",
+            "likely_x_major": "high",
+            "almost_certain_x_severe": "very_high"
+        },
+        "response_by_risk_level": {
+            "very_low": "Do not mention unless specifically asked",
+            "low": "Acknowledge briefly if relevant",
+            "medium": "Discuss with appropriate context",
+            "high": "Emphasize with evidence",
+            "very_high": "Lead with this finding, recommend action"
+        }
+    },
+    "site_sensitivity_thresholds": {
+        "description": "Factors that increase scrutiny requirements",
+        "high_sensitivity_indicators": [
+            "Protected species habitat",
+            "Wilderness or conservation area",
+            "Water supply catchment",
+            "Cultural heritage sites",
+            "Steep terrain with erosion risk"
+        ],
+        "moderate_sensitivity_indicators": [
+            "Near urban interface",
+            "Recreational use area",
+            "Agricultural adjacency",
+            "Road network density"
+        ],
+        "low_sensitivity_indicators": [
+            "Remote undeveloped land",
+            "Modified agricultural landscape",
+            "Previously disturbed areas"
+        ],
+        "sensitivity_impact": {
+            "high_sensitivity": "Lower threshold for mentioning risks, more precautionary",
+            "moderate_sensitivity": "Standard thresholds apply",
+            "low_sensitivity": "Higher threshold required, less need for caution"
+        }
+    }
+}

@@ -1,0 +1,451 @@
+{
+    "metadata": {
+        "name": "Global Ecosystem Types Classification",
+        "description": "Biome and ecosystem type classification for geographic reasoning - enables biome-level assessment when region-specific data unavailable",
+        "version": "1.0.0",
+        "purpose": "Allow the system to reason about any location using ecosystem type rather than assuming California",
+        "sources": [
+            "WWF Ecoregions",
+            "FAO Global Ecological Zones",
+            "IPCC Biome Classification",
+            "Olson Biomes"
+        ],
+        "last_updated": "2026-02-04"
+    },
+    "major_biomes": {
+        "tropical_rainforest": {
+            "id": "tropical_rainforest",
+            "climate": "humid tropical",
+            "precipitation_mm_annual": [
+                2000,
+                10000
+            ],
+            "temperature_range_c": [
+                20,
+                35
+            ],
+            "fire_ecology": "NOT_FIRE_ADAPTED",
+            "fire_natural_role": "None - fire indicates degradation",
+            "typical_regions": [
+                "Amazon Basin",
+                "Congo Basin",
+                "Southeast Asian islands",
+                "Papua New Guinea",
+                "Central America"
+            ],
+            "distinguishing_features": [
+                "Multi-layered canopy",
+                "High biodiversity",
+                "Year-round growing season",
+                "Thin, nutrient-poor soils"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Slow to never - may convert to degraded state",
+                "intervention_urgency": "HIGH - fire is damaging event",
+                "natural_regeneration_likelihood": "Low if fire was severe",
+                "key_concerns": [
+                    "soil degradation",
+                    "invasive grasses",
+                    "permanent type conversion"
+                ]
+            }
+        },
+        "tropical_savanna": {
+            "id": "tropical_savanna",
+            "climate": "wet-dry tropical",
+            "precipitation_mm_annual": [
+                500,
+                1500
+            ],
+            "temperature_range_c": [
+                20,
+                35
+            ],
+            "fire_ecology": "FIRE_DEPENDENT",
+            "fire_natural_role": "Essential for maintaining grass-tree balance",
+            "typical_regions": [
+                "African savannas",
+                "Brazilian cerrado",
+                "Indian dry forest",
+                "Australian tropical woodland"
+            ],
+            "distinguishing_features": [
+                "Grass-dominated understory",
+                "Scattered fire-resistant trees",
+                "Distinct wet and dry seasons",
+                "Fire every 1-5 years natural"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Fast - grasses within weeks, trees slower",
+                "intervention_urgency": "LOW - fire is natural",
+                "natural_regeneration_likelihood": "Very high",
+                "key_concerns": [
+                    "fire suppression causes woody encroachment",
+                    "overgrazing post-fire"
+                ]
+            }
+        },
+        "mediterranean_shrubland": {
+            "id": "mediterranean_shrubland",
+            "climate": "mediterranean (winter wet, summer dry)",
+            "precipitation_mm_annual": [
+                300,
+                900
+            ],
+            "temperature_range_c": [
+                5,
+                35
+            ],
+            "fire_ecology": "FIRE_ADAPTED",
+            "fire_natural_role": "Triggers regeneration, maintains shrub dominance",
+            "typical_regions": [
+                "California chaparral",
+                "Mediterranean maquis",
+                "Chilean matorral",
+                "South African fynbos",
+                "SW Australian kwongan"
+            ],
+            "distinguishing_features": [
+                "Hard-leaved (sclerophyll) shrubs",
+                "Fire-stimulated seed germination",
+                "Drought-adapted vegetation",
+                "High flammability in summer"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Good - 5-15 years to mature shrubland",
+                "intervention_urgency": "LOW unless invasive species threat",
+                "natural_regeneration_likelihood": "High if fire regime appropriate",
+                "key_concerns": [
+                    "invasive grass invasion",
+                    "too-frequent fire",
+                    "erosion on slopes"
+                ]
+            }
+        },
+        "temperate_forest": {
+            "id": "temperate_forest",
+            "climate": "temperate with distinct seasons",
+            "precipitation_mm_annual": [
+                750,
+                2000
+            ],
+            "temperature_range_c": [
+                -10,
+                30
+            ],
+            "fire_ecology": "VARIABLE",
+            "fire_natural_role": "Depends on forest type - some need fire, some don't",
+            "typical_regions": [
+                "Eastern North America",
+                "Western Europe",
+                "Eastern China",
+                "Southern Chile",
+                "New Zealand",
+                "Tasmania"
+            ],
+            "distinguishing_features": [
+                "Deciduous or mixed evergreen-deciduous",
+                "Rich understory diversity",
+                "Seasonal leaf fall",
+                "Deep, fertile soils"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Moderate - depends on severity",
+                "intervention_urgency": "MODERATE",
+                "natural_regeneration_likelihood": "Moderate to high for resprouters",
+                "key_concerns": [
+                    "soil erosion",
+                    "canopy tree replacement if not resprouters"
+                ]
+            }
+        },
+        "temperate_conifer_forest": {
+            "id": "temperate_conifer_forest",
+            "climate": "temperate with cold winters",
+            "precipitation_mm_annual": [
+                400,
+                2500
+            ],
+            "temperature_range_c": [
+                -20,
+                30
+            ],
+            "fire_ecology": "HISTORICALLY_FIRE_MAINTAINED",
+            "fire_natural_role": "Historically frequent low-severity fire maintained structure",
+            "typical_regions": [
+                "Western North America (Sierra Nevada, Cascades, Rockies)",
+                "Pacific Northwest",
+                "Northern Europe (Scots pine)",
+                "Siberia (southern)",
+                "Japan mountains"
+            ],
+            "distinguishing_features": [
+                "Needle-leaved evergreen trees",
+                "Thick-barked fire-resistant species",
+                "Open understory (historically)",
+                "Montane to subalpine zones"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "SLOW - decades for canopy closure",
+                "intervention_urgency": "Depends on severity and seed source",
+                "natural_regeneration_likelihood": "Moderate if seed source within 500m",
+                "key_concerns": [
+                    "long regeneration timeline",
+                    "type conversion to shrub",
+                    "seed source distance"
+                ]
+            }
+        },
+        "boreal_forest": {
+            "id": "boreal_forest",
+            "climate": "cold continental",
+            "precipitation_mm_annual": [
+                300,
+                900
+            ],
+            "temperature_range_c": [
+                -50,
+                25
+            ],
+            "fire_ecology": "FIRE_ADAPTED_STAND_REPLACEMENT",
+            "fire_natural_role": "Infrequent crown fires drive mosaic pattern",
+            "typical_regions": [
+                "Canada boreal",
+                "Alaska interior",
+                "Russia taiga",
+                "Scandinavia",
+                "Northern Japan"
+            ],
+            "distinguishing_features": [
+                "Conifer-dominated (spruce, fir, larch, pine)",
+                "Short growing season",
+                "Permafrost in northern areas",
+                "Moss and lichen understory"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Slow but natural - 50-200 years full recovery",
+                "intervention_urgency": "LOW - stand replacement is natural",
+                "natural_regeneration_likelihood": "High from serotinous cones and adjacent seed",
+                "key_concerns": [
+                    "climate change increasing fire frequency",
+                    "permafrost thaw"
+                ]
+            }
+        },
+        "eucalyptus_forest": {
+            "id": "eucalyptus_forest",
+            "climate": "temperate to subtropical Australian",
+            "precipitation_mm_annual": [
+                500,
+                2500
+            ],
+            "temperature_range_c": [
+                0,
+                40
+            ],
+            "fire_ecology": "EXTREMELY_FIRE_ADAPTED",
+            "fire_natural_role": "Eucalypts evolved with intense fire; shapes ecosystem structure",
+            "typical_regions": [
+                "Eastern Australia",
+                "Western Australia",
+                "Tasmania",
+                "Naturalized: Portugal, California, Chile, South Africa"
+            ],
+            "distinguishing_features": [
+                "Eucalyptus-dominated canopy",
+                "Extremely high fuel loads",
+                "Epicormic resprouting after fire",
+                "Oil-rich foliage (highly flammable)"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Excellent for eucalypts - epicormic sprouting within months",
+                "intervention_urgency": "LOW for eucalypts, MODERATE for understory",
+                "natural_regeneration_likelihood": "Very high",
+                "key_concerns": [
+                    "extreme fire intensity",
+                    "fauna mortality",
+                    "climate change intensification"
+                ]
+            }
+        },
+        "grassland_steppe": {
+            "id": "grassland_steppe",
+            "climate": "semi-arid to subhumid continental",
+            "precipitation_mm_annual": [
+                250,
+                750
+            ],
+            "temperature_range_c": [
+                -30,
+                35
+            ],
+            "fire_ecology": "FIRE_DEPENDENT",
+            "fire_natural_role": "Frequent fire maintains grass dominance, prevents trees",
+            "typical_regions": [
+                "North American prairie",
+                "Eurasian steppe",
+                "South American pampas",
+                "African grasslands",
+                "Australian grasslands"
+            ],
+            "distinguishing_features": [
+                "Grass-dominated, few trees",
+                "Deep root systems",
+                "High biodiversity in soil",
+                "Fire return interval 1-10 years"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Very fast - weeks to months",
+                "intervention_urgency": "VERY LOW - fire is beneficial",
+                "natural_regeneration_likelihood": "Excellent",
+                "key_concerns": [
+                    "fire suppression causes woody invasion",
+                    "overgrazing"
+                ]
+            }
+        },
+        "desert_scrubland": {
+            "id": "desert_scrubland",
+            "climate": "arid to semi-arid",
+            "precipitation_mm_annual": [
+                50,
+                300
+            ],
+            "temperature_range_c": [
+                -10,
+                50
+            ],
+            "fire_ecology": "NOT_HISTORICALLY_FIRE_PRONE",
+            "fire_natural_role": "Historically rare due to sparse fuel",
+            "typical_regions": [
+                "Mojave Desert",
+                "Sonoran Desert",
+                "Sahara",
+                "Australian outback",
+                "Atacama"
+            ],
+            "distinguishing_features": [
+                "Sparse vegetation",
+                "Succulent or drought-deciduous plants",
+                "Long-lived perennials",
+                "Slow growth rates"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Very slow - decades to centuries",
+                "intervention_urgency": "HIGH if fire occurs - not natural",
+                "natural_regeneration_likelihood": "Low",
+                "key_concerns": [
+                    "invasive grass (cheatgrass) creating new fire cycles",
+                    "very slow native recovery"
+                ]
+            }
+        },
+        "wetland_riparian": {
+            "id": "wetland_riparian",
+            "climate": "variable - defined by hydrology",
+            "precipitation_mm_annual": "N/A - groundwater dependent",
+            "temperature_range_c": "variable",
+            "fire_ecology": "FIRE_BUFFERED",
+            "fire_natural_role": "Generally protected by water; upland fires may intrude",
+            "typical_regions": [
+                "River corridors worldwide",
+                "Floodplains",
+                "Marshes",
+                "Deltas"
+            ],
+            "distinguishing_features": [
+                "High soil moisture",
+                "Water-adapted vegetation",
+                "High productivity",
+                "Corridor for wildlife movement"
+            ],
+            "post_fire_assessment": {
+                "expected_recovery": "Fast if hydrology intact",
+                "intervention_urgency": "LOW if water regime preserved",
+                "natural_regeneration_likelihood": "High",
+                "key_concerns": [
+                    "water quality impacts",
+                    "sediment from upland burns",
+                    "invasive species"
+                ]
+            }
+        }
+    },
+    "climate_zone_mapping": {
+        "description": "Map latitude/climate to likely biome for unknown regions",
+        "tropical_zone": {
+            "latitude_range": [
+                -23,
+                23
+            ],
+            "precipitation_high": "tropical_rainforest",
+            "precipitation_moderate": "tropical_savanna",
+            "precipitation_low": "desert_scrubland"
+        },
+        "subtropical_zone": {
+            "latitude_range": [
+                23,
+                35
+            ],
+            "west_coast": "mediterranean_shrubland",
+            "east_coast": "temperate_forest",
+            "interior": "grassland_steppe or desert_scrubland"
+        },
+        "temperate_zone": {
+            "latitude_range": [
+                35,
+                55
+            ],
+            "wet_mild": "temperate_forest",
+            "mountain": "temperate_conifer_forest",
+            "interior_dry": "grassland_steppe"
+        },
+        "boreal_zone": {
+            "latitude_range": [
+                55,
+                70
+            ],
+            "default": "boreal_forest"
+        }
+    },
+    "region_specific_knowledge_status": {
+        "description": "Explicitly tracks which regions have detailed knowledge",
+        "detailed_knowledge": {
+            "california": {
+                "species_catalog": true,
+                "ecoregions": true,
+                "fire_history": true,
+                "restoration_protocols": true
+            }
+        },
+        "moderate_knowledge": {
+            "western_us": {
+                "species_catalog": false,
+                "biome_classification": true,
+                "fire_ecology": true
+            },
+            "australian_eucalyptus": {
+                "species_catalog": false,
+                "biome_classification": true,
+                "fire_ecology": true
+            },
+            "mediterranean_basin": {
+                "species_catalog": false,
+                "biome_classification": true,
+                "fire_ecology": true
+            }
+        },
+        "limited_knowledge": {
+            "tropical_regions": "biome_level_only",
+            "africa": "biome_level_only",
+            "asia": "biome_level_only",
+            "south_america_non_cerrado": "biome_level_only"
+        },
+        "action_when_limited": [
+            "Use biome-level reasoning",
+            "Disclose knowledge gap explicitly",
+            "Recommend local expert consultation",
+            "Avoid species-level recommendations"
+        ]
+    }
+}

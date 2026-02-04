@@ -155,7 +155,7 @@ You are analyzing a burn severity map from a wildfire site. The map shows:
 - ORANGE/YELLOW = Moderate burn
 - DARK/BLACK = Low or no burn
 
-LOCATION: {lat:.4f}°N, {lon:.4f}°W
+LOCATION: {lat_display}
 ECOREGION HINT: {ecoregion}
 
 BURN STATISTICS:
@@ -362,10 +362,14 @@ class EcosystemClassifier:
         # Convert severity map to image for multimodal analysis
         severity_image = severity_map_to_image(severity_map)
         
+        # Format coordinates correctly for display
+        lat_dir = 'N' if lat >= 0 else 'S'
+        lon_dir = 'E' if lon >= 0 else 'W'
+        lat_display = f"{abs(lat):.4f}°{lat_dir}, {abs(lon):.4f}°{lon_dir}"
+        
         # Build prompt
         prompt = ECOSYSTEM_PROMPT.format(
-            lat=lat,
-            lon=lon,
+            lat_display=lat_display,
             ecoregion=ecoregion_hint,
             stats=stats_str
         )
@@ -427,10 +431,12 @@ class EcosystemClassifier:
             Grounded species recommendations with sources
         """
         lat, lon = location
+        lat_dir = 'N' if lat >= 0 else 'S'
+        lon_dir = 'E' if lon >= 0 else 'W'
         
         query = f"""
         I need native plant species recommendations for post-fire restoration in a 
-        {ecosystem_type} ecosystem near {lat:.2f}°N, {lon:.2f}°W in California.
+        {ecosystem_type} ecosystem near {abs(lat):.2f}°{lat_dir}, {abs(lon):.2f}°{lon_dir}.
         
         Please search for:
         1. Current CAL FIRE or USFS recommendations for this ecosystem type

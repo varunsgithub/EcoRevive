@@ -1,0 +1,121 @@
+{
+    "metadata": {
+        "name": "Permit Trigger Logic",
+        "description": "Logic mapping restoration activities to legal triggers and permit requirements",
+        "version": "1.0.0",
+        "purpose": "Identify potential permits based on proposed actions"
+    },
+    "activity_triggers": {
+        "vegetation_management": {
+            "manual_removal": {
+                "description": "Hand pulling, lopping without machinery",
+                "triggers": [
+                    "entry_on_land"
+                ],
+                "likely_exemptions": [
+                    "CEQA Class 4 (Minor Alterations)",
+                    "NEPA Categorical Exclusion (often)"
+                ]
+            },
+            "mechanical_thinning": {
+                "description": "Use of masticators, chippers, skidders",
+                "triggers": [
+                    "soil_disturbance",
+                    "noise_impact",
+                    "emission_source"
+                ],
+                "likely_permits": [
+                    "NEPA/CEQA (if public land)",
+                    "Timber Harvest Plan (if commercial)",
+                    "Air District Burn Permit (if pile burning)"
+                ]
+            },
+            "prescribed_fire": {
+                "description": "Intentional ignition for fuel reduction",
+                "triggers": [
+                    "smoke_emission",
+                    "risk_of_escape",
+                    "take_risk"
+                ],
+                "likely_permits": [
+                    "Smoke Management Plan (Air District)",
+                    "Burn Permit (CAL FIRE/Fire Dept)",
+                    "CalVTP (if state funded)"
+                ]
+            }
+        },
+        "earthwork_and_grading": {
+            "minor_grading": {
+                "description": "< 50 cubic yards, < 10% slope",
+                "triggers": [
+                    "soil_disturbance"
+                ],
+                "likely_permits": [
+                    "Local grading permit (check county thresholds)"
+                ]
+            },
+            "major_grading": {
+                "description": "> 50 cubic yards OR > 10% slope OR near water",
+                "triggers": [
+                    "significant_soil_disturbance",
+                    "erosion_risk",
+                    "sediment_discharge_risk"
+                ],
+                "likely_permits": [
+                    "Grading Permit",
+                    "SWPPP (if > 1 acre disturbance)",
+                    "NPDES Construction General Permit"
+                ]
+            }
+        },
+        "hydrologic_restoration": {
+            "bank_stabilization": {
+                "description": "Work on stream banks (planting, bioengineering, riprap)",
+                "triggers": [
+                    "bed_bank_channel_alteration",
+                    "discharge_dredge_fill",
+                    "navigable_waters_impact"
+                ],
+                "likely_permits": [
+                    "CDFW 1602 LSAA",
+                    "CWA Section 404 (USACE)",
+                    "CWA Section 401 (Regional Board)"
+                ]
+            },
+            "wetland_creation": {
+                "description": "Excavation or filling to create/restore wetland",
+                "triggers": [
+                    "discharge_dredge_fill",
+                    "change_in_land_use"
+                ],
+                "likely_permits": [
+                    "CWA Section 404",
+                    "CWA Section 401",
+                    "Coastal Development Permit (if in zone)"
+                ]
+            }
+        }
+    },
+    "trigger_definitions": {
+        "bed_bank_channel_alteration": {
+            "legal_basis": "CA Fish & Game Code 1602",
+            "threshold": "ANY substantial diversion, obstruction, or change",
+            "jurisdiction": "State (CDFW)"
+        },
+        "discharge_dredge_fill": {
+            "legal_basis": "CWA Section 404",
+            "threshold": "Placement of material into Waters of the US",
+            "jurisdiction": "Federal (USACE)"
+        },
+        "take_risk": {
+            "legal_basis": "ESA Section 9 / CESA Section 2080",
+            "threshold": "Harass, harm, pursue, hunt, shoot, wound, kill, trap, capture, or collect",
+            "jurisdiction": "Federal (USFWS/NMFS) & State (CDFW)"
+        },
+        "soil_disturbance": {
+            "legal_basis": "NHPA Section 106",
+            "threshold": "Potential to affect buried cultural resources (federal nexus)",
+            "jurisdiction": "Federal (Lead Agency) / SHPO"
+        }
+    }
+}

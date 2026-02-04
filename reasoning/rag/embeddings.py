@@ -323,6 +323,80 @@ def load_json_as_documents(
                 }
             )
             documents.append(doc)
+            
+    # BLM Units
+    if "bureau_of_land_management" in data:
+        for office_id, office_data in data["bureau_of_land_management"].items():
+            content = _format_blm_document(office_id, office_data)
+            doc = Document(
+                content=content,
+                metadata={
+                    "source": "federal_state_lands",
+                    "land_id": office_id,
+                    "type": "blm_field_office"
+                }
+            )
+            documents.append(doc)
+
+    # State Lands
+    if "state_lands" in data:
+        for county_id, county_data in data["state_lands"].items():
+            if "parks" in county_data:
+                for park in county_data["parks"]:
+                    content = _format_state_park_document(park, county_id)
+                    doc = Document(
+                        content=content,
+                        metadata={
+                            "source": "federal_state_lands",
+                            "type": "state_park",
+                            "county": county_id
+                        }
+                    )
+                    documents.append(doc)
+
+    # National Parks
+    if "national_park_service" in data:
+        for park_id, park_data in data["national_park_service"].items():
+            content = _format_nps_document(park_id, park_data)
+            doc = Document(
+                content=content,
+                metadata={
+                    "source": "federal_state_lands",
+                    "land_id": park_id,
+                    "type": "national_park"
+                }
+            )
+            documents.append(doc)
+
+    # --- NEW LEGAL LOGIC HANDLERS ---
+
+    # Legal Jurisdiction Logic
+    if "jurisdiction_matrix" in data:
+        for land_type, rules in data["jurisdiction_matrix"].items():
+            content = _format_jurisdiction_rule(land_type, rules)
+            doc = Document(content=content, metadata={"source": "legal_jurisdiction_logic", "type": "jurisdiction_rule", "land_type": land_type})
+            documents.append(doc)
+            
+    if "federal_nexus_triggers" in data:
+         for trigger in data["federal_nexus_triggers"].get("triggers", []):
+             content = _format_nexus_trigger(trigger)
+             doc = Document(content=content, metadata={"source": "legal_jurisdiction_logic", "type": "nexus_trigger"})
+             documents.append(doc)
+
+    # Professional Legal Restraint
+    if "core_prohibitions" in data:
+        for rule_id, rule_data in data["core_prohibitions"].items():
+            content = _format_restraint_rule(rule_id, rule_data)
+            doc = Document(content=content, metadata={"source": "professional_legal_restraint", "type": "legal_prohibition", "rule_id": rule_id})
+            documents.append(doc)
+
+    # Permit Trigger Logic
+    if "activity_triggers" in data:
+        for category, activities in data["activity_triggers"].items():
+            for action_id, action_data in activities.items():
+                content = _format_permit_trigger(action_id, action_data, category)
+                doc = Document(content=content, metadata={"source": "permit_trigger_logic", "type": "permit_trigger", "action": action_id})
+                documents.append(doc)
     
     if "permit_types" in data:
         for permit_id, permit_data in data["permit_types"].items():
@@ -464,6 +538,90 @@ def load_json_as_documents(
                 }
             )
             documents.append(doc)
+            
+    # --- NEW GLOBAL FIRE ECOLOGY HANDLERS ---
+    
+    # Global Fire Ecology
+    if "fire_regime_classification" in data:
+        for regime_id, regime_data in data["fire_regime_classification"].get("regime_types", {}).items():
+            content = _format_fire_regime_document(regime_id, regime_data)
+            doc = Document(content=content, metadata={"source": "fire_ecology_global", "type": "fire_regime", "regime_id": regime_id})
+            documents.append(doc)
+            
+    if "post_fire_processes" in data:
+        for phase_id, phase_data in data["post_fire_processes"].items():
+            if phase_id == "description": continue
+            content = _format_post_fire_process(phase_id, phase_data)
+            doc = Document(content=content, metadata={"source": "fire_ecology_global", "type": "post_fire_process", "phase": phase_id})
+            documents.append(doc)
+
+    if "vegetation_response_types" in data:
+        for resp_id, resp_data in data["vegetation_response_types"].items():
+            if resp_id == "description": continue
+            content = _format_veg_response_document(resp_id, resp_data)
+            doc = Document(content=content, metadata={"source": "fire_ecology_global", "type": "vegetation_response", "response_id": resp_id})
+            documents.append(doc)
+            
+    if "biome_fire_ecology" in data:
+        for biome_id, biome_data in data["biome_fire_ecology"].items():
+            if biome_id == "description": continue
+            content = _format_biome_fire_ecology(biome_id, biome_data)
+            doc = Document(content=content, metadata={"source": "fire_ecology_global", "type": "biome_fire_ecology", "biome_id": biome_id})
+            documents.append(doc)
+
+    # Ecosystem Types
+    if "major_biomes" in data:
+        for biome_id, biome_data in data["major_biomes"].items():
+            content = _format_major_biome(biome_id, biome_data)
+            doc = Document(content=content, metadata={"source": "ecosystem_types", "type": "major_biome", "biome_id": biome_id})
+            documents.append(doc)
+
+    # Professional Practice
+    if "uncertainty_language" in data:
+        for level_id, level_data in data["uncertainty_language"].items():
+            if level_id == "description": continue
+            content = _format_uncertainty_rule(level_id, level_data)
+            doc = Document(content=content, metadata={"source": "professional_practice", "type": "uncertainty_rule", "level": level_id})
+            documents.append(doc)
+            
+    if "professional_restraint" in data:
+        content = _format_professional_restraint(data["professional_restraint"])
+        doc = Document(content=content, metadata={"source": "professional_practice", "type": "restraint_rules"})
+        documents.append(doc)
+
+    # Risk Assessment Logic
+    if "materiality_thresholds" in data:
+        for risk_type, threshold_data in data["materiality_thresholds"].items():
+            if risk_type == "description": continue
+            content = _format_materiality_threshold(risk_type, threshold_data)
+            doc = Document(content=content, metadata={"source": "risk_assessment_logic", "type": "materiality_threshold", "risk_type": risk_type})
+            documents.append(doc)
+
+    if "when_to_mention_risks" in data:
+        for risk_type, rules in data["when_to_mention_risks"].items():
+            if risk_type == "description": continue
+            content = _format_risk_mention_rule(risk_type, rules)
+            doc = Document(content=content, metadata={"source": "risk_assessment_logic", "type": "risk_mention_rule", "risk_type": risk_type})
+            documents.append(doc)
+
+    # Geographic Awareness
+    if "regions_with_detailed_knowledge" in data:
+        for region_id, region_data in data["regions_with_detailed_knowledge"].items():
+            content = _format_region_knowledge(region_id, region_data, "detailed")
+            doc = Document(content=content, metadata={"source": "geographic_awareness", "type": "region_knowledge", "region": region_id})
+            documents.append(doc)
+
+    if "regions_with_moderate_knowledge" in data:
+        for region_id, region_data in data["regions_with_moderate_knowledge"].items():
+            content = _format_region_knowledge(region_id, region_data, "moderate")
+            doc = Document(content=content, metadata={"source": "geographic_awareness", "type": "region_knowledge", "region": region_id})
+            documents.append(doc)
+            
+    if "regions_with_limited_knowledge" in data:
+        for region_id, region_data in data["regions_with_limited_knowledge"].items():
+            content = _format_region_knowledge(region_id, region_data, "limited")
+            doc = Document(content=content, metadata={"source": "geographic_awareness", "type": "region_knowledge", "region": region_id})
+            documents.append(doc)
     
     return documents
 
@@ -557,6 +715,8 @@ def _format_national_forest_document(nf_id: str, data: Dict) -> str:
     lines = [
         f"Land Unit: {data.get('name', nf_id)}",
         f"Agency: {data.get('agency', 'Unknown')}",
+        f"Jurisdiction Type: {data.get('jurisdiction_type', 'federal_default')}",
+        f"Authority Level: {data.get('authority_level', 'federal_lead')}",
         f"Region: {data.get('region', 'Unknown')}",
         f"Total acres: {data.get('total_acres', 0):,}",
     ]
@@ -828,12 +988,223 @@ def _format_site_legal_template(site_type: str, data: Dict) -> str:
         lines.append("Permits likely required:")
         for p in data["permits_likely_required"]:
             lines.append(f"  - {p}")
-    
+            
     if "constraints" in data:
-        lines.append("Key constraints:")
+        lines.append("Constraints:")
         for c in data["constraints"]:
             lines.append(f"  - {c}")
+            
+    return "\n".join(lines)
+
+
+# --- NEW FORMATTING HELPERS ---
+
+def _format_fire_regime_document(regime_id: str, data: Dict) -> str:
+    lines = [
+        f"FIRE REGIME: {regime_id.replace('_', ' ').title()}",
+        f"Description: {data.get('description', '')}",
+        f"Typical ecosystems: {', '.join(data.get('typical_ecosystems', []))}",
+        f"Fire return interval: {data.get('fire_return_interval_years', [0, 0])[0]}-{data.get('fire_return_interval_years', [0, 0])[1]} years",
+        f"Typical burn severity: {data.get('burn_severity_typical', 'Unknown')}",
+        f"Recovery timeline: {data.get('recovery_timeline_years', [0, 0])[0]}-{data.get('recovery_timeline_years', [0, 0])[1]} years",
+        f"Ecological role: {data.get('ecological_role', '')}"
+    ]
+    return "\n".join(lines)
+
+def _format_post_fire_process(phase_id: str, data: Dict) -> str:
+    phase_name = phase_id.replace('_', ' ').title()
+    lines = [f"POST-FIRE PHASE: {phase_name}"]
     
+    if "physical_changes" in data:
+        lines.append("Physical Changes:")
+        for x in data["physical_changes"]: lines.append(f" - {x}")
+        
+    if "biological_responses" in data:
+        lines.append("Biological Responses:")
+        for x in data["biological_responses"]: lines.append(f" - {x}")
+        
+    if "professional_assessment_focus" in data:
+        lines.append("Professional Assessment Focus:")
+        for x in data["professional_assessment_focus"]: lines.append(f" - {x}")
+        
+    return "\n".join(lines)
+
+def _format_veg_response_document(resp_id: str, data: Dict) -> str:
+    lines = [
+        f"VEGETATION RESPONSE: {resp_id.replace('_', ' ').title()}",
+        f"Definition: {data.get('definition', '')}",
+        f"Mechanisms: {', '.join(data.get('mechanisms', []))}",
+        f"Fire survival: {data.get('fire_survival', '')}",
+        f"Restoration implication: {data.get('restoration_implication', '')}"
+    ]
+    return "\n".join(lines)
+
+def _format_biome_fire_ecology(biome_id: str, data: Dict) -> str:
+    lines = [
+        f"BIOME FIRE ECOLOGY: {biome_id.replace('_', ' ').title()}",
+        f"Regions: {', '.join(data.get('regions', []))}",
+        f"Fire regime: {data.get('fire_regime', '')}",
+        f"Typical severity: {data.get('typical_severity', '')}",
+        f"Recovery notes: {data.get('recovery_notes', '')}",
+        f"Professional caution: {data.get('professional_caution', '')}"
+    ]
+    # Handle list or string for key_adaptations
+    ka = data.get('key_adaptations', '')
+    if isinstance(ka, list):
+        lines.append(f"Key adaptations: {', '.join(ka)}")
+    else:
+        lines.append(f"Key adaptations: {ka}")
+    return "\n".join(lines)
+
+def _format_major_biome(biome_id: str, data: Dict) -> str:
+    lines = [
+        f"GLOBAL BIOME: {biome_id.replace('_', ' ').title()}",
+        f"Climate: {data.get('climate', '')}",
+        f"Fire Ecology: {data.get('fire_ecology', '')}",
+        f"Natural Role of Fire: {data.get('fire_natural_role', '')}",
+    ]
+    if "typical_regions" in data:
+        lines.append(f"Typical Regions: {', '.join(data['typical_regions'])}")
+    
+    if "post_fire_assessment" in data:
+        pfa = data["post_fire_assessment"]
+        lines.append("Post-fire Assessment:")
+        lines.append(f" - Recovery: {pfa.get('expected_recovery', '')}")
+        lines.append(f" - Urgency: {pfa.get('intervention_urgency', '')}")
+    return "\n".join(lines)
+
+def _format_uncertainty_rule(level_id: str, data: Dict) -> str:
+    lines = [
+        f"CONFIDENCE LEVEL: {level_id.replace('_', ' ').title()}",
+        f"Evidence strength: {data.get('evidence_strength', '')}",
+        f"Quantification: {data.get('quantification', '')}"
+    ]
+    if "permitted_phrases" in data:
+        lines.append(f"Permitted phrasing: {', '.join(data['permitted_phrases'])}")
+    if "prohibited_phrases" in data:
+        lines.append(f"Prohibited phrasing: {', '.join(data['prohibited_phrases'])}")
+    return "\n".join(lines)
+
+def _format_professional_restraint(data: Dict) -> str:
+    lines = ["PROFESSIONAL RESTRAINT RULES"]
+    if "prohibited_statements" in data:
+        lines.append("PROHIBITED STATEMENTS:")
+        for item in data["prohibited_statements"]:
+            cat = item.get("category", "General")
+            why = item.get("why_prohibited", "")
+            lines.append(f" - {cat}: {why}")
+    return "\n".join(lines)
+
+def _format_materiality_threshold(risk_type: str, data: Dict) -> str:
+    lines = [f"RISK THRESHOLD: {risk_type.replace('_', ' ').title()}"]
+    # Dump key-values as it varies structure
+    for k, v in data.items():
+        if isinstance(v, (str, int, float)):
+             lines.append(f" - {k}: {v}")
+        elif isinstance(v, list):
+             lines.append(f" - {k}: {', '.join([str(i) for i in v])}")
+        elif isinstance(v, dict):
+             lines.append(f" - {k}: [Complex Rule]")
+    return "\n".join(lines)
+
+def _format_risk_mention_rule(risk_type: str, data: Dict) -> str:
+    lines = [f"RISK MENTION RULE: {risk_type.replace('_', ' ').title()}"]
+    if "mention_if" in data:
+        lines.append("MENTION IF:")
+        for c in data["mention_if"]: lines.append(f" - {c}")
+    if "do_not_mention_if" in data:
+        lines.append("DO NOT MENTION IF:")
+        for c in data["do_not_mention_if"]: lines.append(f" - {c}")
+    return "\n".join(lines)
+
+def _format_region_knowledge(region_id: str, data: Dict, level: str) -> str:
+    lines = [
+        f"REGION KNOWLEDGE: {region_id.replace('_', ' ').title()}",
+        f"Knowledge Level: {level.upper()}",
+    ]
+    if "available_data" in data:
+        lines.append(f"Available Data: {', '.join(data['available_data'])}")
+    if "disclosure_text" in data:
+        lines.append(f"Disclosure: {data['disclosure_text']}")
+    return "\n".join(lines)
+
+
+
+# --- NEW LEGAL FORMATTING HELPERS ---
+
+def _format_blm_document(office_id: str, data: Dict) -> str:
+    lines = [
+        f"Land Unit: {data.get('name', office_id)}",
+        f"Agency: BLM",
+        f"Jurisdiction Type: {data.get('jurisdiction_type', 'federal_default')}",
+        f"Authority Level: {data.get('authority_level', 'federal_lead')}",
+    ]
+    if "office" in data:
+        lines.append(f"Office: {data['office'].get('address', '')}, Phone: {data['office'].get('phone', '')}")
+    return "\n".join(lines)
+
+def _format_state_park_document(data: Dict, county: str) -> str:
+    lines = [
+        f"Land Unit: {data.get('name', 'Unknown')}",
+        f"Agency: California State Parks",
+        f"Jurisdiction Type: state_surface",
+        f"County: {county.replace('_', ' ').title()}",
+    ]
+    if "permit_contact" in data:
+        lines.append(f"Permit Contact: {data['permit_contact']}")
+    return "\n".join(lines)
+
+def _format_nps_document(park_id: str, data: Dict) -> str:
+    lines = [
+        f"Land Unit: {data.get('name', park_id)}",
+        f"Agency: National Park Service",
+        f"Jurisdiction Type: {data.get('jurisdiction_type', 'federal_exclusive')}",
+    ]
+    if "restoration_contact" in data:
+        rc = data["restoration_contact"]
+        lines.append(f"Restoration Contact: {rc.get('division', '')} - {rc.get('note', '')}")
+    return "\n".join(lines)
+
+def _format_jurisdiction_rule(land_type: str, data: Dict) -> str:
+    lines = [
+        f"JURISDICTION RULE: {land_type.replace('_', ' ').title()}",
+        f"Primary Authority: {data.get('primary_authority', '')}",
+        f"Authority Overlay: {data.get('state_authority_overlay') or data.get('federal_authority_overlay', '')}",
+        f"Key Principle: {data.get('key_preemption_rule') or data.get('key_principle', '')}"
+    ]
+    return "\n".join(lines)
+
+def _format_nexus_trigger(data: Dict) -> str:
+    return (
+        f"FEDERAL NEXUS TRIGGER: {data.get('trigger_type', '').upper()}. "
+        f"Condition: {data.get('condition', '')}. "
+        f"Consequence: {data.get('consequence', '')}. "
+        f"Examples: {', '.join(data.get('common_examples', []))}."
+    )
+
+def _format_restraint_rule(rule_id: str, data: Dict) -> str:
+    lines = [
+        f"LEGAL RESTRAINT RULE: {rule_id.replace('_', ' ').title()}",
+        f"Rule: {data.get('rule', '')}",
+        f"Rationale: {data.get('rationale', '')}",
+    ]
+    if "prohibited_phrases" in data:
+        lines.append(f"PROHIBITED PHRASES: {', '.join(data['prohibited_phrases'])}")
+    if "required_framing" in data:
+        lines.append(f"REQUIRED FRAMING: {', '.join(data['required_framing'])}")
+    return "\n".join(lines)
+
+def _format_permit_trigger(action_id: str, data: Dict, category: str) -> str:
+    lines = [
+        f"PERMIT TRIGGER: {action_id.replace('_', ' ').title()} ({category.replace('_', ' ').title()})",
+        f"Description: {data.get('description', '')}",
+    ]
+    if "triggers" in data:
+        lines.append(f"Legal Triggers: {', '.join(data['triggers'])}")
+    if "likely_permits" in data:
+        lines.append(f"Likely Permits: {', '.join(data['likely_permits'])}")
+    if "likely_exemptions" in data:
+         lines.append(f"Potential Exemptions: {', '.join(data['likely_exemptions'])}")
     return "\n".join(lines)
 
 
