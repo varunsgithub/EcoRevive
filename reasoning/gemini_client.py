@@ -52,7 +52,7 @@ class EcoReviveGemini:
         self.client = genai.Client(api_key=self.api_key)
         
         # Model names
-        self.model_name = 'gemini-3-flash-preview'  # Use stable model
+        self.model_name = 'gemini-3-flash-preview' 
         
         print("✅ EcoRevive Gemini client initialized")
         print(f"   - Model: {self.model_name}")
