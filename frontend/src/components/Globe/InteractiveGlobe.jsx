@@ -74,7 +74,7 @@ const renderMarkdown = (text) => {
         // Escape HTML (but not our table tags)
         .replace(/&(?!amp;|lt;|gt;)/g, '&amp;')
         .replace(/<(?!\/?(?:table|thead|tbody|tr|th|td)[^>]*>)/g, '&lt;')
-        .replace(/>(?!<)/g, function(match, offset, string) {
+        .replace(/>(?!<)/g, function (match, offset, string) {
             // Don't escape > that are part of our table tags
             const before = string.substring(Math.max(0, offset - 10), offset)
             if (before.match(/<\/?(?:table|thead|tbody|tr|th|td)/)) return match
@@ -1213,7 +1213,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                             </span>
                                             <span className="caution-level">
                                                 {analysisResults.layer3_context.overall_caution_level === 'high' ? 'High Caution' :
-                                                 analysisResults.layer3_context.overall_caution_level === 'moderate' ? 'Moderate Caution' : 'Low Caution'}
+                                                    analysisResults.layer3_context.overall_caution_level === 'moderate' ? 'Moderate Caution' : 'Low Caution'}
                                             </span>
                                         </div>
                                         <p className="warning-message">
@@ -1290,57 +1290,57 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                                 )}
                                             </div>
                                         ) : (
-                                        <>
-                                        {/* Key Stats */}
-                                        <div className="stats-hero">
-                                            <div className="stat-card primary">
-                                                <div className="stat-icon"></div>
-                                                <div className="stat-content">
-                                                    <span className="stat-value">
-                                                        {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.mean_severity * 100) : 0}%
-                                                    </span>
-                                                    <span className="stat-label">Mean Burn Severity</span>
+                                            <>
+                                                {/* Key Stats */}
+                                                <div className="stats-hero">
+                                                    <div className="stat-card primary">
+                                                        <div className="stat-icon"></div>
+                                                        <div className="stat-content">
+                                                            <span className="stat-value">
+                                                                {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.mean_severity * 100) : 0}%
+                                                            </span>
+                                                            <span className="stat-label">Mean Burn Severity</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="stat-card">
+                                                        <div className="stat-content">
+                                                            <span className="stat-value">
+                                                                {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.high_severity_ratio * 100) : 0}%
+                                                            </span>
+                                                            <span className="stat-label">High Severity</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="stat-card">
+                                                        <div className="stat-content">
+                                                            <span className="stat-value">
+                                                                {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.moderate_severity_ratio * 100) : 0}%
+                                                            </span>
+                                                            <span className="stat-label">Moderate</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="stat-card healthy">
+                                                        <div className="stat-content">
+                                                            <span className="stat-value">
+                                                                {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.low_severity_ratio * 100) : 0}%
+                                                            </span>
+                                                            <span className="stat-label">Low/Unburned</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="stat-card">
-                                                <div className="stat-content">
-                                                    <span className="stat-value">
-                                                        {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.high_severity_ratio * 100) : 0}%
-                                                    </span>
-                                                    <span className="stat-label">High Severity</span>
-                                                </div>
-                                            </div>
-                                            <div className="stat-card">
-                                                <div className="stat-content">
-                                                    <span className="stat-value">
-                                                        {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.moderate_severity_ratio * 100) : 0}%
-                                                    </span>
-                                                    <span className="stat-label">Moderate</span>
-                                                </div>
-                                            </div>
-                                            <div className="stat-card healthy">
-                                                <div className="stat-content">
-                                                    <span className="stat-value">
-                                                        {analysisResults.severity_stats ? Math.round(analysisResults.severity_stats.low_severity_ratio * 100) : 0}%
-                                                    </span>
-                                                    <span className="stat-label">Low/Unburned</span>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        {/* Severity Map Preview */}
-                                        {analysisResults.severity_image && (
-                                            <div className="map-preview">
-                                                <h4>Severity Map</h4>
-                                                <img src={analysisResults.severity_image} alt="Burn Severity" />
-                                                <div className="severity-legend-bar">
-                                                    <span>Low</span>
-                                                    <div className="legend-gradient" />
-                                                    <span>High</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                        </>
+                                                {/* Severity Map Preview */}
+                                                {analysisResults.severity_image && (
+                                                    <div className="map-preview">
+                                                        <h4>Severity Map</h4>
+                                                        <img src={analysisResults.severity_image} alt="Burn Severity" />
+                                                        <div className="severity-legend-bar">
+                                                            <span>Low</span>
+                                                            <div className="legend-gradient" />
+                                                            <span>High</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
 
                                         {/* Land Use Context (Layer 3) */}
@@ -1351,7 +1351,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                                     <div>
                                                         <span className="land-use-type">
                                                             {analysisResults.layer3_context.land_use.land_use_type?.charAt(0).toUpperCase() +
-                                                             analysisResults.layer3_context.land_use.land_use_type?.slice(1) || 'Unknown'} Area
+                                                                analysisResults.layer3_context.land_use.land_use_type?.slice(1) || 'Unknown'} Area
                                                         </span>
                                                         <span className={`reliability-badge ${analysisResults.layer3_context.analysis_suitable ? 'good' : 'caution'}`}>
                                                             {analysisResults.layer3_context.analysis_suitable ? 'High Reliability' : 'Use with Caution'}

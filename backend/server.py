@@ -11,10 +11,13 @@ FastAPI server that handles the full pipeline:
 import os
 import sys
 import base64
+import json
 import io
 from pathlib import Path
 from typing import Dict, Any, Optional
 from datetime import datetime
+import ee
+from google.oauth2 import service_account
 
 import numpy as np
 from PIL import Image
@@ -737,6 +740,42 @@ Keep it encouraging and accessible - this person cares about the environment but
     response = client.analyze_multimodal(prompt=prompt, use_json=False)
     return {'text': response.get('text', 'Analysis not available.'), 'analysis': None}
 
+###TESTING For google cloud deployment###
+def initialize_ee_robust():
+    """Robust Earth Engine initialization for Cloud Run using Service Account."""
+    try:
+        # 1. Look for the secret file we mounted in the Docker command
+        # Defaults to /secrets/service-account.json if env var isn't set
+        creds_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '/secrets/service-account.json')
+        
+        if os.path.exists(creds_path):
+            print(f"[INFO] Found Service Account at {creds_path}")
+            
+            # Load credentials with the specific Earth Engine scope
+            credentials = service_account.Credentials.from_service_account_file(creds_path)
+            scoped_credentials = credentials.with_scopes([
+                'https://www.googleapis.com/auth/earthengine',
+                'https://www.googleapis.com/auth/cloud-platform'
+            ])
+            
+            # Initialize with these scoped credentials
+            ee.Initialize(scoped_credentials)
+            print("[SUCCESS] EE Initialized via Service Account!")
+            return True
+            
+        else:
+            print(f"[WARNING] Service account key not found at {creds_path}")
+            
+        # 2. Fallback for Local Development (uses local gcloud auth if available)
+        print("[INFO] Attempting default local authentication...")
+        ee.Initialize()
+        return True
+        
+    except Exception as e:
+        print(f"[ERROR] EE failed to initialize: {e}")
+        return False
+
+
 
 
 
@@ -747,8 +786,19 @@ async def startup_event():
     
     print("[INFO] Starting EcoRevive API Server...")
     
-    # Initialize Earth Engine
-    ee_initialized = initialize_ee()
+    # # Check for encoded credentials (e.g. from Railway/Docker env)
+    # if 'GOOGLE_APPLICATION_CREDENTIALS_JSON' in os.environ:
+    #     try:
+    #         creds_json = base64.b64decode(os.environ['GOOGLE_APPLICATION_CREDENTIALS_JSON']).decode('utf-8')
+    #         print("[INFO] Found GOOGLE_APPLICATION_CREDENTIALS_JSON, decoding...")
+    #         # Pass to ee_download via its expected env var
+    #         os.environ['EE_SERVICE_ACCOUNT_JSON'] = creds_json
+    #     except Exception as e:
+    #         print(f"[ERROR] Failed to decode GOOGLE_APPLICATION_CREDENTIALS_JSON: {e}")
+    
+    
+    # Initialize Earth Engine using the new robust function
+    ee_initialized = initialize_ee_robust()
     
     # Load Fire Model
     load_fire_model()
