@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import './InteractiveGlobe.css'
+import ErrorBoundary from '../common/ErrorBoundary'
 
 // API Base URL - use environment variable or fallback to localhost
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
@@ -114,7 +115,7 @@ let Viewer, Cartesian3, Cartographic, CesiumMath, Rectangle, Color, ScreenSpaceE
  * CesiumJS-powered satellite imagery explorer with drag-to-draw area selection
  * Features: Hope Visualizer, Chat AI, Professional/Personal outputs
  */
-export default function InteractiveGlobe({ onBack, isTransitioning, userType = 'personal' }) {
+function InteractiveGlobeContent({ onBack, isTransitioning, userType = 'personal' }) {
     const cesiumContainerRef = useRef(null)
     const viewerRef = useRef(null)
     const handlerRef = useRef(null)
@@ -316,11 +317,15 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         initViewer()
 
         return () => {
-            if (handlerRef.current) {
+            if (handlerRef.current && !handlerRef.current.isDestroyed()) {
                 handlerRef.current.destroy()
             }
-            if (viewerRef.current) {
-                viewerRef.current.destroy()
+            if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+                try {
+                    viewerRef.current.destroy()
+                } catch (e) {
+                    console.warn('[Globe] Error destroying viewer:', e)
+                }
                 viewerRef.current = null
             }
         }
@@ -1698,5 +1703,42 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                 </span>
             </div>
         </div>
+    )
+}
+
+export default function InteractiveGlobe(props) {
+    return (
+        <ErrorBoundary
+            fallback={
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100vh',
+                    background: '#050508',
+                    color: 'white'
+                }}>
+                    <h3>Global View Error</h3>
+                    <p>The satellite view encountered a problem.</p>
+                    <button
+                        onClick={props.onBack}
+                        style={{
+                            marginTop: '16px',
+                            padding: '8px 16px',
+                            background: '#333',
+                            border: '1px solid #555',
+                            borderRadius: '4px',
+                            color: 'white',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Return to Menu
+                    </button>
+                </div>
+            }
+        >
+            <InteractiveGlobeContent {...props} />
+        </ErrorBoundary>
     )
 }
