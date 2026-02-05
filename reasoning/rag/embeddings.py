@@ -13,7 +13,7 @@ import hashlib
 from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 
-import google.generativeai as genai
+import google.genai as genai
 
 
 class GeminiEmbeddings:
@@ -24,7 +24,7 @@ class GeminiEmbeddings:
     for semantic search and retrieval.
     """
     
-    MODEL_NAME = "models/text-embedding-004"
+    MODEL_NAME = "text-embedding-004"
     EMBEDDING_DIMENSION = 768  # text-embedding-004 produces 768-dim vectors
     
     def __init__(self, api_key: Optional[str] = None):
@@ -40,7 +40,9 @@ class GeminiEmbeddings:
                 "Google API key required. Set GOOGLE_API_KEY environment variable "
                 "or pass api_key parameter."
             )
-        genai.configure(api_key=self.api_key)
+        
+        # Initialize unified client
+        self.client = genai.Client(api_key=self.api_key)
         
         print(f"[OK] Gemini Embeddings initialized")
         print(f"   Model: {self.MODEL_NAME}")
@@ -61,12 +63,12 @@ class GeminiEmbeddings:
         Returns:
             List of floats representing the embedding vector
         """
-        result = genai.embed_content(
+        result = self.client.models.embed_content(
             model=self.MODEL_NAME,
-            content=text,
-            task_type=task_type
+            contents=text,
+            config=genai.types.EmbedContentConfig(task_type=task_type)
         )
-        return result['embedding']
+        return result.embeddings[0].values
     
     def embed_documents(
         self,
