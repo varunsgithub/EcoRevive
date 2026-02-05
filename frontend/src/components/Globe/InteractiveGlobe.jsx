@@ -316,13 +316,22 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         initViewer()
 
         return () => {
-            if (handlerRef.current) {
-                handlerRef.current.destroy()
+            try {
+                if (handlerRef.current) {
+                    handlerRef.current.destroy()
+                    handlerRef.current = null
+                }
+            } catch (e) {
+                console.warn('[Cleanup] Handler destroy error:', e)
             }
-            if (viewerRef.current) {
-                viewerRef.current.destroy()
-                viewerRef.current = null
+            try {
+                if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+                    viewerRef.current.destroy()
+                }
+            } catch (e) {
+                console.warn('[Cleanup] Viewer destroy error:', e)
             }
+            viewerRef.current = null
         }
     }, [cesiumLoaded])
 
@@ -478,12 +487,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
             try {
                 console.log('[Search] Querying:', searchQuery)
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&addressdetails=1`,
-                    {
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    }
+                    `${API_BASE}/api/search?q=${encodeURIComponent(searchQuery)}`
                 )
                 const results = await response.json()
                 console.log('[Search] Results:', results.length, 'items', results)
@@ -507,12 +511,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         try {
             console.log('[Search Manual] Querying:', searchQuery)
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&addressdetails=1`,
-                {
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                }
+                `${API_BASE}/api/search?q=${encodeURIComponent(searchQuery)}`
             )
             const results = await response.json()
             console.log('[Search Manual] Results:', results.length, 'items')
@@ -525,23 +524,42 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         }
     }, [searchQuery, isSearching])
 
-    // Fly to location
-    const flyToLocation = useCallback((lon, lat, name) => {
-        console.log('[FlyTo] Location:', name, 'Coords:', lon, lat)
+    // Fly to location with bounding box for proper zoom level
+    const flyToLocation = useCallback((lon, lat, name, boundingbox) => {
+        console.log('[FlyTo] Location:', name, 'Coords:', lon, lat, 'BBox:', boundingbox)
         if (!viewerRef.current) {
             console.error('[FlyTo] No viewer available')
             return
         }
 
-        viewerRef.current.camera.flyTo({
-            destination: Cartesian3.fromDegrees(parseFloat(lon), parseFloat(lat), 30000),
-            duration: 2,
-            orientation: {
-                heading: 0,
-                pitch: CesiumMath.toRadians(-60),
-                roll: 0
-            }
-        })
+        if (boundingbox && boundingbox.length === 4) {
+            // Use bounding box for accurate zoom: [south, north, west, east]
+            const south = parseFloat(boundingbox[0])
+            const north = parseFloat(boundingbox[1])
+            const west = parseFloat(boundingbox[2])
+            const east = parseFloat(boundingbox[3])
+            const rect = Rectangle.fromDegrees(west, south, east, north)
+            viewerRef.current.camera.flyTo({
+                destination: rect,
+                duration: 2,
+                orientation: {
+                    heading: 0,
+                    pitch: CesiumMath.toRadians(-60),
+                    roll: 0
+                }
+            })
+        } else {
+            // Fallback to point + fixed altitude
+            viewerRef.current.camera.flyTo({
+                destination: Cartesian3.fromDegrees(parseFloat(lon), parseFloat(lat), 30000),
+                duration: 2,
+                orientation: {
+                    heading: 0,
+                    pitch: CesiumMath.toRadians(-60),
+                    roll: 0
+                }
+            })
+        }
 
         setSearchQuery(name)
         setShowSearchResults(false)
@@ -656,9 +674,14 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                 const meanSev = data.severity_stats ? Math.round(data.severity_stats.mean_severity * 100) : 0
                 const lowSev = data.severity_stats ? Math.round(data.severity_stats.low_severity_ratio * 100) : 0
 
-                const welcomeMsg = userType === 'professional'
-                    ? `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\n**Severity Breakdown:**\n- High severity: ${highSev}%\n- Mean severity: ${meanSev}%\n- Unburned/low: ${lowSev}%\n\nI can help with legal compliance, species recommendations, or monitoring frameworks. Select a quick action or ask me anything.`
-                    : `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\nI found that ${highSev}% of this area has high burn severity, while ${lowSev}% is lightly affected or unburned.\n\nWant to know if it's safe to volunteer here? Curious what it could look like in 15 years? Click a button below or just ask me.`
+                let welcomeMsg
+                if (data.fire_verified === false) {
+                    welcomeMsg = `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\n⚠️ ${data.fire_verification_message || 'No recent fire activity detected in this area.'}\n\nThis appears to be a developed/urban area. You can still ask me questions about this location, environmental planning, or fire preparedness.`
+                } else if (userType === 'professional') {
+                    welcomeMsg = `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\n**Severity Breakdown:**\n- High severity: ${highSev}%\n- Mean severity: ${meanSev}%\n- Unburned/low: ${lowSev}%\n\nI can help with legal compliance, species recommendations, or monitoring frameworks. Select a quick action or ask me anything.`
+                } else {
+                    welcomeMsg = `**Analysis Complete** for ${calculateArea(selectedBounds)} km²\n\nI found that ${highSev}% of this area has high burn severity, while ${lowSev}% is lightly affected or unburned.\n\nWant to know if it's safe to volunteer here? Click a button below or just ask me.`
+                }
 
                 setChatMessages([{
                     role: 'assistant',
@@ -702,7 +725,9 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                     context: {
                         severity_stats: analysisResults.severity_stats,
                         bbox: selectedBounds,
-                        layer2_output: analysisResults.layer2_output
+                        layer2_output: analysisResults.layer2_output,
+                        fire_verified: analysisResults.fire_verified,
+                        layer3_context: analysisResults.layer3_context
                     }
                 }),
             })
@@ -756,7 +781,9 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                     context: {
                         severity_stats: analysisResults?.severity_stats,
                         bbox: selectedBounds,
-                        layer2_output: analysisResults?.layer2_output
+                        layer2_output: analysisResults?.layer2_output,
+                        fire_verified: analysisResults?.fire_verified,
+                        layer3_context: analysisResults?.layer3_context
                     }
                 }),
             })
@@ -909,25 +936,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
 
             {/* Top bar */}
             <div className="globe-topbar">
-                <button
-                    type="button"
-                    className="back-button"
-                    onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        console.log('[Back] Button clicked')
-                        if (typeof onBack === 'function') {
-                            onBack()
-                        } else {
-                            console.error('[Back] onBack is not a function:', onBack)
-                        }
-                    }}
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7" />
-                    </svg>
-                    <span>Back</span>
-                </button>
+                <div style={{ width: '90px' }} /> {/* Spacer for back button in App.jsx */}
 
                 <div className="search-container">
                     <input
@@ -960,7 +969,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                     onClick={(e) => {
                                         e.preventDefault()
                                         e.stopPropagation()
-                                        flyToLocation(result.lon, result.lat, result.display_name)
+                                        flyToLocation(result.lon, result.lat, result.display_name, result.boundingbox)
                                     }}
                                 >
                                     <span className="result-icon">📍</span>
@@ -1268,6 +1277,20 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                 {/* Overview Tab */}
                                 {activeTab === 'overview' && (
                                     <div className="tab-overview">
+                                        {/* Fire verification check */}
+                                        {analysisResults.fire_verified === false ? (
+                                            <div className="no-fire-notice">
+                                                <div className="notice-icon">&#9888;</div>
+                                                <p>{analysisResults.fire_verification_message || 'No recent fire activity detected in this area.'}</p>
+                                                {analysisResults.satellite_image && (
+                                                    <div className="map-preview">
+                                                        <h4>Satellite Image</h4>
+                                                        <img src={analysisResults.satellite_image} alt="Satellite" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                        <>
                                         {/* Key Stats */}
                                         <div className="stats-hero">
                                             <div className="stat-card primary">
@@ -1316,6 +1339,8 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                                                     <span>High</span>
                                                 </div>
                                             </div>
+                                        )}
+                                        </>
                                         )}
 
                                         {/* Land Use Context (Layer 3) */}

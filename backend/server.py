@@ -84,6 +84,8 @@ class AnalyzeResponse(BaseModel):
     layer2_output: Optional[Dict[str, Any]] = None  # Structured Layer 2 JSON
     layer3_context: Optional[Dict[str, Any]] = None  # Layer 3 contextual analysis (urban detection, cautions)
     carbon_analysis: Optional[Dict[str, Any]] = None  # Carbon sequestration calculator
+    fire_verified: bool = True  # Whether actual fire activity was detected
+    fire_verification_message: Optional[str] = None  # Message if fire not verified
     error: Optional[str] = None
 
 
@@ -764,6 +766,18 @@ async def root():
     }
 
 
+@app.get("/api/search")
+async def search_location(q: str):
+    """Proxy Nominatim search to avoid browser CORS issues."""
+    import requests as req
+    resp = req.get(
+        "https://nominatim.openstreetmap.org/search",
+        params={"format": "json", "q": q, "limit": 5, "addressdetails": 1},
+        headers={"User-Agent": "EcoRevive/1.0"}
+    )
+    return resp.json()
+
+
 @app.get("/health")
 async def health_check():
     return {
@@ -941,7 +955,28 @@ async def analyze_area(request: AnalyzeRequest):
             traceback.print_exc()
 
         print("[OK] Analysis complete!")
-        
+
+        # Fire verification: check if area is urban with no actual fire
+        fire_verified = True
+        fire_verification_message = None
+        if layer3_context:
+            land_use = layer3_context.get('land_use', {})
+            land_use_type = land_use.get('land_use_type', '').lower()
+            urban_pct = land_use.get('urban_percentage', 0)
+            if land_use_type in ('urban', 'suburban', 'developed') or urban_pct > 50:
+                # Check if severity is likely a false positive (model artifact on urban surfaces)
+                high_sev = stats.get('high_severity_ratio', 0) if stats else 0
+                mean_sev = stats.get('mean_severity', 0) if stats else 0
+                # Urban areas with moderate-looking severity but no extreme burn = likely false positive
+                if high_sev < 0.3 and mean_sev < 0.6:
+                    fire_verified = False
+                    fire_verification_message = (
+                        f"This area is classified as {land_use_type} ({urban_pct}% developed). "
+                        "No significant fire activity detected. The burn severity model is trained "
+                        "on wildland fires and may produce inaccurate readings for urban areas."
+                    )
+                    print(f"[INFO] Urban area detected - fire_verified=False")
+
         return AnalyzeResponse(
             success=True,
             satellite_image=satellite_image,
@@ -951,7 +986,9 @@ async def analyze_area(request: AnalyzeRequest):
             gemini_analysis=None,  # No longer sending verbose text
             layer2_output=layer2_output,
             layer3_context=layer3_context,
-            carbon_analysis=carbon_analysis
+            carbon_analysis=carbon_analysis,
+            fire_verified=fire_verified,
+            fire_verification_message=fire_verification_message
         )
         
     except HTTPException:
@@ -1129,8 +1166,39 @@ async def chat_with_ai(request: ChatRequest):
         # Build concise system context for faster responses
         high_sev = severity_stats.get('high_severity_ratio', 0) * 100
         mean_sev = severity_stats.get('mean_severity', 0) * 100
+        fire_verified = context.get('fire_verified', True)
+        layer3 = context.get('layer3_context', {})
+        land_use = layer3.get('land_use', {}) if layer3 else {}
+        land_use_type = land_use.get('land_use_type', 'unknown')
 
-        system_context = f"""Restoration ecologist for EcoRevive. Site: {area_km2:.1f}km², {mean_sev:.0f}% mean severity, {high_sev:.0f}% high severity. Be concise, use markdown."""
+        # Location info from bbox
+        lat = (bbox.get('north', 0) + bbox.get('south', 0)) / 2
+        lon = (bbox.get('east', 0) + bbox.get('west', 0)) / 2
+
+        # Retrieve RAG context from knowledge base
+        rag_context = ""
+        try:
+            from reasoning.rag.ecology_rag import CombinedRAG
+            rag = CombinedRAG()
+            location_desc = f"California site at {lat:.2f}°N, {abs(lon):.2f}°W, land use: {land_use_type}"
+            severity_level = "high" if high_sev > 30 else "moderate" if mean_sev > 20 else "low"
+            rag_context = rag.get_full_context(
+                location_description=location_desc,
+                severity_level=severity_level,
+                activity_type="restoration" if fire_verified else "planning"
+            )
+            print(f"   [RAG] Retrieved {len(rag_context)} chars of context")
+        except Exception as e:
+            print(f"   [WARNING] RAG context retrieval failed: {e}")
+
+        if fire_verified is False:
+            system_context = f"""Environmental advisor for EcoRevive. Location: {lat:.2f}°N, {lon:.2f}°W, {area_km2:.1f}km², land use: {land_use_type}. No recent fire activity detected here. Focus on: environmental planning, fire preparedness, urban ecology, sustainability. Be concise, use markdown."""
+        else:
+            system_context = f"""Restoration ecologist for EcoRevive. Site: {lat:.2f}°N, {lon:.2f}°W, {area_km2:.1f}km², land use: {land_use_type}, {mean_sev:.0f}% mean severity, {high_sev:.0f}% high severity. Be concise, use markdown."""
+
+        # Append RAG context if available
+        if rag_context:
+            system_context += f"\n\n--- REFERENCE DATA ---\n{rag_context}\n--- END REFERENCE DATA ---\nUse the reference data above to ground your response with real species names, legal requirements, and ecological data. Cite specific species, laws, or permits when relevant."
 
         # Build short prompts for fast responses
         if request.action_type:
@@ -1138,25 +1206,25 @@ async def chat_with_ai(request: ChatRequest):
                 # PERSONAL - short prompts
                 'safety': f"Safety checklist for volunteers at this {high_sev:.0f}% high-severity burn site. List: hazards, required gear, zones to avoid. Keep brief.",
 
-                'hope': f"Recovery timeline for this burn site. Show: Now, Year 5, Year 10, Year 15. Include species, cover %, carbon. Be encouraging but realistic.",
+                'hope': f"Recovery timeline for this burn site. Show: Now, Year 5, Year 10, Year 15. Include species, cover %, carbon. Be encouraging but realistic. Use species from the reference data.",
 
-                'ownership': f"Land ownership guide for California site at {bbox.get('south', 0):.2f}°N, {abs(bbox.get('west', 0)):.2f}°W. Cover: jurisdiction, permits, contacts, timeline.",
+                'ownership': f"Land ownership guide for California site at {bbox.get('south', 0):.2f}°N, {abs(bbox.get('west', 0)):.2f}°W. Cover: jurisdiction, permits, contacts, timeline. Reference the legal data provided.",
 
                 'supplies': f"Supply list & budget for 10-person restoration event at {area_km2:.1f}km² site. Table format: item, qty, cost. Include total.",
 
                 # PROFESSIONAL - short prompts
-                'legal': f"Legal/tenure analysis for professional restoration grant. Cover: ownership verification, protected status, encumbrances, compliance requirements.",
+                'legal': f"Legal/tenure analysis for professional restoration grant. Use the legal framework and land ownership data provided. Cover: ownership verification, protected status, encumbrances, compliance requirements.",
 
-                'biophysical': f"Biophysical characterization: soil, hydrology, topography, land use history. Recommend species for {mean_sev:.0f}% severity site.",
+                'biophysical': f"Biophysical characterization: soil, hydrology, topography, land use history. Recommend species from the reference data for {mean_sev:.0f}% severity site.",
 
-                'species': f"Native species palette for California burn site ({high_sev:.0f}% high severity). Tables: pioneers (0-2yr), mid-succession (2-5yr), climax (5-10yr). Include scientific names.",
+                'species': f"Native species palette using the species catalog provided. Tables: pioneers (0-2yr), mid-succession (2-5yr), climax (5-10yr). Include scientific names, planting density, and survival rates from the data.",
 
                 'monitoring': f"Monitoring framework for restoration. Include: baseline metrics, schedule table (Year 0-10), carbon protocol eligibility, uncertainty bounds."
             }
 
             prompt = action_prompts.get(request.action_type, request.message)
         else:
-            prompt = f"Question: {request.message}\nAnswer concisely based on site data."
+            prompt = f"Question: {request.message}\nAnswer concisely based on site data and reference knowledge."
 
         full_prompt = f"{system_context}\n\n{prompt}"
 

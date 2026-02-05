@@ -23,11 +23,8 @@ function App() {
   }, [])
 
   const handleBackToLanding = useCallback(() => {
-    setIsTransitioning(true)
-    setTimeout(() => {
-      setCurrentView('landing')
-      setIsTransitioning(false)
-    }, 600)
+    // Switch immediately - no transition (fade-out would make landing invisible)
+    setCurrentView('landing')
   }, [])
 
   return (
@@ -38,11 +35,42 @@ function App() {
           isTransitioning={isTransitioning}
         />
       ) : (
-        <InteractiveGlobe
-          onBack={handleBackToLanding}
-          isTransitioning={isTransitioning}
-          userType={userType}
-        />
+        <>
+          <InteractiveGlobe
+            onBack={handleBackToLanding}
+            isTransitioning={isTransitioning}
+            userType={userType}
+          />
+          {/* Back button rendered at App level - outside Cesium entirely */}
+          <button
+            type="button"
+            onClick={() => handleBackToLanding()}
+            style={{
+              position: 'fixed',
+              top: '18px',
+              left: '20px',
+              zIndex: 2147483647,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              background: 'rgba(20, 20, 20, 0.95)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '8px',
+              color: 'rgba(255,255,255,0.8)',
+              fontSize: '13px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              backdropFilter: 'blur(8px)',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back
+          </button>
+        </>
       )}
 
       {/* Transition overlay */}

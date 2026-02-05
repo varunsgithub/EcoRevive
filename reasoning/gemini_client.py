@@ -100,12 +100,23 @@ class EcoReviveGemini:
         if use_json:
             config.response_mime_type = 'application/json'
         
-        # Generate response
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=contents,
-            config=config
-        )
+        # Generate response with retry on 503
+        import time
+        response = None
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=contents,
+                    config=config
+                )
+                break
+            except Exception as e:
+                if '503' in str(e) and attempt < 2:
+                    print(f"[RETRY] Gemini 503, retrying in {2 ** attempt}s...")
+                    time.sleep(2 ** attempt)
+                else:
+                    raise
         
         result = {
             'text': response.text,
@@ -142,12 +153,23 @@ class EcoReviveGemini:
             tools=[types.Tool(google_search=types.GoogleSearch())]
         )
         
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=query,
-            config=config
-        )
-        
+        import time
+        response = None
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=query,
+                    config=config
+                )
+                break
+            except Exception as e:
+                if '503' in str(e) and attempt < 2:
+                    print(f"[RETRY] Gemini 503, retrying in {2 ** attempt}s...")
+                    time.sleep(2 ** attempt)
+                else:
+                    raise
+
         result = {
             'text': response.text,
             'grounding_metadata': None,
@@ -199,12 +221,23 @@ class EcoReviveGemini:
             tools=tools
         )
         
-        response = self.client.models.generate_content(
-            model=self.model_name,
-            contents=prompt,
-            config=config
-        )
-        
+        import time
+        response = None
+        for attempt in range(3):
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config=config
+                )
+                break
+            except Exception as e:
+                if '503' in str(e) and attempt < 2:
+                    print(f"[RETRY] Gemini 503, retrying in {2 ** attempt}s...")
+                    time.sleep(2 ** attempt)
+                else:
+                    raise
+
         result = {
             'text': None,
             'function_calls': [],
