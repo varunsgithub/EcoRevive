@@ -14,7 +14,7 @@ import base64
 import json
 import io
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from datetime import datetime
 import ee
 from google.oauth2 import service_account
