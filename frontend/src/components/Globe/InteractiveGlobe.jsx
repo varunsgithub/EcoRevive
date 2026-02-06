@@ -176,6 +176,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         { id: 'species', label: 'Species Palette', icon: '', prompt: 'Recommend native species palette with pioneer vs climax breakdown and drought tolerance.' },
         { id: 'monitoring', label: 'Monitoring Plan', icon: '', prompt: 'Create a monitoring and verification framework with NDVI baselines and carbon accounting.' }
     ] : [
+        { id: 'volunteer', label: 'How Can I Help?', icon: '', prompt: 'Find up to 6 nearby volunteering organizations or groups that work on wildfire recovery, reforestation, or environmental restoration in this area. Include their names, what they do, contact information (phone numbers, websites, emails if available), and how someone can sign up to volunteer with them. Focus on organizations that accept individual volunteers for hands-on restoration work.' },
         { id: 'safety', label: 'Safety Check', icon: '', prompt: 'Identify all safety hazards including widowmaker trees, unstable slopes, and danger zones.' },
         { id: 'ownership', label: 'Land Ownership', icon: '', prompt: 'Provide information about land ownership and who to contact for restoration permits.' },
         { id: 'supplies', label: 'Supplies & Cost', icon: '', prompt: 'Generate a list of supplies and estimated costs for a community restoration drive.' }
