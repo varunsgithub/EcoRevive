@@ -7,7 +7,7 @@ Entry point for generating PDF reports.
 import io
 import base64
 from datetime import datetime
-from typing import Tuple, Dict, Any, Optional
+from typing import Tuple, Dict, Any, Optional, List
 
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, PageTemplate, Frame
@@ -29,6 +29,7 @@ def generate_pdf(
     carbon_analysis: Optional[Dict[str, Any]] = None,
     location_name: Optional[str] = None,
     analysis_id: Optional[str] = None,
+    chat_history: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[bytes, Dict[str, Any]]:
     """
     Generate a PDF report for burn severity analysis.
@@ -44,6 +45,7 @@ def generate_pdf(
         carbon_analysis: Carbon analysis results (optional)
         location_name: Human-readable location name (optional)
         analysis_id: Unique analysis identifier (optional)
+        chat_history: List of chat messages to append to report (optional)
 
     Returns:
         Tuple of (pdf_bytes, metadata_dict)
@@ -92,6 +94,7 @@ def generate_pdf(
             carbon_analysis=carbon_analysis,
             location_name=location_name,
             analysis_id=analysis_id,
+            chat_history=chat_history,
         )
         filename = f"EcoRevive_Professional_Report_{analysis_id}.pdf"
     else:
@@ -104,6 +107,7 @@ def generate_pdf(
             layer3_context=layer3_context,
             location_name=location_name,
             analysis_id=analysis_id,
+            chat_history=chat_history,
         )
         filename = f"EcoRevive_Impact_Card_{analysis_id}.pdf"
 
@@ -181,6 +185,7 @@ def generate_pdf_base64(
     carbon_analysis: Optional[Dict[str, Any]] = None,
     location_name: Optional[str] = None,
     analysis_id: Optional[str] = None,
+    chat_history: Optional[List[Dict[str, Any]]] = None,
 ) -> Tuple[str, Dict[str, Any]]:
     """
     Generate a PDF report and return as base64 encoded string.
@@ -201,6 +206,7 @@ def generate_pdf_base64(
         carbon_analysis=carbon_analysis,
         location_name=location_name,
         analysis_id=analysis_id,
+        chat_history=chat_history,
     )
 
     # Encode to base64

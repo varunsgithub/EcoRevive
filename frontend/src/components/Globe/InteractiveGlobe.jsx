@@ -833,6 +833,12 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                     user_type: userType,
                     location_name: searchQuery || null,
                     analysis_id: null,
+                    chat_history: chatMessages.map((msg, idx) => ({
+                        role: msg.role,
+                        content: msg.content,
+                        timestamp: msg.timestamp || new Date().toISOString(),
+                        order: idx
+                    })),
                 }),
             })
 
@@ -854,7 +860,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         } finally {
             setIsExporting(false)
         }
-    }, [analysisResults, selectedBounds, userType, searchQuery, isExporting])
+    }, [analysisResults, selectedBounds, userType, searchQuery, isExporting, chatMessages])
 
     // Handle Word Export
     const handleExportWord = useCallback(async () => {
@@ -879,6 +885,12 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
                     report_type: userType,
                     user_type: userType,
                     location_name: searchQuery || null,
+                    chat_history: chatMessages.map((msg, idx) => ({
+                        role: msg.role,
+                        content: msg.content,
+                        timestamp: msg.timestamp || new Date().toISOString(),
+                        order: idx
+                    })),
                 }),
             })
 
@@ -899,7 +911,7 @@ export default function InteractiveGlobe({ onBack, isTransitioning, userType = '
         } finally {
             setIsExportingWord(false)
         }
-    }, [analysisResults, selectedBounds, userType, searchQuery, isExportingWord])
+    }, [analysisResults, selectedBounds, userType, searchQuery, isExportingWord, chatMessages])
 
     const formatAltitude = (meters) => {
         if (meters > 1000000) {

@@ -5,6 +5,7 @@ Modern, card-based 2-3 page Impact Card design with detailed sections.
 """
 
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import (
@@ -43,6 +44,7 @@ def build_personal_report(
     layer3_context: dict = None,
     location_name: str = None,
     analysis_id: str = None,
+    chat_history: Optional[List[Dict[str, Any]]] = None,
 ) -> list:
     """
     Build the story elements for a personal Impact Card PDF.
@@ -161,6 +163,14 @@ def build_personal_report(
     story.append(Spacer(1, 0.1 * inch))
     story.append(_create_timeline_section())
     story.append(Spacer(1, 0.3 * inch))
+
+    # ==================== CHAT LOG (if provided) ====================
+    if chat_history and len(chat_history) > 0:
+        story.append(PageBreak())
+        story.append(_section_label("AI CONSULTATION LOG"))
+        story.append(Spacer(1, 0.1 * inch))
+        story.append(_create_chat_log_section(chat_history))
+        story.append(Spacer(1, 0.2 * inch))
 
     # Footer
     story.append(_create_footer(timestamp, analysis_id))
@@ -588,6 +598,59 @@ def _create_footer(timestamp, analysis_id):
     return Table([[line], [footer_text]], colWidths=[PAGE_WIDTH])
 
 
+def _create_chat_log_section(chat_history: List[Dict[str, Any]]) -> Table:
+    """Create a chat log section for the report."""
+    # Limit to last 20 messages
+    messages = chat_history[-20:] if len(chat_history) > 20 else chat_history
+    
+    content = '<font size="9" color="#5a6b66">'
+    if len(chat_history) > 20:
+        content += f'<i>(Showing last 20 of {len(chat_history)} messages)</i><br/><br/>'
+    
+    content += 'The following questions and answers were discussed during this analysis session:<br/><br/>'
+    
+    for msg in messages:
+        role = msg.get('role', 'unknown')
+        msg_content = msg.get('content', '')
+        timestamp = msg.get('timestamp', '')
+        
+        # Format timestamp if present
+        time_str = ''
+        if timestamp:
+            try:
+                from datetime import datetime as dt
+                ts = dt.fromisoformat(timestamp.replace('Z', '+00:00'))
+                time_str = f' ({ts.strftime("%I:%M %p")})'
+            except:
+                pass
+        
+        # Role styling
+        if role == 'user':
+            role_label = f'<font color="#006494"><b>You{time_str}:</b></font>'
+        else:
+            role_label = f'<font color="#00856a"><b>EcoRevive AI{time_str}:</b></font>'
+        
+        # Truncate long messages
+        if len(msg_content) > 500:
+            msg_content = msg_content[:500] + '...'
+        
+        content += f'{role_label}<br/>{msg_content}<br/><br/>'
+    
+    content += '</font>'
+    
+    para = Paragraph(content, _style_left_wrapped())
+    wrapper = Table([[para]], colWidths=[PAGE_WIDTH])
+    wrapper.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), CARD_BG),
+        ('TOPPADDING', (0, 0), (-1, -1), 14),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 14),
+        ('LEFTPADDING', (0, 0), (-1, -1), 16),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 16),
+        ('ROUNDEDCORNERS', [4, 4, 4, 4]),
+    ]))
+    return wrapper
+
+
 def _get_detailed_recommendations(layer3_context: dict, severity_stats: dict) -> list:
     """Get detailed recommendations based on context."""
     recommendations = []
@@ -612,6 +675,7 @@ def _get_detailed_recommendations(layer3_context: dict, severity_stats: dict) ->
             recommendations.append((title, desc))
 
     return recommendations
+
 
 
 # Style helper functions

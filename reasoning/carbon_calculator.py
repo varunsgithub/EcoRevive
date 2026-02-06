@@ -95,6 +95,164 @@ UNCERTAINTY = {
     "combined": 0.35,         # Combined uncertainty ~35%
 }
 
+# Ecosystem display names for user-friendly output
+ECOSYSTEM_DISPLAY_NAMES = {
+    "mixed_conifer": "Sierra Nevada Mixed Conifer Forest",
+    "oak_woodland": "California Oak Woodland",
+    "chaparral": "Chaparral Shrubland",
+    "grassland": "California Grassland",
+    "riparian": "Riparian Forest Corridor",
+    "redwood": "Coastal Redwood Forest",
+    "pinyon_juniper": "High Desert Pinyon-Juniper Woodland",
+    "default": "California Forest Ecosystem",
+}
+
+
+# =============================================================================
+# METHODOLOGY EXPLANATION FUNCTIONS
+# =============================================================================
+
+def get_methodology_explanation(user_type: str = "personal") -> Dict[str, str]:
+    """
+    Return methodology explanation appropriate for user expertise level.
+    
+    Args:
+        user_type: "personal" for plain English, "professional" for technical detail
+        
+    Returns:
+        Dict with 'summary', 'approach', and 'confidence' explanations
+    """
+    if user_type == "personal":
+        return {
+            "summary": (
+                "We estimate how much CO₂ this restored land could capture over time. "
+                "Think of it like counting how many car emissions we're offsetting by "
+                "letting nature do its work."
+            ),
+            "approach": (
+                "Our calculations use scientific data from California forests, looking at "
+                "how fast different types of ecosystems grow and store carbon. We account "
+                "for how badly the fire damaged the area—more damage means more potential "
+                "for recovery and carbon capture."
+            ),
+            "confidence": (
+                "These are estimates, not guarantees. Actual carbon capture depends on "
+                "weather, which plants grow back, and how the restoration is managed. "
+                "We use conservative numbers to avoid over-promising."
+            ),
+            "what_it_means": (
+                "If restoration succeeds, this land will slowly pull carbon dioxide out of "
+                "the air as plants grow, helping fight climate change one tree at a time."
+            ),
+        }
+    else:
+        return {
+            "summary": (
+                "Carbon sequestration estimates follow IPCC Tier 2 methodology with "
+                "California-specific coefficients derived from USFS Forest Inventory and "
+                "Analysis (FIA) data and peer-reviewed literature."
+            ),
+            "approach": (
+                "Baseline carbon stocks are estimated from ecosystem-specific lookup tables "
+                "(tC/ha). Fire-induced carbon loss is calculated using severity-weighted "
+                "combustion factors. Annual sequestration rates assume successful "
+                "restoration with >70% survival rate and typical species composition."
+            ),
+            "confidence": (
+                "Combined uncertainty is approximately ±35% (95% CI), reflecting variability "
+                "in: (1) baseline carbon estimates (±30%), (2) severity-loss relationships "
+                "(±20%), and (3) growth rate projections (±25%). Uncertainty compounds over "
+                "longer time horizons."
+            ),
+            "limitations": (
+                "Estimates do not account for: climate change impacts on growth rates, "
+                "future fire risk and potential re-release, site-specific soil conditions, "
+                "or management intervention effects. Field validation is recommended for "
+                "carbon credit applications."
+            ),
+        }
+
+
+def get_assumptions_list() -> List[Dict[str, str]]:
+    """
+    Return list of explicit assumptions with descriptions and implications.
+    
+    Returns:
+        List of dicts with 'name', 'description', 'impact', and 'confidence' keys
+    """
+    return [
+        {
+            "name": "Restoration Success Rate",
+            "description": "Assumes >70% of planted vegetation survives to maturity",
+            "impact": "Lower survival reduces actual carbon capture proportionally",
+            "confidence": "Medium - depends heavily on site management and climate",
+        },
+        {
+            "name": "Ecosystem Type Classification",
+            "description": "Ecosystem type inferred from location coordinates using regional heuristics",
+            "impact": "Misclassification could shift estimates by ±40%",
+            "confidence": "Medium - field verification recommended for precision",
+        },
+        {
+            "name": "Linear Growth Model",
+            "description": "Carbon accumulation modeled as linear over projection period",
+            "impact": "Underestimates early years, overestimates mature forest phase",
+            "confidence": "Low - sigmoid curve more accurate but requires species data",
+        },
+        {
+            "name": "No Re-burn Events",
+            "description": "Projections assume no subsequent fires release stored carbon",
+            "impact": "Re-burn would reset carbon gains; California fire return intervals vary widely",
+            "confidence": "Low - fire risk increasing with climate change",
+        },
+        {
+            "name": "Typical Species Composition",
+            "description": "Carbon rates based on historical species mix for ecosystem type",
+            "impact": "Actual species selection affects growth rates and carbon density",
+            "confidence": "Medium - species palette recommendations can optimize outcomes",
+        },
+        {
+            "name": "Baseline Carbon Stock",
+            "description": "Pre-fire carbon estimated from regional averages, not site-specific inventory",
+            "impact": "Actual pre-fire conditions may differ from regional means",
+            "confidence": "Medium - remote sensing can improve estimates",
+        },
+    ]
+
+
+def get_ecosystem_display_name(ecosystem_type: str) -> str:
+    """Return user-friendly display name for ecosystem type."""
+    return ECOSYSTEM_DISPLAY_NAMES.get(ecosystem_type, ECOSYSTEM_DISPLAY_NAMES["default"])
+
+
+def get_location_context(location: tuple, ecosystem_type: str) -> str:
+    """
+    Generate a user-friendly location context description.
+    
+    Args:
+        location: (latitude, longitude) tuple
+        ecosystem_type: Estimated ecosystem type
+        
+    Returns:
+        Human-readable location context string
+    """
+    lat, lon = location
+    display_name = get_ecosystem_display_name(ecosystem_type)
+    
+    # Determine general region from coordinates
+    if -124 < lon < -119 and 38 < lat < 42:
+        region = "Northern California"
+    elif -122 < lon < -118 and 36 < lat < 38:
+        region = "Central Sierra Nevada"
+    elif -122 < lon < -117 and lat < 36:
+        region = "Southern California"
+    elif -122 < lon < -119 and lat < 38:
+        region = "Central California"
+    else:
+        region = "California"
+    
+    return f"{display_name} in {region} ({lat:.2f}°N, {abs(lon):.2f}°W)"
+
 
 # =============================================================================
 # DATA CLASSES
@@ -142,11 +300,17 @@ class CarbonAnalysisPersonal:
 
     # Simple confidence indicator
     confidence: str  # "high", "medium", "low"
+    
+    # NEW: User-friendly methodology explanations
+    what_this_means: str = ""      # Plain-English explanation of carbon capture
+    location_context: str = ""     # e.g., "Sierra Nevada Mixed Conifer Forest in Northern California"
+    methodology_note: str = ""     # Brief note on how calculation was done
 
     def to_dict(self) -> Dict[str, Any]:
         result = asdict(self)
         result['equivalencies'] = self.equivalencies.to_dict()
         return result
+
 
 
 @dataclass
@@ -452,6 +616,10 @@ def calculate_carbon(
     else:
         confidence = "low"
 
+    # Generate location context and methodology explanations
+    location_context = get_location_context(location, ecosystem_type)
+    methodology_info = get_methodology_explanation("personal")
+    
     # Build personal analysis
     personal = CarbonAnalysisPersonal(
         total_co2_capture_20yr=round(total_20yr_tco2e, 0),
@@ -459,7 +627,10 @@ def calculate_carbon(
         trees_equivalent=equivalencies.tree_seedlings_grown_10yr,
         equivalencies=equivalencies,
         impact_statements=impact_statements,
-        confidence=confidence
+        confidence=confidence,
+        what_this_means=methodology_info.get("what_it_means", ""),
+        location_context=location_context,
+        methodology_note=methodology_info.get("summary", "")
     )
 
     # Build professional analysis
@@ -532,12 +703,22 @@ def create_carbon_response(
             "headline": f"{int(output.personal.total_co2_capture_20yr):,} tons CO2",
             "subheadline": f"captured over 20 years of restoration",
             "key_equivalency": output.personal.impact_statements[0] if output.personal.impact_statements else "",
+            "location_context": output.personal.location_context,
+            "what_this_means": output.personal.what_this_means,
         }
     else:
         result["summary"] = {
             "headline": f"{output.professional.annual_sequestration_tco2e:.1f} tCO2e/year",
             "subheadline": f"sequestration potential ({output.ecosystem_type} ecosystem)",
             "protocols_eligible": sum(1 for v in output.professional.protocols.values() if v),
+            "location_context": get_location_context(location, output.ecosystem_type),
         }
+    
+    # Add methodology and assumptions for transparency
+    methodology_info = get_methodology_explanation(user_type)
+    result["methodology"] = methodology_info
+    result["assumptions"] = get_assumptions_list()
+    result["location_display_name"] = get_ecosystem_display_name(output.ecosystem_type)
 
     return result
+

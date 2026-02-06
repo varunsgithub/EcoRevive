@@ -129,6 +129,7 @@ class PDFExportRequest(BaseModel):
     user_type: str = "personal"
     location_name: Optional[str] = None
     analysis_id: Optional[str] = None
+    chat_history: Optional[List[Dict[str, Any]]] = None  # Chat messages to append to report
 
 
 class PDFExportResponse(BaseModel):
@@ -151,6 +152,7 @@ class WordExportRequest(BaseModel):
     report_type: str = "personal"
     user_type: str = "personal"
     location_name: Optional[str] = None
+    chat_history: Optional[List[Dict[str, Any]]] = None  # Chat messages to append to report
 
 
 class WordExportResponse(BaseModel):
@@ -1332,6 +1334,7 @@ async def export_pdf(request: PDFExportRequest):
             carbon_analysis=request.carbon_analysis,
             location_name=request.location_name,
             analysis_id=request.analysis_id,
+            chat_history=request.chat_history,
         )
 
         # Encode to base64
@@ -1740,6 +1743,61 @@ async def export_word(request: WordExportRequest):
                     cell.paragraphs[0].runs[0].bold = True
 
         doc.add_paragraph()
+
+        # ==================== CONSULTATION LOG (if chat history provided) ====================
+        if request.chat_history and len(request.chat_history) > 0:
+            doc.add_page_break()
+            doc.add_heading('Appendix: AI Consultation Log', level=1)
+            
+            intro = doc.add_paragraph()
+            intro.add_run(
+                "The following is a record of questions asked and responses received during the analysis session. "
+                "This log is provided for transparency and reference."
+            )
+            intro.paragraph_format.space_after = Pt(12)
+            
+            # Limit to last 20 messages to prevent extremely long reports
+            messages_to_render = request.chat_history[-20:] if len(request.chat_history) > 20 else request.chat_history
+            
+            if len(request.chat_history) > 20:
+                truncation_note = doc.add_paragraph()
+                truncation_note.add_run(f"(Showing last 20 of {len(request.chat_history)} messages)")
+                truncation_note.runs[0].italic = True
+                truncation_note.paragraph_format.space_after = Pt(6)
+            
+            for idx, msg in enumerate(messages_to_render):
+                role = msg.get('role', 'unknown').capitalize()
+                content = msg.get('content', '')
+                msg_timestamp = msg.get('timestamp', '')
+                
+                # Create message header
+                msg_header = doc.add_paragraph()
+                role_run = msg_header.add_run(f"{role}")
+                role_run.bold = True
+                if role == 'User':
+                    role_run.font.color.rgb = RGBColor(0, 100, 150)  # Blue for user
+                else:
+                    role_run.font.color.rgb = RGBColor(0, 120, 80)  # Green for assistant
+                
+                if msg_timestamp:
+                    # Format timestamp for display
+                    try:
+                        from datetime import datetime as dt
+                        ts = dt.fromisoformat(msg_timestamp.replace('Z', '+00:00'))
+                        ts_str = ts.strftime('%I:%M %p')
+                        msg_header.add_run(f" • {ts_str}")
+                    except:
+                        pass
+                
+                msg_header.paragraph_format.space_before = Pt(8)
+                msg_header.paragraph_format.space_after = Pt(2)
+                
+                # Create message content
+                msg_body = doc.add_paragraph(content)
+                msg_body.paragraph_format.left_indent = Inches(0.25)
+                msg_body.paragraph_format.space_after = Pt(6)
+            
+            doc.add_paragraph()
 
         # ==================== FOOTER ====================
         doc.add_paragraph()

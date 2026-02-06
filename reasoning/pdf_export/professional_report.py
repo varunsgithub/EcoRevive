@@ -5,6 +5,7 @@ Comprehensive 5-10 page technical document for grants and stakeholders.
 """
 
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import (
@@ -46,6 +47,7 @@ def build_professional_report(
     carbon_analysis: dict = None,
     location_name: str = None,
     analysis_id: str = None,
+    chat_history: Optional[List[Dict[str, Any]]] = None,
 ) -> list:
     """Build the story elements for a professional grant-ready PDF."""
     styles = get_styles()
@@ -104,6 +106,11 @@ def build_professional_report(
 
     # ==================== METHODOLOGY ====================
     story.extend(_build_methodology_section(layer2_output, layer3_context))
+    
+    # ==================== CONSULTATION LOG APPENDIX ====================
+    if chat_history and len(chat_history) > 0:
+        story.append(PageBreak())
+        story.extend(_build_consultation_log_appendix(chat_history))
 
     return story
 
@@ -957,6 +964,88 @@ def _get_priority_recommendations(severity_stats, layer3_context, carbon_analysi
     recs.append("Engage local stakeholders and potential volunteer groups for restoration activities.")
 
     return recs
+
+
+def _build_consultation_log_appendix(chat_history: List[Dict[str, Any]]) -> list:
+    """Build appendix section for AI consultation log."""
+    story = []
+    
+    story.append(_section_header("Appendix A: AI Consultation Log"))
+    
+    # Introduction
+    intro_text = '''
+    <font size="10" color="#5a6b66">
+    The following is a record of questions and responses during the AI-assisted analysis session.
+    This log is provided for transparency and to document the analytical process. All AI responses
+    should be verified independently before use in decision-making.
+    </font>
+    '''
+    story.append(Paragraph(intro_text, _style_left_wrapped()))
+    story.append(Spacer(1, 0.15 * inch))
+    
+    # Limit messages
+    messages = chat_history[-20:] if len(chat_history) > 20 else chat_history
+    
+    if len(chat_history) > 20:
+        story.append(Paragraph(
+            f'<font size="9" color="#8a9a95"><i>(Showing last 20 of {len(chat_history)} interactions)</i></font>',
+            _style_left()
+        ))
+        story.append(Spacer(1, 0.1 * inch))
+    
+    # Build consultation table
+    data = [["Time", "Role", "Content"]]
+    
+    for msg in messages:
+        role = msg.get('role', 'unknown').capitalize()
+        content = msg.get('content', '')
+        timestamp = msg.get('timestamp', '')
+        
+        # Format timestamp
+        time_str = "—"
+        if timestamp:
+            try:
+                from datetime import datetime as dt
+                ts = dt.fromisoformat(timestamp.replace('Z', '+00:00'))
+                time_str = ts.strftime("%H:%M")
+            except:
+                pass
+        
+        # Truncate long content for table display
+        if len(content) > 300:
+            content = content[:300] + "..."
+        
+        # Role styling
+        if role == 'User':
+            role_display = Paragraph('<font size="9" color="#006494"><b>User</b></font>', _style_left())
+        else:
+            role_display = Paragraph('<font size="9" color="#00856a"><b>AI</b></font>', _style_left())
+        
+        content_para = Paragraph(f'<font size="9" color="#5a6b66">{content}</font>', _style_left_wrapped())
+        time_para = Paragraph(f'<font size="8" color="#8a9a95">{time_str}</font>', _style_center())
+        
+        data.append([time_para, role_display, content_para])
+    
+    table = Table(data, colWidths=[0.5 * inch, 0.5 * inch, 5.0 * inch])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), TABLE_HEADER_BG),
+        ('TEXTCOLOR', (0, 0), (-1, 0), white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 9),
+        ('ALIGN', (0, 0), (1, 0), 'CENTER'),
+        ('ALIGN', (0, 1), (1, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.5, BORDER_COLOR),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [white, TABLE_ALT_ROW]),
+    ]))
+    
+    story.append(table)
+    
+    return story
 
 
 # Style helper functions
